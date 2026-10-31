@@ -111,6 +111,7 @@ Consolidated test-case catalog for the **Estate Management System (EM)** rebuild
 |---|---|
 | [test-catalog.csv](test-catalog.csv) | Generated. One row per case (`canonical`) and one per extra data variant (`variant`), with columns:<br>• ID, row type, feature, sub-feature, title<br>• priority, ★, smoke, E2E, regression<br>• automation, status, variant label<br>• source, source TC ID, feature file<br>The Playwright traceability check and tags are driven by it. |
 | [duplicates-merged.md](duplicates-merged.md) | Historical record of the workbook import (11 Oct 2026): which workbook rows were merged into which case, and why. Not updated. |
+| [../sanity-test/](../sanity-test/README.md) | Hand-written, not generated. Sanity pass of New EM vs Old EM on UAT (130 `SAN-*` cases, 32 bugs with evidence, Jira cross-check). Not part of this catalog yet. |
 | [source-issues.md](source-issues.md) | Decisions needed, known defects, wrong expected results, coverage gaps (hand-written); all cases in Review (generated). |
 
 ## Suggested automation tagging
