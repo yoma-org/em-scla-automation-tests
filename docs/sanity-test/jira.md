@@ -2,6 +2,8 @@
 
 [← Sanity index](README.md) · [Bugs](bugs.md)
 
+> **Current status is in [tickets/README.md](tickets/README.md)** (all 90 tickets, build -37, 2026-11-01). Sections 2 and 3 below record the 30/10 check on build -31 and are kept as history. Priorities in section 1 are as filed on 30/10; on 01/11 Jira shows EM-93 … EM-107 as Medium, including the hard-stop EM-96.
+
 On 30/10/2026 all **65 bugs** in Jira `project = EM` (EM-28 … EM-92) were read without editing anything and compared with this report. A pair counts as the same when it is on **the same screen with the same symptom**, since Jira tickets are short. Jira attachments could not be opened, so 🔗 pairs need a look at the ticket's images to be sure. After that, the **25 new bugs were filed as EM-93 … EM-117**.
 
 Jira base: `https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-NN`

@@ -58,7 +58,7 @@
 |---|---|---|
 | RV-102415 'Wallet Cash Received'; wallet 1,000 | RV-00059 'Recharge'; wallet 1,000 (amount not aligned under DR/CR, D-07); RV not in Recent Receipts (BUG-13) | ✅ Match |
 
-**Retest (build -37):** BUG-13 / [EM-102](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-102) fixed: RV-00059 (Wallet Cash Received 1,000) is now listed in Recent Receipts. Still one row per receipt, while Old splits a receipt by allocation.
+**Retest (build -37):** BUG-13 / [EM-102](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-102) fixed: RV-00059 (Wallet Cash Received 1,000) is now listed in Recent Receipts. Still one row per receipt, while Old splits a receipt by allocation. Repro 2026-11-01: EM-102 is **partly open** (still one row per receipt, no Created By column).
 
 **Evidence:**
 
@@ -325,7 +325,7 @@
 |---|---|---|
 | RV-102416; deposit 5,000; account +5,000 | RV-00060; deposit 5,000; RV not in Recent Receipts (BUG-13) | ✅ Match |
 
-**Retest (build -37):** BUG-13 / [EM-102](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-102) fixed: RV-00060 (Deposit Received 5,000) is now listed; a new deposit RV-00069 appears at the top of Recent Receipts and the Deposit tab shows 'RV-00069 ( Deposit Received )'. Still one row per receipt (Old splits by allocation).
+**Retest (build -37):** BUG-13 / [EM-102](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-102) fixed: RV-00060 (Deposit Received 5,000) is now listed; a new deposit RV-00069 appears at the top of Recent Receipts and the Deposit tab shows 'RV-00069 ( Deposit Received )'. Still one row per receipt (Old splits by allocation). Repro 2026-11-01: EM-102 is **partly open** (still one row per receipt, no Created By column).
 
 **Evidence:**
 
@@ -366,7 +366,7 @@
 |---|---|---|
 | Account chosen from a dropdown; 6,000 → 'Invalid Amount' | 6,000 → 'Insufficient deposit balance', but Withdraw From is free text where the account ID must be typed | ✅ Match |
 
-**Retest (build -37):** BUG-30 / [EM-105](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-105) fixed: Withdraw From is a dropdown 'Choose an account' listing only MMK accounts; withdrawing 6,000 above the deposit is blocked with 'Insufficient deposit balance (ERR_DEPOSIT_INSUFFICIENT_BALANCE)'. The hint 'Enter an amount to deposit' is still shown on the withdraw form.
+**Retest (build -37):** BUG-30 / [EM-105](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-105) fixed: Withdraw From is a dropdown 'Choose an account' listing only MMK accounts; withdrawing 6,000 above the deposit is blocked with 'Insufficient deposit balance (ERR_DEPOSIT_INSUFFICIENT_BALANCE)'. The hint 'Enter an amount to deposit' is still shown on the withdraw form. Repro 2026-11-01: EM-105 is **partly open** (hint still says 'Enter an amount to deposit.').
 
 **Evidence:**
 

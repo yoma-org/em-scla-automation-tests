@@ -59,7 +59,7 @@
 |---|---|---|
 | Newest on top. One row per allocation: RV-102417 split into Wallet 920 + Inv 80. Deposit receipt RV-102416 listed. Columns Created By, Category, Description present | One row per receipt (RV-00061 = 1,000). Category 'No category', Description '—'. RV-00060 (deposit 5,000) and RV-00059 (wallet) missing. No Created By column | ❌ [BUG-13](../bugs.md#bug-13) · [EM-102](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-102), [BUG-14](../bugs.md#bug-14) · [EM-109](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-109) |
 
-**Retest (build -37):** BUG-13 / EM-102 fixed — RV-00059 'Wallet Cash Received' 1,000 and RV-00060 'Deposit Received' 5,000 are now listed, and a new deposit (RV-00069, 50) appears at the top immediately. Created By is available in the expanded [+] row. Still one row per receipt (RV-00066, which pays 3 invoices, is a single row); Old splits by allocation.
+**Retest (build -37):** BUG-13 / EM-102 fixed — RV-00059 'Wallet Cash Received' 1,000 and RV-00060 'Deposit Received' 5,000 are now listed, and a new deposit (RV-00069, 50) appears at the top immediately. Created By is available in the expanded [+] row. Still one row per receipt (RV-00066, which pays 3 invoices, is a single row); Old splits by allocation. Repro 2026-11-01: EM-102 is **partly open** (still one row per receipt, no Created By column).
 
 **Evidence:**
 
