@@ -115,4 +115,4 @@ CSS only inside those components and only when a semantic locator is not practic
 - avoid cross-test dependencies; E2E flows are one test with `test.step()` per flow step;
 - include the case ID in the title and the `tc` annotation;
 - give E2E flows their own timeout (`test.setTimeout`);
-- tag suites and priority as described in `em-project.md`.
+- tag suites and priority as described in `references/test-case-conventions.md`.

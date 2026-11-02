@@ -20,7 +20,7 @@ Mock when:
 
 Do not mock the behavior being validated.
 
-EM notes:
+Example notes (`em` app):
 
 - em-backend responses are encrypted. A mocked em-backend response must be encrypted the same
   way (an `encryptPayload()` helper next to `decryptPayload()`), or em-web will fail to read it.

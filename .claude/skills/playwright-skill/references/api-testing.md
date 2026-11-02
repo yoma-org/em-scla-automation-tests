@@ -1,6 +1,8 @@
 # API Testing
 
-Read the "Encrypted API Responses" and "Two API Clients" sections of `em-project.md` first.
+Read the API sections of `projects/<app>/PROJECT.md` first. The examples below come from the
+`em` app, whose back-office API encrypts every response body (hence `decryptPayload()`); an
+app without that quirk reads `response.json()` in the same place.
 
 ## Back-office Request Context
 

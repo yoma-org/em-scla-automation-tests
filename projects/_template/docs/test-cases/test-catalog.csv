@@ -1,0 +1,2 @@
+test_id,row_type,feature,sub_feature,title,priority,critical,smoke,e2e,regression,automation,manual_reason,status,status_note,variant,source,source_id,doc
+AUTH-001,canonical,Login & Authentication,Login,Login with valid credentials lands on the home page,P1,Y,Y,,Y,Auto-UI,,Active,,,Example — replace with the real source,,features/01-login.md

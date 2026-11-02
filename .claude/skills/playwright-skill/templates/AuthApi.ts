@@ -2,7 +2,8 @@
 import { type APIRequestContext } from '@playwright/test';
 import { decryptPayload } from '@api/crypto';
 
-// Confirm the login endpoint and response shape against em-backend routes.
+// Confirm the login endpoint and response shape against the app API (PROJECT.md).
+// decryptPayload() is em-specific; other apps read response.json() unless their API wraps bodies.
 const LOGIN_PATH = 'auth/login';
 
 export class AuthApi {

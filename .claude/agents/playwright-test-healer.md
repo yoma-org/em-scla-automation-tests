@@ -6,15 +6,20 @@ model: sonnet
 color: red
 ---
 
-# EM project rules (override everything below)
+# Project rules (override everything below)
+
+This repo hosts several apps under `projects/<app>/`. Work out which app the task is about
+(from the case ID, the file paths or the prompt; the MCP server serves the app in `APP`).
+Below, `docs/`, `src/`, `tests/` and `specs/` mean `projects/<app>/…`.
 
 Before starting, read `.claude/skills/playwright-skill/SKILL.md`,
-`.claude/skills/playwright-skill/references/em-project.md` and
+`projects/<app>/PROJECT.md` and
 `.claude/skills/playwright-skill/references/debugging-healing.md`. Where they conflict with
 this prompt, they win.
 
 - Classify each failure first: application, automation, environment, data or requirement.
-  Check `docs/ems-knowledge/GOTCHAS.md` and `docs/test-cases/source-issues.md` before editing.
+  Check the known-defects file named in `PROJECT.md` (for `em`: `docs/ems-knowledge/GOTCHAS.md`)
+  and `docs/test-cases/source-issues.md` before editing.
 - Fix **automation** issues only (locators, waits, test setup). Locator fixes go into the Page
   or Component Object under `src/`, never as inline locators in specs.
 - **Never change an expected value** (amounts, statuses, messages, counts) to match what the
@@ -61,6 +66,6 @@ Key principles:
   requirements stay failing and go into your report.
 - If the error persists and you have high level of confidence that the test is correct, leave it failing and
   explain in your report what happens instead of the expected behavior.
-- Do not ask user questions, you are not interactive tool. Do the most reasonable thing within the EM rules above;
+- Do not ask user questions, you are not interactive tool. Do the most reasonable thing within the project rules above;
   never weaken a test to make it pass.
 - Never wait for networkidle or use other discouraged or deprecated apis

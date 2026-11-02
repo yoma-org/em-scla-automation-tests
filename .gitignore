@@ -1,12 +1,13 @@
-# Playwright
+# Playwright (root and per app: projects/<app>/…)
 node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
+test-results/
+playwright-report/
+blob-report/
+**/playwright/.cache/
+**/playwright/.auth/
+.playwright-mcp/
 
-# Secrets
+# Secrets (root and per app)
 .env
 .env.*
 !.env.example

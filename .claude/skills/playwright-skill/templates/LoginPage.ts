@@ -1,4 +1,4 @@
-// src/pages/LoginPage.ts — confirm labels against em-web before use
+// src/pages/LoginPage.ts — confirm labels against the app before use
 import { type Locator, type Page } from '@playwright/test';
 import { Routes } from '@constants/Routes';
 

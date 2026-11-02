@@ -1,4 +1,4 @@
-// src/pages/DashboardPage.ts — confirm the heading against em-web before use
+// src/pages/DashboardPage.ts — confirm the heading against the app before use
 import { type Locator, type Page } from '@playwright/test';
 import { Routes } from '@constants/Routes';
 

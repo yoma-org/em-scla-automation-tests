@@ -1,12 +1,14 @@
 # Playwright Planner
 
+All paths are inside the app folder `projects/<app>/`. The example rows come from the `em` app.
+
 ## Inputs
 
 - canonical cases: `docs/test-cases/features/**/*.md` (the only source) and `docs/test-cases/test-catalog.csv`
   (generated from them; handy for filtering);
 - E2E flows: `docs/test-cases/suites/e2e-critical-flows.md`;
 - open questions: `docs/test-cases/source-issues.md`;
-- business rules: `docs/EM_Business_Summary.md`, `docs/ems-knowledge/`;
+- app rules and business context: `PROJECT.md` and the knowledge docs it points to;
 - existing automation under `tests/` and `src/`;
 - optional Website Discovery evidence (plans in `specs/`).
 
@@ -25,7 +27,7 @@
   in the plan under `specs/`.
 - It becomes a canonical case only after validation: add it to the feature file with the
   next free `<FEATURE>-<nnn>` ID (template and rules: "Adding or changing test cases" in
-  `docs/test-cases/README.md`), then run `npm run cases:build`. Never edit `test-catalog.csv`,
+  `docs/test-cases/README.md`), then run `npm run cases:build -- --app <app>`. Never edit `test-catalog.csv`,
   the suites or the generated blocks by hand, and never renumber existing IDs.
 
 ## Planner Output Example

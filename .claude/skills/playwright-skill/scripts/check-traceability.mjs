@@ -1,21 +1,27 @@
 #!/usr/bin/env node
-// Checks every Playwright test against docs/test-cases/test-catalog.csv:
+// Checks every Playwright test of one app against projects/<app>/docs/test-cases/test-catalog.csv:
 // title / `tc` / `source` annotations, tags, variants, status (Review / Manual / Obsolete),
 // leftover generator drafts. Exit code 1 when anything is wrong.
 //
-// Usage (from the repo root):
-//   node .claude/skills/playwright-skill/scripts/check-traceability.mjs            # runs `playwright test --list`
-//   node .claude/skills/playwright-skill/scripts/check-traceability.mjs --json list.json
-//   node .claude/skills/playwright-skill/scripts/check-traceability.mjs --coverage # also list cases with no test
+// Usage (from the repo root; --app defaults to $APP):
+//   node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em            # runs `playwright test --list`
+//   node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em --json list.json
+//   node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em --coverage # also list cases with no test
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 
 const args = process.argv.slice(2);
 const opt = name => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] : undefined;
 };
-const catalogPath = opt('--catalog') ?? 'docs/test-cases/test-catalog.csv';
+const app = opt('--app') ?? process.env.APP;
+if (!app || !existsSync(`projects/${app}/playwright.config.ts`)) {
+  const apps = readdirSync('projects').filter(d => !d.startsWith('_') && existsSync(`projects/${d}/playwright.config.ts`));
+  console.error(`Pass --app <name> (or set APP). Apps: ${apps.join(', ')}`);
+  process.exit(1);
+}
+const catalogPath = opt('--catalog') ?? `projects/${app}/docs/test-cases/test-catalog.csv`;
 const jsonPath = opt('--json');
 const showCoverage = args.includes('--coverage');
 
@@ -69,7 +75,7 @@ for (const [id, c] of catalog) {
 
 const listJson = jsonPath
   ? readFileSync(jsonPath, 'utf8')
-  : execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json'], {
+  : execFileSync('npx', ['playwright', 'test', '-c', `projects/${app}`, '--list', '--reporter=json'], {
       encoding: 'utf8',
       maxBuffer: 256 * 1024 * 1024,
       stdio: ['ignore', 'pipe', 'inherit']

@@ -1,3 +1,4 @@
+// em app only (PROJECT.md "Encrypted API Responses"). Other apps do not need this file.
 // src/api/crypto.ts
 import { type APIResponse } from '@playwright/test';
 import { env } from '@utils/Environment';

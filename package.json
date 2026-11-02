@@ -1,14 +1,13 @@
 {
-  "name": "em-automation-tests",
+  "name": "em-scla-automation-tests",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "description": "Playwright TypeScript automation for several apps (projects/<app>/), sharing one framework, skill and agents",
   "scripts": {
+    "test": "playwright test",
     "cases:build": "node scripts/test-cases.mjs",
-    "cases:check": "node scripts/test-cases.mjs --check"
+    "cases:check": "node scripts/test-cases.mjs --check",
+    "new-project": "node scripts/new-project.mjs",
+    "traceability": "node .claude/skills/playwright-skill/scripts/check-traceability.mjs"
   },
   "keywords": [],
   "author": "",

@@ -1,11 +1,14 @@
 # Authentication Strategy
 
-## EM Default
+## Choosing the Default
 
-EM uses maker–checker roles, so the default is **role-specific storage state**: one setup
-test logs in every role the suite uses, and tests open a context per role
-(`asRole()` in `references/fixtures.md`). em-web keeps its token encrypted in localStorage,
-which `storageState()` captures.
+The app's `PROJECT.md` ("Roles and Authentication") decides. When cases need several roles
+(maker–checker, approvals), the default is **role-specific storage state**: one setup test
+logs in every role the suite uses, and tests open a context per role (`asRole()` in
+`references/fixtures.md`).
+
+Example (`em` app): EM uses maker–checker roles, so it uses role-specific storage state.
+em-web keeps its token encrypted in localStorage, which `storageState()` captures.
 
 ## Other Strategies
 

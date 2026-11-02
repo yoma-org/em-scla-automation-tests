@@ -117,7 +117,7 @@ export class DashboardPage {
 
 Prefer composition over inheritance.
 
-EM candidates for Component Objects: PrimeVue `DataTable` (search, filter, paginate, row by
+Example (`em` app) candidates for Component Objects: PrimeVue `DataTable` (search, filter, paginate, row by
 document number), `Toast`, `ConfirmDialog`, `Dropdown` / `Calendar`, the sidebar menu, and
 the approve / reject action bar shared by every maker–checker document.
 

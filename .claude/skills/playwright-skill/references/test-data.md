@@ -36,6 +36,6 @@ export function buildContact(overrides: Partial<Contact> = {}): Contact {
 - log the faker seed (`faker.seed()`) in the test so failing data can be reproduced;
 - sensitive or real resident data must not be committed;
 - approved financial records cannot be deleted; isolation comes from unique data on a
-  dedicated environment (see `em-project.md`);
+  dedicated environment (see the app's `PROJECT.md`);
 - tests must not depend on pre-existing mutable records;
 - data should match the business partition being tested (currency, utility type, month).

@@ -102,7 +102,7 @@ test('UO-007 approving a UO reading generates the invoice', async ({ asRole }) =
 ## Lifecycle Fixture
 
 Data fixtures create isolated records through the API. Approved financial documents cannot be
-deleted, so isolation comes from unique data, not teardown (see `em-project.md`).
+deleted, so isolation comes from unique data, not teardown (see the app's `PROJECT.md`).
 
 ```ts
 type DataFixtures = {

@@ -13,7 +13,7 @@ Healing workflow:
 1. reproduce failure;
 2. inspect trace, screenshot, logs, and network;
 3. classify application, automation, environment, data, or requirement issue
-   (check `docs/ems-knowledge/GOTCHAS.md` and `docs/test-cases/source-issues.md` first);
+   (check the known-defects file named in `PROJECT.md` — for `em`, `docs/ems-knowledge/GOTCHAS.md` — and `docs/test-cases/source-issues.md` first);
 4. apply the smallest safe fix;
 5. rerun targeted test;
 6. rerun affected suite;

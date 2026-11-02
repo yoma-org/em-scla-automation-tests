@@ -142,7 +142,7 @@ There is no `@regression` tag: every case is in regression.
 
 Blocking gates leave out `@review`: their expected result is still in question, so a red one is checked against [source-issues.md](source-issues.md) instead of failing the build.
 
-The full rules are in the Playwright skill (`.claude/skills/playwright-skill/references/em-project.md`).
+The full rules are in [PROJECT.md](../../PROJECT.md) and the Playwright skill (`.claude/skills/playwright-skill/references/test-case-conventions.md`).
 
 ## Adding or changing test cases
 
@@ -164,7 +164,7 @@ Do not edit generated content by hand; the next build overwrites it. [suites/e2e
 
 - **New case:** the next free number at the end of the feature, under the right `### <sub-feature>` heading. Never renumber or reuse an ID.
 - **Removed case:** set its Status to `Obsolete` and keep it. Delete a case only if it was never automated.
-- **New feature:** a new file `features/<nn>-<slug>.md` (next free number) with its own ID prefix, starting with `# <nn> · <Feature name>`, the index link, empty `<!-- generated:summary -->` markers and `## Test cases`. Add the prefix to a README group and a smoke stage in `scripts/test-cases.mjs`, or it is listed under "Other".
+- **New feature:** a new file `features/<nn>-<slug>.md` (next free number) with its own ID prefix, starting with `# <nn> · <Feature name>`, the index link, empty `<!-- generated:summary -->` markers and `## Test cases`. Add the prefix to a README group and a smoke stage in `../../test-cases.config.mjs`, or it is listed under "Other".
 - **Status `Review`** needs the open question after the status: `Review — <question>`. **Automation `Manual`** needs the reason: `Manual — <reason>`.
 
 **Case template**
