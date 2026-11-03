@@ -25,6 +25,8 @@ export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
   reporter: [
     ['list'],
+    // In CI, show each failing test and its error on the run's Summary page.
+    ...(process.env.CI ? [['github'] as ['github']] : []),
     ['html', { outputFolder: path.join(__dirname, 'playwright-report'), open: 'never' }],
     ['junit', { outputFile: path.join(__dirname, 'test-results', 'junit.xml') }],
     // Read by scripts/jira-tests.mjs to comment results on Jira tickets.
