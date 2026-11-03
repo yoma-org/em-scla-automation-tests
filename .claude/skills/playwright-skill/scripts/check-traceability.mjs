@@ -3,12 +3,17 @@
 // title / `tc` / `source` annotations, tags, variants, status (Review / Manual / Obsolete),
 // leftover generator drafts. Exit code 1 when anything is wrong.
 //
+// Sanity tests (tests/sanity/, IDs SAN-…) are checked against projects/<app>/docs/sanity-test/
+// instead of the catalog: the ID must be a case heading there, and tags must be @sanity +
+// the doc's priority (+ @critical for ★ cases).
+//
 // Usage (from the repo root; --app defaults to $APP):
 //   node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em            # runs `playwright test --list`
 //   node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em --json list.json
 //   node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em --coverage # also list cases with no test
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import path from 'node:path';
 
 const args = process.argv.slice(2);
 const opt = name => {
@@ -27,8 +32,8 @@ const showCoverage = args.includes('--coverage');
 
 // Files that are allowed to have tests without a case ID.
 const NO_ID_FILES = [/(^|\/)seed\.spec\.ts$/, /\.setup\.ts$/];
-const ID = /^([A-Z]+(?:-[A-Z]+)?-\d{3}|E2E-\d{2})(?:\s|$)/;
-const MANAGED_TAGS = ['@smoke', '@P1', '@P2', '@P3', '@critical', '@review', '@e2e'];
+const ID = /^([A-Z]+(?:-[A-Z]+)?-\d{3}|E2E-\d{2}|SAN-[A-Z0-9]+-\d{3})(?:\s|$)/;
+const MANAGED_TAGS = ['@smoke', '@P1', '@P2', '@P3', '@critical', '@review', '@e2e', '@sanity'];
 const REMOVED_TAGS = /^@(R[1-3]|regression)$/;
 // Variant rows that are merged duplicates or source noise (matrix header / blank rows), not
 // separate data: kept in the catalog for traceability, but they need no run of their own.
@@ -71,6 +76,30 @@ for (const [id, c] of catalog) {
   if (dup.length) catalogWarnings.push(`${id}: duplicate variant label(s) in catalog: ${[...new Set(dup)].join(' | ')}`);
 }
 
+// ---------- sanity cases (docs/sanity-test/**/*.md) ----------
+// Heading: "#### [★ ]SAN-XXX-nnn · Title", then a table whose first data cell is the priority.
+
+const sanityDir = `projects/${app}/docs/sanity-test`;
+const sanityCases = new Map(); // id -> { priority, critical, doc }
+(function scan(dir) {
+  if (!existsSync(dir)) return;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const file = path.join(dir, entry.name);
+    if (entry.isDirectory()) { scan(file); continue; }
+    if (!entry.name.endsWith('.md')) continue;
+    const lines = readFileSync(file, 'utf8').split('\n');
+    lines.forEach((line, i) => {
+      const m = /^#{2,5}\s+(★\s*)?(SAN-[A-Z0-9]+-\d{3})\s+·/.exec(line);
+      if (!m) return;
+      let priority;
+      for (let j = i + 1; j < Math.min(i + 8, lines.length) && !priority; j++) {
+        priority = /^\|\s*(P[1-3])\s*\|/.exec(lines[j])?.[1];
+      }
+      sanityCases.set(m[2], { priority, critical: Boolean(m[1]), doc: path.relative(`projects/${app}`, file) });
+    });
+  }
+})(sanityDir);
+
 // ---------- tests ----------
 
 const listJson = jsonPath
@@ -99,6 +128,7 @@ const tests = new Map();
 const errors = [];
 const implemented = new Map(); // id -> Set(label)
 const seenTitles = new Map();
+const sanityImplemented = new Set();
 
 for (const t of tests.values()) {
   const where = `${t.file}:${t.line} "${t.title}"`;
@@ -125,6 +155,33 @@ for (const t of tests.values()) {
     const covered = ann('tc');
     if (!covered.length) err('E2E flow lists no covered cases (`tc` annotations)');
     for (const c of covered) if (!catalog.has(c)) err(`tc "${c}" is not in the catalog`);
+    continue;
+  }
+
+  // ----- sanity cases -----
+  if (id.startsWith('SAN-')) {
+    if (!/(^|\/)sanity\//.test(t.file)) err('sanity cases (SAN-…) belong in tests/sanity/');
+    const c = sanityCases.get(id);
+    if (!c) { err(`${id} is not a case heading in ${sanityDir}`); continue; }
+    const tc = ann('tc');
+    if (tc.length !== 1 || tc[0] !== id) err(`needs exactly one annotation { type: 'tc', description: '${id}' } (found: ${tc.join(', ') || 'none'})`);
+    const expected = new Set(['@sanity', ...(c.priority ? [`@${c.priority}`] : []), ...(c.critical ? ['@critical'] : [])]);
+    if (!c.priority) err(`${id}: no priority found under its heading in ${c.doc}`);
+    // Ticket cases (SAN-EM92-…) must carry their Jira task as a tag, so CI can run them per ticket.
+    const task = /^SAN-([A-Z]+)(\d+)-\d{3}$/.exec(id);
+    if (task && !tags.has(`@${task[1]}-${task[2]}`)) err(`missing Jira task tag @${task[1]}-${task[2]} (sanity() adds it from the ID)`);
+    const actual = new Set(MANAGED_TAGS.filter(tag => tags.has(tag)));
+    const missing = [...expected].filter(tag => !actual.has(tag));
+    const extra = [...actual].filter(tag => !expected.has(tag));
+    if (missing.length || extra.length) {
+      err(`tags: expected [${[...expected].join(' ')}]` +
+        (missing.length ? `, missing ${missing.join(' ')}` : '') +
+        (extra.length ? `, unexpected ${extra.join(' ')}` : ''));
+    }
+    const key = `${id} []`;
+    if (seenTitles.has(key)) err(`duplicate test for ${id} (also ${seenTitles.get(key)})`);
+    else seenTitles.set(key, `${t.file}:${t.line}`);
+    sanityImplemented.add(id);
     continue;
   }
 
@@ -211,6 +268,7 @@ if (errors.length) {
 }
 console.log(`\nTests checked: ${tests.size}`);
 console.log(`Cases implemented: ${done.length} / ${automatable.length} automatable canonical cases`);
+if (sanityCases.size) console.log(`Sanity cases implemented: ${sanityImplemented.size} / ${sanityCases.size} in ${sanityDir}`);
 for (const m of missingVariants) console.log(`  incomplete: ${m}`);
 if (showCoverage) {
   const byFeature = new Map();

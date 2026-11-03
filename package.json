@@ -7,7 +7,9 @@
     "cases:build": "node scripts/test-cases.mjs",
     "cases:check": "node scripts/test-cases.mjs --check",
     "new-project": "node scripts/new-project.mjs",
-    "traceability": "node .claude/skills/playwright-skill/scripts/check-traceability.mjs"
+    "traceability": "node .claude/skills/playwright-skill/scripts/check-traceability.mjs",
+    "test:sanity": "node scripts/run-tags.mjs @sanity -- --project=chromium",
+    "test:tags": "node scripts/run-tags.mjs"
   },
   "keywords": [],
   "author": "",

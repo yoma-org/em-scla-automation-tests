@@ -73,6 +73,12 @@ Roles: `admin`, `management`, `uo-operator`/`uo-manager`, `mo-operator`/`mo-mana
 Follow the skill's `references/test-case-conventions.md` (titles, `tc` / `source`
 annotations, tags, E2E flows, `@review`, data variants, CI gates). EM specifics:
 
+- **Sanity suite** (New EM vs Old EM, Jira bug repros): cases in `docs/sanity-test/`,
+  tests in `tests/sanity/`, tag `@sanity`, CI `.github/workflows/em-tests.yml`. Use
+  `sanity()` from `@helpers/sanity` for tags and annotations. See `docs/sanity-test/README.md#automation`.
+- The target is **New EM** (Next.js, Radix-style comboboxes, `data-testid` on figures), not
+  the Vue/PrimeVue em-web described below. Confirm locators on the live page.
+
 - There are 12 composed flows, `E2E-01` … `E2E-12` (`docs/test-cases/suites/e2e-critical-flows.md`:
   "All flows are P1 ★"). E2E flows chain several roles and approvals.
 - Feature folders, e.g. `tests/invoice/`, `tests/payment/`, `tests/balances/`,

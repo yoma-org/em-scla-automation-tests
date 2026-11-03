@@ -49,7 +49,17 @@ test('E2E-01 order to payment', {
 
 - Folders are **by feature**, not by suite, because one case can be in several suites:
   `tests/<feature>/<feature>.spec.ts`, `tests/e2e/E2E-01-<slug>.spec.ts`, `tests/api/…`.
-- Which tests to run is chosen by tag, with no extra tier tags. Gates that block a merge or a
+- One exception: **sanity** cases, which an app keeps outside the catalog in
+  `docs/sanity-test/` (IDs `SAN-…`), live in `tests/sanity/`, mirroring the doc folders
+  (`docs/sanity-test/tickets/g3-x.md` → `tests/sanity/tickets/g3-x.spec.ts`). They are tagged
+  `@sanity` + the doc's priority (+ `@critical` for ★), carry a `tc` annotation (plus `jira`
+  and `doc` when known) and are run with `--grep @sanity`. `check-traceability.mjs` checks
+  them against the doc headings instead of the catalog. `@sanity` is used on nothing else.
+- Which tests to run is chosen by tag, with no extra tier tags. People and CI select with one
+  tag expression, `npm run test:tags -- "<tags>" --app <app>` (`scripts/run-tags.mjs`: space =
+  OR, `+` = AND, `!` = NOT, whole-word match), which builds the `--grep` below.
+- A test that checks a Jira issue also carries the issue key as a tag (`@EM-92`), so a run
+  can be limited to issues (`"@EM-92 @EM-93"`). Gates that block a merge or a
   deploy exclude `@review` (their expected result is in question, so a red one is not a
   regression); a separate non-blocking job runs `--grep @review` and reports its failures
   against `docs/test-cases/source-issues.md`:

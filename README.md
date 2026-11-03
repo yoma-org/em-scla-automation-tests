@@ -42,6 +42,31 @@ npm run traceability -- --app em                 # tests ↔ catalog check
 
 Each app reads its secrets from `projects/<app>/.env` (copy `.env.example`; git-ignored).
 
+### Running by tag
+
+Suites are chosen by tag, locally and in CI, with one tag expression
+(`scripts/run-tags.mjs`): space = OR, `+` = AND, `!` = NOT. A missing `@` is added, and tags
+match whole words (`@EM-9` does not match `@EM-92`).
+
+```bash
+npm run test:tags -- "@sanity" --app em               # sanity suite
+npm run test:tags -- "@smoke+!@review" --app em       # smoke without review cases
+npm run test:tags -- "@e2e" --app em                  # E2E flows
+npm run test:tags -- "@EM-92 @EM-93" --app em         # tests of these Jira issues
+npm run test:tags -- "@sanity+@P1" --app em -- --project=chromium --headed   # extra Playwright args after --
+npm run test:tags -- "@smoke" --app em --print        # only print the --grep regex
+```
+
+| Tag | Meaning |
+|---|---|
+| `@smoke`, `@e2e`, `@sanity` | Suite |
+| `@P1` `@P2` `@P3`, `@critical` | Priority, ★ business flow |
+| `@review` | Expected result in question (non-blocking) |
+| `@EM-92` … | Jira issue the test checks |
+
+CI for `em`: `.github/workflows/em-tests.yml`. Actions → EM tests → Run workflow, type the tags,
+optionally tick *comment* to post the result on the Jira issues in the tags.
+
 ## Adding an app
 
 ```bash
