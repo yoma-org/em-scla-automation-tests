@@ -108,7 +108,80 @@ Cases follow the same template as [docs/test-cases](../test-cases/README.md#addi
 | Status | ✅ / ⚠️ / ❌ are `Active`. ❌ cases expect the **correct** behaviour, so an automated test stays red until the bug is fixed. |
 | Automation | `Auto-UI`, `Auto-UI+API` (hidden decimals / numbers checked via API), `Auto-API` (API-only bugs), or `Manual — <reason>` |
 
-These cases live outside `docs/test-cases/features/`, so `npm run cases:build` does not pick them up. Mapping them to catalog IDs (INV-017 …) and automating them is the next step.
+These cases live outside `docs/test-cases/features/`, so `npm run cases:build` does not pick them up. They are automated separately, see [Automation](#automation).
+
+## Automation
+
+Sanity tests have their own folder, mirroring this one, and run by the `@sanity` tag.
+
+| Cases in | Tests in |
+|---|---|
+| `docs/sanity-test/tickets/<file>.md` | `tests/sanity/tickets/<file>.spec.ts` |
+| `docs/sanity-test/cases/<file>.md` | `tests/sanity/cases/<file>.spec.ts` |
+
+Each test:
+
+- has a title starting with the case ID, e.g. `SAN-EM92-001 Create Invoice opens with …`;
+- uses `sanity({ id, priority, critical, doc })` from `@helpers/sanity`, which adds the tags `@sanity` + `@P1`/`@P2`/`@P3` (+ `@critical` for ★) + the **Jira task** and the `tc`, `jira` and `doc` annotations;
+- is linked to its Jira task by the ID: `SAN-EM92-001` gets the tag `@EM-92` automatically. A parity case (`SAN-INV-013`) that a ticket covers passes it: `sanity({ …, jira: ['EM-93'] })`;
+- expects the **Old EM** behaviour, so a test for a ticket that is still open stays red until the fix is on UAT.
+
+Run (from the repo root):
+
+```bash
+npm run test:sanity                                 # whole sanity suite, Chromium
+npm run test:tags -- "@EM-92" --app em               # one Jira issue
+npm run test:tags -- "@sanity+@P1" --app em          # sanity P1 only
+APP=em npx playwright test --grep "SAN-EM92-002"     # one case, by ID
+```
+
+`node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em` checks that every `SAN-…` test is a case heading here, sits in `tests/sanity/` and has the right tags. It also prints how many sanity cases are automated.
+
+**CI:** [`.github/workflows/em-tests.yml`](../../../../.github/workflows/em-tests.yml)
+
+| When | What runs | Jira comment |
+|---|---|---|
+| A task moves to **QA** (Jira Automation, set up below) | Tests of that task | Yes |
+| Mon–Fri 09:00 Vietnam | `@sanity`, to catch regressions on fixed tasks | No |
+| Mon–Fri 14:30 Vietnam | Every task in QA that has tests | Yes |
+| Push to `main` touching `projects/em/` | `@sanity` | No |
+| By hand: Actions → EM tests → Run workflow | The **tags** you type (see below) | If `comment` is ticked |
+
+**Running by tag.** The form has one field, **tags** (the same expression as `npm run test:tags`, see the [repo README](../../../../README.md#running-by-tag)): space = OR, `+` = AND, `!` = NOT.
+
+| Type in tags | Runs |
+|---|---|
+| `@sanity` (default) | Whole sanity suite |
+| `@EM-92` | Tests of issue EM-92 |
+| `@EM-92 @EM-93 @EM-75` | Tests of these issues |
+| `@sanity+@P1` | Sanity tests with priority P1 |
+| `@smoke`, `@e2e` | Other suites, once they have tests |
+
+Tick **comment** to post the result on each issue named in the tags (`@EM-…`). Same from the command line: `gh workflow run em-tests.yml -f tags="@EM-92 @EM-93" -f comment=true`.
+
+The Jira comment lists each test of the task with ✅ / ❌ and links the run (HTML report and traces). A green result does not move the task; QA still decides. The run summary also lists the tasks in QA that **have no test yet**.
+
+Secrets in the GitHub environment `em-uat`: `BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and for Jira `JIRA_BASE_URL` (`https://zeyalabs-team-a83df6me.atlassian.net`), `JIRA_EMAIL`, `JIRA_API_TOKEN` (an API token of the account that comments, from id.atlassian.com → Security → API tokens).
+
+Locally: `node scripts/jira-tests.mjs tasks --app em` lists the tasks in QA with and without tests; `node scripts/jira-tests.mjs comment --app em --tasks EM-92 --dry-run` shows the comment for the last run without posting it. Both read the `JIRA_*` variables from the environment.
+
+### Run tests when a ticket is fixed
+
+Set up once by a Jira admin, in Project settings → Automation → Create rule:
+
+1. **Trigger:** Issue transitioned, to status `QA`.
+2. **Condition:** Issue type equals `Bug`.
+3. **Action:** Send web request
+   - URL: `https://api.github.com/repos/yoma-org/em-scla-automation-tests/actions/workflows/em-tests.yml/dispatches`
+   - Method: `POST`
+   - Headers: `Accept: application/vnd.github+json`, `Authorization: Bearer <GitHub token>` (fine-grained token on this repo with **Actions: Read and write**; mark the header as hidden)
+   - Body (custom data): `{"ref": "main", "inputs": {"tags": "@{{issue.key}}", "comment": "true"}}`
+
+Then, when a developer moves EM-92 to QA, the EM-92 tests run on UAT and the result appears as a comment on EM-92. Without this rule, the 14:30 run does the same once a day.
+
+| Automated | Cases |
+|---|---|
+| [g3-invoice-amounts](tickets/g3-invoice-amounts.md) | SAN-EM92-001 … 004 |
 
 ## How to read the evidence
 

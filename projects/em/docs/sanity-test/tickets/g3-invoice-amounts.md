@@ -25,11 +25,29 @@ Deploy EM-92 first, then recheck EM-75 and EM-76, which share its cause. EM-93 a
 
 **Reported:** On new EM Create Invoice, line "Disc. Price" shows 0.00 instead of the price after discount, line "Total" includes tax, and Payment Terms is required with no default.
 
+**Retest 2026-11-02, build `v0.4.1-43-ga03414c2` (Jira status QA): all 4 cases pass, by hand and by the automated tests, so the fix is on UAT.** Results per case below are the earlier failing runs, kept as history. No invoice was saved.
+
+| Case | New EM on build -43 | Manual | Auto test |
+|---|---|---|---|
+| SAN-EM92-001 | Payment Terms has no `*`, preset to "Due on receipt" | ✅ Pass | [✅ Pass](../../../tests/sanity/tickets/g3-invoice-amounts.spec.ts#L41) |
+| SAN-EM92-002 | Disc. Price 1,000.000 Ks · Tax 50.000 Ks · Total 1,000.000 Ks · Grand Total 1,050.00 Ks | ✅ Pass | [✅ Pass](../../../tests/sanity/tickets/g3-invoice-amounts.spec.ts#L21) |
+| SAN-EM92-003 | Disc. Price 900.000 Ks · Tax 45.000 Ks · Total 900.000 Ks · Grand Total 945.00 Ks | ✅ Pass | [✅ Pass](../../../tests/sanity/tickets/g3-invoice-amounts.spec.ts#L27) |
+| SAN-EM92-004 | 5% → 3% clears Unit and Gross Price, Discount back to 0 | ✅ Pass | [✅ Pass](../../../tests/sanity/tickets/g3-invoice-amounts.spec.ts#L62) |
+
+Notes: line values recalculate only after leaving the Discount field. Line cells now show 3 decimals, as in Old EM.
+
+- ![EM-92 retest](img/EM-92/31_NEW-uat_retest-2026-11-02_payment-terms.png) — Payment Terms optional, "Due on receipt".
+- ![EM-92 retest](img/EM-92/32_NEW-uat_retest-2026-11-02_1x1000_5pct_disc0.png) — 1 × 1000, 5% Tax, discount 0.
+- ![EM-92 retest](img/EM-92/33_NEW-uat_retest-2026-11-02_1x1000_5pct_disc10pct.png) — 1 × 1000, 5% Tax, discount 10%.
+- ![EM-92 retest](img/EM-92/34_NEW-uat_retest-2026-11-02_taxtype-change-clears-line.png) — Tax Type 5% → 3% clears the line.
+
 #### ★ SAN-EM92-001 · Create Invoice opens with Payment Terms optional and preset to Due On Receipt
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
 | P1 | Sanity · Regression | Auto-UI | Active | EM-92 repro (scenario: open form), 2026-10-31, rechecked 2026-11-01 |
+
+**Automated test:** [`SAN-EM92-001` in g3-invoice-amounts.spec.ts](../../../tests/sanity/tickets/g3-invoice-amounts.spec.ts#L41) · tag `@sanity` · run `APP=em npx playwright test --grep SAN-EM92-001` · last run 2026-11-02, build -43: ✅ pass
 
 **Preconditions:**
 
@@ -70,6 +88,8 @@ Deploy EM-92 first, then recheck EM-75 and EM-76, which share its cause. EM-93 a
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
 | P1 | Sanity · Regression | Auto-UI | Active | EM-92 repro (scenario: 1×1000, 5% Tax, disc 0), 2026-10-31, rechecked 2026-11-01 |
+
+**Automated test:** [`SAN-EM92-002` in g3-invoice-amounts.spec.ts](../../../tests/sanity/tickets/g3-invoice-amounts.spec.ts#L21) · tag `@sanity` · run `APP=em npx playwright test --grep SAN-EM92-002` · last run 2026-11-02, build -43: ✅ pass
 
 **Preconditions:**
 
@@ -115,6 +135,8 @@ Deploy EM-92 first, then recheck EM-75 and EM-76, which share its cause. EM-93 a
 |---|---|---|---|---|
 | P1 | Sanity · Regression | Auto-UI | Active | EM-92 repro (scenario: 1×1000, 5% Tax, disc 10%), 2026-10-31 |
 
+**Automated test:** [`SAN-EM92-003` in g3-invoice-amounts.spec.ts](../../../tests/sanity/tickets/g3-invoice-amounts.spec.ts#L27) · tag `@sanity` · run `APP=em npx playwright test --grep SAN-EM92-003` · last run 2026-11-02, build -43: ✅ pass
+
 **Preconditions:**
 
 1. Logged in to EM.
@@ -157,6 +179,8 @@ Deploy EM-92 first, then recheck EM-75 and EM-76, which share its cause. EM-93 a
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
 | P1 | Sanity · Regression | Auto-UI | Active | EM-92 repro (scenario: change Tax Type 5% → 3%), 2026-10-31 |
+
+**Automated test:** [`SAN-EM92-004` in g3-invoice-amounts.spec.ts](../../../tests/sanity/tickets/g3-invoice-amounts.spec.ts#L62) · tag `@sanity` · run `APP=em npx playwright test --grep SAN-EM92-004` · last run 2026-11-02, build -43: ✅ pass
 
 **Preconditions:**
 
