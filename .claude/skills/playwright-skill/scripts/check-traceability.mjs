@@ -33,7 +33,7 @@ const showCoverage = args.includes('--coverage');
 // Files that are allowed to have tests without a case ID.
 const NO_ID_FILES = [/(^|\/)seed\.spec\.ts$/, /\.setup\.ts$/];
 const ID = /^([A-Z]+(?:-[A-Z]+)?-\d{3}|E2E-\d{2}|SAN-[A-Z0-9]+-\d{3})(?:\s|$)/;
-const MANAGED_TAGS = ['@smoke', '@P1', '@P2', '@P3', '@critical', '@review', '@e2e', '@sanity'];
+const MANAGED_TAGS = ['@smoke', '@P1', '@P2', '@P3', '@critical', '@review', '@e2e', '@sanity', '@open', '@fixed'];
 const REMOVED_TAGS = /^@(R[1-3]|regression)$/;
 // Variant rows that are merged duplicates or source noise (matrix header / blank rows), not
 // separate data: kept in the catalog for traceability, but they need no run of their own.
@@ -165,7 +165,11 @@ for (const t of tests.values()) {
     if (!c) { err(`${id} is not a case heading in ${sanityDir}`); continue; }
     const tc = ann('tc');
     if (tc.length !== 1 || tc[0] !== id) err(`needs exactly one annotation { type: 'tc', description: '${id}' } (found: ${tc.join(', ') || 'none'})`);
-    const expected = new Set(['@sanity', ...(c.priority ? [`@${c.priority}`] : []), ...(c.critical ? ['@critical'] : [])]);
+    // Ticket docs sit in tickets/open/ or tickets/fixed/; the test carries that state as a tag
+    // and sits in the same folder under tests/sanity/tickets/.
+    const state = /(^|\/)tickets\/(open|fixed)\//.exec(c.doc)?.[2];
+    const expected = new Set(['@sanity', ...(c.priority ? [`@${c.priority}`] : []), ...(c.critical ? ['@critical'] : []), ...(state ? [`@${state}`] : [])]);
+    if (state && !new RegExp(`(^|/)sanity/tickets/${state}/`).test(t.file)) err(`${id}: its doc is in tickets/${state}/, so the test belongs in tests/sanity/tickets/${state}/`);
     if (!c.priority) err(`${id}: no priority found under its heading in ${c.doc}`);
     // Ticket cases (SAN-EM92-…) must carry their Jira task as a tag, so CI can run them per ticket.
     const task = /^SAN-([A-Z]+)(\d+)-\d{3}$/.exec(id);

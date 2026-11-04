@@ -1,6 +1,7 @@
 // src/helpers/sanity.ts — tag and annotations for sanity tests (tests/sanity/).
 // Sanity cases live in docs/sanity-test/ (not in the test-case catalog):
-//   tickets/<file>.md → SAN-EM<ticket>-<nnn>  (one or more cases per Jira ticket)
+//   tickets/open/<file>.md  → SAN-EM<ticket>-<nnn>, ticket not fixed yet  → tag @open
+//   tickets/fixed/<file>.md → SAN-EM<ticket>-<nnn>, ticket fixed on UAT  → tag @fixed
 //   cases/<file>.md   → SAN-<MOD>-<nnn>       (New EM vs Old EM parity pass)
 // Expected results are Old EM behaviour, so a test stays red until the New EM bug is fixed.
 
@@ -26,12 +27,20 @@ export function jiraFromId(id: string): string | undefined {
   return m ? `EM-${m[1]}` : undefined;
 }
 
+/** 'docs/sanity-test/tickets/open/g3-….md' → '@open'; '…/tickets/fixed/…' → '@fixed'; otherwise none. */
+export function ticketStateTag(doc: string): '@open' | '@fixed' | undefined {
+  const m = /\/tickets\/(open|fixed)\//.exec(doc);
+  return m ? (`@${m[1]}` as '@open' | '@fixed') : undefined;
+}
+
 export function sanity({ id, priority, critical, jira = [], doc }: SanityCase) {
   const fromId = jiraFromId(id);
   const tasks = [...new Set([...(fromId ? [fromId] : []), ...jira])];
+  const state = ticketStateTag(doc);
   return {
     // @EM-92 lets CI pick every test of one Jira task: --grep "@EM-92( |$)"
-    tag: ['@sanity', `@${priority}`, ...(critical ? ['@critical'] : []), ...tasks.map(t => `@${t}`)],
+    // @open / @fixed come from the doc's folder: moving the doc moves the test to the other group.
+    tag: ['@sanity', `@${priority}`, ...(critical ? ['@critical'] : []), ...(state ? [state] : []), ...tasks.map(t => `@${t}`)],
     annotation: [
       { type: 'tc', description: id },
       ...tasks.map(t => ({ type: 'jira', description: t })),

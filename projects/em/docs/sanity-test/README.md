@@ -18,29 +18,30 @@ QE record of the rebuilt **New EM** against the current **Old EM** on the UAT we
 
 | Status | Jira tickets |
 |---|---|
-| Open | 21 |
+| Open | 22 |
 | Partly open | 13 |
-| Fixed | 54 |
+| Fixed | 53 |
 | Fixed (partly verified) | 1 |
 | Blocked | 1 |
 | **Total** | **90** |
 
-**Fix first:** [EM-96](tickets/g1-api-validation.md), where the API accepts a Cash Transfer to the internal control account `INCOME-CTRL`, and [EM-98](tickets/g1-api-validation.md), where it creates a BANK account with no bank details.
+**Fix first:** [EM-96](tickets/open/g1-api-validation.md), where the API accepts a Cash Transfer to the internal control account `INCOME-CTRL`, and [EM-98](tickets/open/g1-api-validation.md), where it creates a BANK account with no bank details.
 
 | Group | Area | Tickets | Bugs in [bugs.md](bugs.md) |
 |---|---|---|---|
-| [G1](tickets/g1-api-validation.md) | API validation: Cash & Bank, Cash Transfer, Cash Outflow | EM-96, 98, 97 | BUG-04, 07, 05 |
-| [G2](tickets/g2-cash-bank-screens.md) | Cash & Bank Account screens | EM-94, 72, 73 | BUG-02 |
-| [G3](tickets/g3-invoice-amounts.md) | Invoice line amounts and precision | EM-92, 75, 76, 112, 93, 113 | BUG-01, 22, 23, 26 |
-| [G4](tickets/g4-payment-allocation.md) | USD and Unknown payment allocation | EM-116, 117, 114, 115, 104 | BUG-37, 38, 31, 36, 19 |
-| [G5](tickets/g5-receipt-display.md) | How receipts show in lists, reports and S.O.A | EM-102, 109, 101, 74 | BUG-13, 14, 12 |
-| [G6](tickets/g6-reports-ar.md) | Reports and AR | EM-107, 108, 99, 95, 100 | BUG-33, 09, 08, 03, 10 |
-| [G7](tickets/g7-deposit.md) | Deposit | EM-103, 105 | BUG-15, 30 |
-| [G8](tickets/g8-uo-em-dates.md) | UO, EM and reading dates | EM-110, 111, 37, 55 | BUG-17, 21 |
-| [G9](tickets/g9-ui-data.md) | UI and stray data | EM-85, 35 | BUG-20, 24 |
-| [Blocked](tickets/blocked.md) | Needs a person to run it | EM-29 | — |
+| [G1](tickets/open/g1-api-validation.md) | API validation: Cash & Bank, Cash Transfer, Cash Outflow | EM-96, 98, 97 | BUG-04, 07, 05 |
+| [G2](tickets/open/g2-cash-bank-screens.md) | Cash & Bank Account screens | EM-94, 72, 73 | BUG-02 |
+| [G3](tickets/open/g3-invoice-amounts.md) | Invoice line amounts and precision | EM-92, 75, 76, 112, 93, 113 | BUG-01, 22, 23, 26 |
+| [G4](tickets/open/g4-payment-allocation.md) | USD and Unknown payment allocation | EM-116, 117, 114, 115, 104 | BUG-37, 38, 31, 36, 19 |
+| [G5](tickets/open/g5-receipt-display.md) | How receipts show in lists, reports and S.O.A | EM-102, 109, 101, 74 | BUG-13, 14, 12 |
+| [G6](tickets/open/g6-reports-ar.md) | Reports and AR | EM-107, 108, 99, 95, 100 | BUG-33, 09, 08, 03, 10 |
+| [G7](tickets/open/g7-deposit.md) | Deposit | EM-103, 105 | BUG-15, 30 |
+| [G8](tickets/open/g8-uo-em-dates.md) | UO, EM and reading dates | EM-110, 111, 37, 55 | BUG-17, 21 |
+| [G9](tickets/open/g9-ui-data.md) | UI and stray data | EM-85, 35 | BUG-20, 24 |
+| [G10](tickets/open/g10-apartment-form.md) | Apartment form (reopened 11-02) | EM-33 | — |
+| [Blocked](tickets/open/blocked.md) | Needs a person to run it | EM-29 | — |
 
-The 55 fixed tickets are in `tickets/fixed-*.md`, grouped by screen, and listed in the [ticket index](tickets/README.md#tickets-by-group).
+The 54 fixed tickets are in `tickets/fixed/`, grouped by screen, and listed in the [ticket index](tickets/README.md#tickets-by-group).
 
 ## Parity pass result: 130 cases with a clear verdict
 
@@ -114,10 +115,13 @@ These cases live outside `docs/test-cases/features/`, so `npm run cases:build` d
 
 Sanity tests have their own folder, mirroring this one, and run by the `@sanity` tag.
 
-| Cases in | Tests in |
-|---|---|
-| `docs/sanity-test/tickets/<file>.md` | `tests/sanity/tickets/<file>.spec.ts` |
-| `docs/sanity-test/cases/<file>.md` | `tests/sanity/cases/<file>.spec.ts` |
+| Cases in | Tests in | Extra tag |
+|---|---|---|
+| `docs/sanity-test/tickets/open/<file>.md` (not fixed yet: G1–G10, blocked) | `tests/sanity/tickets/open/<file>.spec.ts` | `@open` |
+| `docs/sanity-test/tickets/fixed/<file>.md` (fixed on UAT) | `tests/sanity/tickets/fixed/<file>.spec.ts` | `@fixed` |
+| `docs/sanity-test/cases/<file>.md` | `tests/sanity/cases/<file>.spec.ts` | — |
+
+**When a ticket's status changes** (fixed after a retest, or reopened): move its section to a doc in the other folder, move its test the same way and change the spec's `doc` constant. `sanity()` takes `@open` / `@fixed` from the doc path, and `check-traceability.mjs` fails if the test and its doc are in different folders.
 
 Each test:
 
@@ -132,6 +136,8 @@ Run (from the repo root):
 npm run test:sanity                                 # whole sanity suite, Chromium
 npm run test:tags -- "@EM-92" --app em               # one Jira issue
 npm run test:tags -- "@sanity+@P1" --app em          # sanity P1 only
+npm run test:tags -- "@open" --app em                # tickets not fixed yet (retest)
+npm run test:tags -- "@fixed" --app em               # fixed tickets (regression)
 APP=em npx playwright test --grep "SAN-EM92-002"     # one case, by ID
 ```
 
@@ -181,7 +187,8 @@ Then, when a developer moves EM-92 to QA, the EM-92 tests run on UAT and the res
 
 | Automated | Cases |
 |---|---|
-| [g3-invoice-amounts](tickets/g3-invoice-amounts.md) | SAN-EM92-001 … 004 |
+| [g3-invoice-amounts](tickets/open/g3-invoice-amounts.md) | SAN-EM92-001 … 004 |
+| [g10-apartment-form](tickets/open/g10-apartment-form.md) | SAN-EM33-001 |
 
 ## How to read the evidence
 
