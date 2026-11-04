@@ -27,3 +27,16 @@ export function amountOrNull(text: string, fractionDigits = 2): string | null {
     return null;
   }
 }
+
+/** a − b for two decimal strings from parseAmount ("961.99" − "10.00" = "951.99"), without floats. */
+export function subtractAmount(a: string, b: string, fractionDigits = 2): string {
+  const toMinor = (v: string) => {
+    const [int, frac = ''] = v.replace('-', '').split('.');
+    const minor = BigInt(int) * 10n ** BigInt(fractionDigits) + BigInt(frac.padEnd(fractionDigits, '0') || '0');
+    return v.startsWith('-') ? -minor : minor;
+  };
+  const diff = toMinor(a) - toMinor(b);
+  const abs = diff < 0n ? -diff : diff;
+  const base = 10n ** BigInt(fractionDigits);
+  return `${diff < 0n ? '-' : ''}${abs / base}.${(abs % base).toString().padStart(fractionDigits, '0')}`;
+}

@@ -51,8 +51,8 @@ test('E2E-01 order to payment', {
   `tests/<feature>/<feature>.spec.ts`, `tests/e2e/E2E-01-<slug>.spec.ts`, `tests/api/…`.
 - One exception: **sanity** cases, which an app keeps outside the catalog in
   `docs/sanity-test/` (IDs `SAN-…`), live in `tests/sanity/`, mirroring the doc folders
-  (`docs/sanity-test/tickets/g3-x.md` → `tests/sanity/tickets/g3-x.spec.ts`). They are tagged
-  `@sanity` + the doc's priority (+ `@critical` for ★), carry a `tc` annotation (plus `jira`
+  (`docs/sanity-test/tickets/open/g3-x.md` → `tests/sanity/tickets/open/g3-x.spec.ts`). They are tagged
+  `@sanity` + the doc's priority (+ `@critical` for ★) + `@open` / `@fixed` from the ticket folder, carry a `tc` annotation (plus `jira`
   and `doc` when known) and are run with `--grep @sanity`. `check-traceability.mjs` checks
   them against the doc headings instead of the catalog. `@sanity` is used on nothing else.
 - Which tests to run is chosen by tag, with no extra tier tags. People and CI select with one

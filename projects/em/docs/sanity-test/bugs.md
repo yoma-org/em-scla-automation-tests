@@ -59,7 +59,7 @@ There are also 4 minor display items, [UI-17…20](#ui-17) (end of file), and 3 
 
 ## G1 · API validation: Cash & Bank, Cash Transfer, Cash Outflow
 
-3 bug(s) · [Ticket cases](tickets/g1-api-validation.md)
+3 bug(s) · [Ticket cases](tickets/open/g1-api-validation.md)
 
 <a id="bug-04"></a>
 ### BUG-04 · [Cash Transfer > API] Transfer can be created to the internal control account INCOME-CTRL
@@ -100,7 +100,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** A Cash Transfer can only be created between CASH/BANK accounts; a request to a control account is rejected (422). Control accounts should also not be offered as report filter options.
 
-**Status 2026-11-01 (build -37):** **Open — hard stop.** `POST` still returns 201 and created draft #23 to `INCOME-CTRL`. Fix this first. Draft #23 is still on UAT and needs removing. [EM-96](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-96) · [case](tickets/g1-api-validation.md)
+**Status 2026-11-01 (build -37):** **Open — hard stop.** `POST` still returns 201 and created draft #23 to `INCOME-CTRL`. Fix this first. Draft #23 is still on UAT and needs removing. [EM-96](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-96) · [case](tickets/open/g1-api-validation.md)
 
 **Evidence:**
 
@@ -152,7 +152,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Related, not a duplicate: [EM-88](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-88), [EM-71](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-71) fixed the screen part on 30/10 (Type = BANK now shows and requires Bank Name, Account Number, Enable Overdraft as in Old); BUG-07 is the remaining API-level gap, logged separately and linked to EM-88.
 
-**Status 2026-11-01 (build -37):** **Partly open.** Sending only `kind=BANK` still creates a BANK account without bank fields (id 66). Sending `account_type_id` is now blocked. [EM-98](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-98) · [case](tickets/g1-api-validation.md)
+**Status 2026-11-01 (build -37):** **Partly open.** Sending only `kind=BANK` still creates a BANK account without bank fields (id 66). Sending `account_type_id` is now blocked. [EM-98](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-98) · [case](tickets/open/g1-api-validation.md)
 
 **Evidence:**
 
@@ -205,7 +205,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** The balance is checked when the draft is created, as in Old: an amount above the balance shows 'Insufficient Balance' and no draft is created.
 
-**Status 2026-11-01 (build -37):** **Open.** Outflow 30,000 and Transfer 50,000 against a 10,000 balance still create drafts. Old blocks them. [EM-97](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-97) · [case](tickets/g1-api-validation.md)
+**Status 2026-11-01 (build -37):** **Open.** Outflow 30,000 and Transfer 50,000 against a 10,000 balance still create drafts. Old blocks them. [EM-97](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-97) · [case](tickets/open/g1-api-validation.md)
 
 **Evidence:**
 
@@ -226,7 +226,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 ## G2 · Cash & Bank Account screens
 
-1 bug(s) · [Ticket cases](tickets/g2-cash-bank-screens.md)
+1 bug(s) · [Ticket cases](tickets/open/g2-cash-bank-screens.md)
 
 <a id="bug-02"></a>
 ### BUG-02 · [Cash & Bank Account > Edit Initial Balance] Update fails with 'Could not update initial balance'
@@ -271,7 +271,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Related, not a duplicate: [EM-72](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-72), [EM-73](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-73) cover the account Edit form, which matched Old on 30/10; the separate 'Edit Initial Balance' button is still broken, so BUG-02 was logged separately.
 
-**Status 2026-11-01 (build -37):** **Open.** Update Initial Balance still fails (ERR_UNKNOWN, `PUT migrated-balance` returns 405). [EM-94](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-94) · [case](tickets/g2-cash-bank-screens.md)
+**Status 2026-11-01 (build -37):** **Open.** Update Initial Balance still fails (ERR_UNKNOWN, `PUT migrated-balance` returns 405). [EM-94](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-94) · [case](tickets/open/g2-cash-bank-screens.md)
 
 **Evidence:**
 
@@ -288,7 +288,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 ## G3 · Invoice line amounts and precision
 
-4 bug(s) · [Ticket cases](tickets/g3-invoice-amounts.md)
+4 bug(s) · [Ticket cases](tickets/open/g3-invoice-amounts.md)
 
 <a id="bug-01"></a>
 ### BUG-01 · [Invoices / Debit Note > Add Invoice] Invoice stays Partially Paid after paying the full displayed amount (3-decimal unit price)
@@ -337,7 +337,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** Unit price and totals are rounded to 2 decimals as in Old (or input with more than 2 decimals is blocked), and an invoice closes as PAID when the remaining due is below 0.01.
 
-**Status 2026-11-01 (build -37):** **Open.** Paying the displayed balance still leaves INV-202610-00047 PARTIALLY_PAID with 0.0042 due (screen shows 0.00). The 3-decimal input block works; totals are still stored with 4 decimals. [EM-93](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-93) · [case](tickets/g3-invoice-amounts.md)
+**Status 2026-11-01 (build -37):** **Open.** Paying the displayed balance still leaves INV-202610-00047 PARTIALLY_PAID with 0.0042 due (screen shows 0.00). The 3-decimal input block works; totals are still stored with 4 decimals. [EM-93](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-93) · [case](tickets/open/g3-invoice-amounts.md)
 
 **Evidence:**
 
@@ -406,7 +406,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Related, not a duplicate of [EM-75](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-75) (same Add Invoice discount area; EM-75 is about Inclusive tax still allowing a discount). Logged separately.
 
-**Status 2026-11-01 (build -37):** **Open.** Discount 100% still gives 'Could not calculate the total / ERR_UNKNOWN'; Old clears the field. [EM-112](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-112) · [case](tickets/g3-invoice-amounts.md)
+**Status 2026-11-01 (build -37):** **Open.** Discount 100% still gives 'Could not calculate the total / ERR_UNKNOWN'; Old clears the field. [EM-112](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-112) · [case](tickets/open/g3-invoice-amounts.md)
 
 **Evidence:**
 
@@ -458,7 +458,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Very likely a duplicate of [EM-75](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-75) / [EM-76](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-76) (Inclusive tax 5%/3% UI differs from Old; with Inclusive tax line Total is Old 2,000 vs New 2,100, SAN-INV-003). Add the SAN-INV-002/003 evidence to EM-75/76.
 
-**Status 2026-11-01 (build -37):** **Partly open.** Discount is locked for inclusive tax, but Disc. Price and line Total still differ ([EM-75](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-75), [EM-76](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-76)). Same cause as [EM-92](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-92), which is Open on UAT: its fix is not deployed. [EM-75](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-75) · [case](tickets/g3-invoice-amounts.md)
+**Status 2026-11-01 (build -37):** **Partly open.** Discount is locked for inclusive tax, but Disc. Price and line Total still differ ([EM-75](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-75), [EM-76](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-76)). Same cause as [EM-92](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-92), which is Open on UAT: its fix is not deployed. [EM-75](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-75) · [case](tickets/open/g3-invoice-amounts.md)
 
 **Evidence:**
 
@@ -503,7 +503,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** Show an 'already approved' message when approving again.
 
-**Status 2026-11-01 (build -37):** **Open.** A second Approve from an old tab still shows no 'Invoice has been already approved.' [EM-113](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-113) · [case](tickets/g3-invoice-amounts.md)
+**Status 2026-11-01 (build -37):** **Open.** A second Approve from an old tab still shows no 'Invoice has been already approved.' [EM-113](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-113) · [case](tickets/open/g3-invoice-amounts.md)
 
 **Evidence:**
 
@@ -516,7 +516,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 ## G4 · USD and Unknown payment allocation
 
-5 bug(s) · [Ticket cases](tickets/g4-payment-allocation.md)
+5 bug(s) · [Ticket cases](tickets/open/g4-payment-allocation.md)
 
 <a id="bug-37"></a>
 ### BUG-37 · [Make Payment > USD] 1-cent difference across invoices (no rounding adjustment)
@@ -553,7 +553,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** The rounding difference is added to the last invoice, so the per-invoice USD adds up to the amount paid, as in Old EM.
 
-**Status 2026-11-01 (build -37):** **Open.** $1 across 3 invoices is still 0.33 × 3 = $0.99; Old gives 0.33 / 0.33 / 0.34. Checked on RV-00066 from 30/10; no new receipt was created. [EM-116](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-116) · [case](tickets/g4-payment-allocation.md)
+**Status 2026-11-01 (build -37):** **Open.** $1 across 3 invoices is still 0.33 × 3 = $0.99; Old gives 0.33 / 0.33 / 0.34. Checked on RV-00066 from 30/10; no new receipt was created. [EM-116](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-116) · [case](tickets/open/g4-payment-allocation.md)
 
 **Evidence:**
 
@@ -599,7 +599,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** Write the conversion description as Old EM does. Whether the receipt should appear in Assigned Logs needs a PO decision.
 
-**Status 2026-11-01 (build -37):** **Open.** Assign Unknown still has Description '—'; Old writes the conversion text. [EM-117](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-117) · [case](tickets/g4-payment-allocation.md)
+**Status 2026-11-01 (build -37):** **Open.** Assign Unknown still has Description '—'; Old writes the conversion text. [EM-117](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-117) · [case](tickets/open/g4-payment-allocation.md)
 
 **Evidence:**
 
@@ -647,7 +647,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Related, not a duplicate of [EM-85](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-85) (same Assign Unknown popup; EM-85 is about layout only). Logged separately, linked to EM-85.
 
-**Status 2026-11-01 (build -37):** **Open.** Allocating 80.01 of 1,000 still says 'short of 1000.0000' (should be 919.99). [EM-114](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-114) · [case](tickets/g4-payment-allocation.md)
+**Status 2026-11-01 (build -37):** **Open.** Allocating 80.01 of 1,000 still says 'short of 1000.0000' (should be 919.99). [EM-114](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-114) · [case](tickets/open/g4-payment-allocation.md)
 
 **Evidence:**
 
@@ -694,7 +694,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** Hide Wallet when paying in a different currency.
 
-**Status 2026-11-01 (build -37):** **Open.** Wallet is still selectable with Pay In USD. [EM-115](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-115) · [case](tickets/g4-payment-allocation.md)
+**Status 2026-11-01 (build -37):** **Open.** Wallet is still selectable with Pay In USD. [EM-115](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-115) · [case](tickets/open/g4-payment-allocation.md)
 
 **Evidence:**
 
@@ -748,7 +748,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** With Wallet selected, Received is locked to the wallet balance and each line is capped as in Old; if the amount still exceeds the wallet, a clear message says so.
 
-**Status 2026-11-01 (build -37):** **Partly open.** Now says Insufficient wallet balance clearly and creates no receipt, but the amount is still not capped. Old caps it: on `A1-QEPAIR01` (wallet 1,920), typing 5,000 becomes 1,920. [EM-104](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-104) · [case](tickets/g4-payment-allocation.md)
+**Status 2026-11-01 (build -37):** **Partly open.** Now says Insufficient wallet balance clearly and creates no receipt, but the amount is still not capped. Old caps it: on `A1-QEPAIR01` (wallet 1,920), typing 5,000 becomes 1,920. [EM-104](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-104) · [case](tickets/open/g4-payment-allocation.md)
 
 **Evidence:**
 
@@ -769,7 +769,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 ## G5 · How receipts show in lists, reports and S.O.A
 
-3 bug(s) · [Ticket cases](tickets/g5-receipt-display.md)
+3 bug(s) · [Ticket cases](tickets/open/g5-receipt-display.md)
 
 <a id="bug-13"></a>
 ### BUG-13 · [Cash Received > Recent Receipts] Wallet recharge and deposit receipts are not listed
@@ -810,7 +810,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** Recent Receipts lists wallet recharge and deposit receipts together with all other receipts.
 
-**Status 2026-11-01 (build -37):** **Partly open.** Wallet and deposit receipts are listed now. Still one row per receipt and no Created By column. [EM-102](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-102) · [case](tickets/g5-receipt-display.md)
+**Status 2026-11-01 (build -37):** **Partly open.** Wallet and deposit receipts are listed now. Still one row per receipt and no Created By column. [EM-102](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-102) · [case](tickets/open/g5-receipt-display.md)
 
 **Evidence:**
 
@@ -855,7 +855,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** One row per allocation (each invoice payment and the wallet recharge), with descriptions, as in Old EM.
 
-**Status 2026-11-01 (build -37):** **Open.** RV-00057 (3 invoices + wallet) is still one row with no description. [EM-109](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-109) · [case](tickets/g5-receipt-display.md)
+**Status 2026-11-01 (build -37):** **Open.** RV-00057 (3 invoices + wallet) is still one row with no description. [EM-109](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-109) · [case](tickets/open/g5-receipt-display.md)
 
 **Evidence:**
 
@@ -905,7 +905,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** The SOA shows only opening balance, invoices and payments, without wallet rows or internal text, as in Old.
 
-**Status 2026-11-01 (build -37):** **Open.** S.O.A still shows OVERPAYMENT_RESIDUE, a 0.00 row and wallet rows. [EM-101](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-101) · [case](tickets/g5-receipt-display.md)
+**Status 2026-11-01 (build -37):** **Open.** S.O.A still shows OVERPAYMENT_RESIDUE, a 0.00 row and wallet rows. [EM-101](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-101) · [case](tickets/open/g5-receipt-display.md)
 
 **Evidence:**
 
@@ -918,7 +918,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 ## G6 · Reports and AR
 
-5 bug(s) · [Ticket cases](tickets/g6-reports-ar.md)
+5 bug(s) · [Ticket cases](tickets/open/g6-reports-ar.md)
 
 <a id="bug-33"></a>
 ### BUG-33 · [Reports > Cash Outflow / Transactions] Unapproved drafts are included
@@ -960,7 +960,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** The Cash Outflow and Transactions reports list only approved vouchers.
 
-**Status 2026-11-01 (build -37):** **Open.** The Cash Outflow report still has 3 draft rows '— No voucher yet'. [EM-107](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-107) · [case](tickets/g6-reports-ar.md)
+**Status 2026-11-01 (build -37):** **Open.** The Cash Outflow report still has 3 draft rows '— No voucher yet'. [EM-107](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-107) · [case](tickets/open/g6-reports-ar.md)
 
 **Evidence:**
 
@@ -1010,7 +1010,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** 'Last 30 days' starts at today minus 30 days, as in Old EM.
 
-**Status 2026-11-01 (build -37):** **Open.** 'Last 30 days' starts 03/10; Old starts 02/10 (today − 30). [EM-108](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-108) · [case](tickets/g6-reports-ar.md)
+**Status 2026-11-01 (build -37):** **Open.** 'Last 30 days' starts 03/10; Old starts 02/10 (today − 30). [EM-108](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-108) · [case](tickets/open/g6-reports-ar.md)
 
 **Evidence:**
 
@@ -1066,7 +1066,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Related, not a duplicate: [EM-53](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-53) is about the advanced filters of the Invoices list; BUG-08 is the Type filter in AR and reports leaving out UO / EM documents. Logged separately; the same grouping should be applied when EM-53 is fixed.
 
-**Status 2026-11-01 (build -37):** **Open.** Type still has 4 values; 'Invoice' (1,037,909.21 Ks) leaves out UO (557,200.00 Ks sits under 'Utility operation'). [EM-99](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-99) · [case](tickets/g6-reports-ar.md)
+**Status 2026-11-01 (build -37):** **Open.** Type still has 4 values; 'Invoice' (1,037,909.21 Ks) leaves out UO (557,200.00 Ks sits under 'Utility operation'). [EM-99](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-99) · [case](tickets/open/g6-reports-ar.md)
 
 **Evidence:**
 
@@ -1126,7 +1126,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** The daily USD snapshot includes every outstanding USD invoice, so its totals match the AR screen for that day.
 
-**Status 2026-11-01 (build -37):** **Open.** AR Snapshot USD for 01/11 is $200, AR USD is $550. Old UAT has no snapshot data, so the check compares New's snapshot with New's AR. [EM-95](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-95) · [case](tickets/g6-reports-ar.md)
+**Status 2026-11-01 (build -37):** **Open.** AR Snapshot USD for 01/11 is $200, AR USD is $550. Old UAT has no snapshot data, so the check compares New's snapshot with New's AR. [EM-95](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-95) · [case](tickets/open/g6-reports-ar.md)
 
 **Evidence:**
 
@@ -1177,7 +1177,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** The list shows a Totals footer (Amount / Paid / Balance) for the filtered rows, as in Old.
 
-**Status 2026-11-01 (build -37):** **Open.** The Invoice / Debit Note list still has no Totals row. [EM-100](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-100) · [case](tickets/g6-reports-ar.md)
+**Status 2026-11-01 (build -37):** **Open.** The Invoice / Debit Note list still has no Totals row. [EM-100](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-100) · [case](tickets/open/g6-reports-ar.md)
 
 **Evidence:**
 
@@ -1190,7 +1190,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 ## G7 · Deposit
 
-2 bug(s) · [Ticket cases](tickets/g7-deposit.md)
+2 bug(s) · [Ticket cases](tickets/open/g7-deposit.md)
 
 <a id="bug-15"></a>
 ### BUG-15 · [Deposit Invoice] No Date field; approved invoice shows no dates, creator or approver
@@ -1235,7 +1235,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Related, not a duplicate: [EM-89](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-89) says wallet / deposit recharges should not need approval; BUG-15 is about the approved deposit invoice losing dates and approver. Logged separately; recheck BUG-15 if EM-89 removes the approval step.
 
-**Status 2026-11-01 (build -37):** **Open.** No Date field; an approved Deposit Invoice shows '—' for dates and people and still has Remove. [EM-103](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-103) · [case](tickets/g7-deposit.md)
+**Status 2026-11-01 (build -37):** **Open.** No Date field; an approved Deposit Invoice shows '—' for dates and people and still has Remove. [EM-103](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-103) · [case](tickets/open/g7-deposit.md)
 
 **Evidence:**
 
@@ -1291,7 +1291,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Related, not a duplicate: [EM-78](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-78) is the same kind of issue (text box instead of a list) on Wallet Transfer; BUG-30 is on Deposit Withdraw. Logged separately; both should be fixed together.
 
-**Status 2026-11-01 (build -37):** **Partly open.** Withdraw From is a dropdown now. The hint still says 'Enter an amount to deposit.' [EM-105](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-105) · [case](tickets/g7-deposit.md)
+**Status 2026-11-01 (build -37):** **Partly open.** Withdraw From is a dropdown now. The hint still says 'Enter an amount to deposit.' [EM-105](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-105) · [case](tickets/open/g7-deposit.md)
 
 **Evidence:**
 
@@ -1304,7 +1304,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 ## G8 · UO, EM and reading dates
 
-2 bug(s) · [Ticket cases](tickets/g8-uo-em-dates.md)
+2 bug(s) · [Ticket cases](tickets/open/g8-uo-em-dates.md)
 
 <a id="bug-17"></a>
 ### BUG-17 · [UO > Meter Reset] Reset is rejected on the same day as the last reading
@@ -1342,7 +1342,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** A reset dated the same day as the last reading is accepted.
 
-**Status 2026-11-01 (build -37):** **Open.** Same-day reset is still rejected with ERR_METER_RESET_DATE_NOT_AFTER_PREVIOUS. [EM-110](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-110) · [case](tickets/g8-uo-em-dates.md)
+**Status 2026-11-01 (build -37):** **Open.** Same-day reset is still rejected with ERR_METER_RESET_DATE_NOT_AFTER_PREVIOUS. [EM-110](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-110) · [case](tickets/open/g8-uo-em-dates.md)
 
 **Evidence:**
 
@@ -1392,7 +1392,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** From is auto-filled with the day after the previous period and locked.
 
-**Status 2026-11-01 (build -37):** **Open.** From stays empty and the hint shows the wrong date (01/10 instead of 01/11). [EM-111](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-111) · [case](tickets/g8-uo-em-dates.md)
+**Status 2026-11-01 (build -37):** **Open.** From stays empty and the hint shows the wrong date (01/10 instead of 01/11). [EM-111](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-111) · [case](tickets/open/g8-uo-em-dates.md)
 
 **Evidence:**
 
@@ -1405,7 +1405,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 ## G9 · UI and stray data
 
-2 bug(s) · [Ticket cases](tickets/g9-ui-data.md)
+2 bug(s) · [Ticket cases](tickets/open/g9-ui-data.md)
 
 <a id="bug-20"></a>
 ### BUG-20 · [Cash Received > Unknown Receipt > Assign] Confirm disabled until Payer is entered, with no message; invoice no. truncated
@@ -1450,7 +1450,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Very likely a duplicate of [EM-85](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-85) for the truncated invoice number (overlapping, misaligned fields in the Assign Unknown popup); the "Confirm disabled without a message until Payer is entered" part is not in that ticket and should be logged separately.
 
-**Status 2026-11-01 (build -37):** **Partly open.** Fields no longer overlap, but the Apartment dropdown overflows the screen and cannot scroll. The missing-Payer message in this bug is not covered by the ticket and was not re-run. [EM-85](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-85) · [case](tickets/g9-ui-data.md)
+**Status 2026-11-01 (build -37):** **Partly open.** Fields no longer overlap, but the Apartment dropdown overflows the screen and cannot scroll. The missing-Payer message in this bug is not covered by the ticket and was not re-run. [EM-85](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-85) · [case](tickets/open/g9-ui-data.md)
 
 **Evidence:**
 
@@ -1510,7 +1510,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Duplicate of [EM-35](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-35) (UO Pricing allows extra records beyond the 4 standard types); BUG-24 is the effect on the UO form. Not logged separately; note added to EM-35 that the duplicate record on UAT must be cleaned up after the fix.
 
-**Status 2026-11-01 (build -37):** **Partly open.** The New button is gone, but UO Pricing still has 5 records (duplicate YESC, 2 Seed) and lacks Generator / Treated Water. The UO template still has a duplicate 'Electricity (YESC)' header. [EM-35](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-35) · [case](tickets/g9-ui-data.md)
+**Status 2026-11-01 (build -37):** **Partly open.** The New button is gone, but UO Pricing still has 5 records (duplicate YESC, 2 Seed) and lacks Generator / Treated Water. The UO template still has a duplicate 'Electricity (YESC)' header. [EM-35](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-35) · [case](tickets/open/g9-ui-data.md)
 
 **Evidence:**
 
@@ -1565,7 +1565,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Expected fix (user-visible):** The Cash Received report includes Unknown receipts, assigned and unassigned.
 
-**Status 2026-11-01 (build -37):** **Fixed.** Unknown receipts (RV-00061/62/73) appear in Reports > Cash Received. [EM-106](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-106) · [case](tickets/fixed-reports.md)
+**Status 2026-11-01 (build -37):** **Fixed.** Unknown receipts (RV-00061/62/73) appear in Reports > Cash Received. [EM-106](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-106) · [case](tickets/fixed/fixed-reports.md)
 
 **Evidence:**
 
@@ -1617,7 +1617,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Duplicate of [EM-39](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-39) (created Fund Categories do not appear in related forms; Funding Received is that form). Not logged separately; BUG-35 evidence attached to EM-39.
 
-**Status 2026-11-01 (build -37):** **Fixed.** A newly created Fund Category is available in the Funding Received form. [EM-39](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-39) · [case](tickets/fixed-settings.md)
+**Status 2026-11-01 (build -37):** **Fixed.** A newly created Fund Category is available in the Funding Received form. [EM-39](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-39) · [case](tickets/fixed/fixed-settings.md)
 
 **Evidence:**
 
@@ -1672,7 +1672,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Very likely a duplicate of [EM-83](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-83) (same UO Import screen, "no rows staged"); on 30/10 the file is read (1 row) but still '0 of 1 rows staged' with the wrong message. Evidence added to EM-83 instead of a new ticket.
 
-**Status 2026-11-01 (build -37):** **Fixed (partly verified).** The file is read correctly, but no row has been staged: batch #21 was quarantined because 02/11 counts as a future date, so a successful import is not confirmed yet. Retry from 02/11. The same-month rejection in this bug was not re-run. [EM-83](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-83) · [case](tickets/fixed-uo-import.md)
+**Status 2026-11-01 (build -37):** **Fixed (partly verified).** The file is read correctly, but no row has been staged: batch #21 was quarantined because 02/11 counts as a future date, so a successful import is not confirmed yet. Retry from 02/11. The same-month rejection in this bug was not re-run. [EM-83](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-83) · [case](tickets/fixed/fixed-uo-import.md)
 
 **Evidence:**
 
@@ -1726,7 +1726,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Very likely a duplicate of [EM-47](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-47) for the owner/tenant save (screen and data match Old, but Save returns 503 although it saved); to be merged if EM-47's tester saw this error. The 503 on deleting a Cash Outflow draft is not on Jira and should be logged separately.
 
-**Status 2026-11-01 (build -37):** **Not re-run.** [EM-47](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-47) is Fixed for the Add Owner / Tenant flow and layout, but Save was not clicked, so the 503-on-success in this bug was not re-run. [EM-47](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-47) · [case](tickets/fixed-apartments.md)
+**Status 2026-11-01 (build -37):** **Not re-run.** [EM-47](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-47) is Fixed for the Add Owner / Tenant flow and layout, but Save was not clicked, so the 503-on-success in this bug was not re-run. [EM-47](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-47) · [case](tickets/fixed/fixed-apartments.md)
 
 **Evidence:**
 
@@ -1774,7 +1774,7 @@ Build: `v0.4.1-31-g1482a663` · Tested: 2026-10-29/30
 
 **Jira cross-check:** Conflicts with [EM-61](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-61), which says Old EM has no Amount Received / Conversion Rate fields and New should drop them. On Old UAT a USD → MMK transfer does show both (Conversion Rate 2,100); build -31 has Amount Received but no Conversion Rate. PO to decide: show both fields for cross-currency transfers as in Old EM, rather than removing them per EM-61.
 
-**Status 2026-11-01 (build -37):** **Needs check.** [EM-61](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-61) is Fixed: the form no longer shows the 4 extra fields. Only the form was checked, not a cross-currency transfer, while this bug showed Old UAT displays Conversion Rate for USD → MMK. Check a cross-currency transfer before closing either. [EM-61](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-61) · [case](tickets/fixed-cash-transfer.md)
+**Status 2026-11-01 (build -37):** **Needs check.** [EM-61](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-61) is Fixed: the form no longer shows the 4 extra fields. Only the form was checked, not a cross-currency transfer, while this bug showed Old UAT displays Conversion Rate for USD → MMK. Check a cross-currency transfer before closing either. [EM-61](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-61) · [case](tickets/fixed/fixed-cash-transfer.md)
 
 **Evidence:**
 
