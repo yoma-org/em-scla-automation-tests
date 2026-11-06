@@ -10,7 +10,7 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 
 | Ticket | Title | Jira priority | Status (build -37) | Result | Case |
 |---|---|---|---|---|---|
-| [EM-28](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-28) | [Change Password] “Log out of every device?” dialog content overflows outside the modal | Medium | Fixed | "Log out everywhere" button and dialog removed; page matches Old EM | [SAN-EM28-001](#san-em28-001--change-password-page-has-no-log-out-everywhere-button-so-the-dialog-cannot-overflow) |
+| [EM-28](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-28) | [Change Password] “Log out of every device?” dialog content overflows outside the modal | Medium | Fixed | "Log out everywhere" button and dialog removed; page matches Old EM (automated, build -74) | [SAN-EM28-001](#san-em28-001--change-password-page-has-no-log-out-everywhere-button-so-the-dialog-cannot-overflow) |
 | [EM-30](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-30) | [Sign In] Invalid email/password alert message is incorrect | Low | Fixed | Shows "Email or Password is invalid"; only the final period differs from Old EM | [SAN-EM30-001](#san-em30-001--invalid-email-or-password-shows-email-or-password-is-invalid) |
 | [EM-87](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-87) | [Sign In > Forgot Your Password] Feature shown but not supported in current EM | Low | Fixed | Sign In page no longer has the link | [SAN-EM87-001](#san-em87-001--sign-in-page-has-no-forgot-your-password-link) |
 
@@ -44,6 +44,8 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 1. The change password page opens with Current / New / Confirm fields.
 2. There is no "Log out everywhere" button and no "Log out of every device?" dialog, as in Old EM. If a dialog ever exists, its content stays inside the modal.
 
+**Automated test:** [`SAN-EM28-001` in fixed-sign-in.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-sign-in.spec.ts) · tag `@sanity` `@EM-28` · run `APP=em npx playwright test --grep SAN-EM28-001` · opens Change Password from the account menu and never submits it; read-only.
+
 **Result (build -37, 2026-11-01):**
 
 | # | Old EM | New EM | |
@@ -53,6 +55,13 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 | 3 | No dialog "Log out of every device?" | No dialog; the note "your other devices are signed out" describes automatic behaviour on password change | ✅ Same |
 
 **Conclusion:** Fixed. The feature was removed, which matches Old EM, so the overflow can no longer occur.
+
+**Retest (build -74, 2026-11-06, automated): passed** (Chromium and Firefox, build `v0.4.1-74-g77cbcadf`)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | Change Password from the account menu | Current / New / Confirm + Submit | Current / New / Confirm + Submit (`/change-password`) | ✅ Same |
+| 2 | "Log out everywhere" / "Log out of every device?" | None | None on the page and none in the account menu | ✅ Same |
 
 **Evidence:**
 

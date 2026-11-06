@@ -18,9 +18,9 @@ QE record of the rebuilt **New EM** against the current **Old EM** on the UAT we
 
 | Status | Jira tickets |
 |---|---|
-| Open | 22 |
-| Partly open | 13 |
-| Fixed | 53 |
+| Open | 21 |
+| Partly open | 12 |
+| Fixed | 55 |
 | Fixed (partly verified) | 1 |
 | Blocked | 1 |
 | **Total** | **90** |
@@ -31,17 +31,16 @@ QE record of the rebuilt **New EM** against the current **Old EM** on the UAT we
 |---|---|---|---|
 | [G1](tickets/open/g1-api-validation.md) | API validation: Cash & Bank, Cash Transfer, Cash Outflow | EM-96, 98, 97 | BUG-04, 07, 05 |
 | [G2](tickets/open/g2-cash-bank-screens.md) | Cash & Bank Account screens | EM-94, 72, 73 | BUG-02 |
-| [G3](tickets/open/g3-invoice-amounts.md) | Invoice line amounts and precision | EM-92, 75, 76, 112, 93, 113 | BUG-01, 22, 23, 26 |
+| [G3](tickets/open/g3-invoice-amounts.md) | Invoice line amounts and precision | EM-112, 93, 113 | BUG-01, 22, 23, 26 |
 | [G4](tickets/open/g4-payment-allocation.md) | USD and Unknown payment allocation | EM-116, 117, 114, 115, 104 | BUG-37, 38, 31, 36, 19 |
 | [G5](tickets/open/g5-receipt-display.md) | How receipts show in lists, reports and S.O.A | EM-102, 109, 101, 74 | BUG-13, 14, 12 |
 | [G6](tickets/open/g6-reports-ar.md) | Reports and AR | EM-107, 108, 99, 95, 100 | BUG-33, 09, 08, 03, 10 |
 | [G7](tickets/open/g7-deposit.md) | Deposit | EM-103, 105 | BUG-15, 30 |
 | [G8](tickets/open/g8-uo-em-dates.md) | UO, EM and reading dates | EM-110, 111, 37, 55 | BUG-17, 21 |
 | [G9](tickets/open/g9-ui-data.md) | UI and stray data | EM-85, 35 | BUG-20, 24 |
-| [G10](tickets/open/g10-apartment-form.md) | Apartment form (reopened 11-02) | EM-33 | — |
 | [Blocked](tickets/open/blocked.md) | Needs a person to run it | EM-29 | — |
 
-The 54 fixed tickets are in `tickets/fixed/`, grouped by screen, and listed in the [ticket index](tickets/README.md#tickets-by-group).
+The 55 fixed tickets are in `tickets/fixed/`, grouped by screen, and listed in the [ticket index](tickets/README.md#tickets-by-group).
 
 ## Parity pass result: 130 cases with a clear verdict
 
@@ -145,13 +144,15 @@ APP=em npx playwright test --grep "SAN-EM92-002"     # one case, by ID
 
 **CI:** [`.github/workflows/em-tests.yml`](../../../../.github/workflows/em-tests.yml)
 
+> **Jira is off for now.** No `JIRA_*` secrets are set, the 14:30 run is commented out in the workflow, and the Jira comment step is skipped. To turn it on: add the secrets below, uncomment the `30 7 * * 1-5` cron, and set up the Jira Automation rule.
+
 | When | What runs | Jira comment |
 |---|---|---|
-| A task moves to **QA** (Jira Automation, set up below) | Tests of that task | Yes |
 | Mon–Fri 09:00 Vietnam | `@sanity`, to catch regressions on fixed tasks | No |
-| Mon–Fri 14:30 Vietnam | Every task in QA that has tests | Yes |
 | Push to `main` touching `projects/em/` | `@sanity` | No |
-| By hand: Actions → EM tests → Run workflow | The **tags** you type (see below) | If `comment` is ticked |
+| By hand: Actions → EM tests → Run workflow | The **tags** you type (see below) | Later, if `comment` is ticked |
+| *(Jira off)* A task moves to **QA** (Jira Automation, set up below) | Tests of that task | Yes |
+| *(Jira off)* Mon–Fri 14:30 Vietnam | Every task in QA that has tests | Yes |
 
 **Running by tag.** The form has one field, **tags** (the same expression as `npm run test:tags`, see the [repo README](../../../../README.md#running-by-tag)): space = OR, `+` = AND, `!` = NOT.
 
@@ -187,8 +188,14 @@ Then, when a developer moves EM-92 to QA, the EM-92 tests run on UAT and the res
 
 | Automated | Cases |
 |---|---|
-| [g3-invoice-amounts](tickets/open/g3-invoice-amounts.md) | SAN-EM92-001 … 004 |
-| [g10-apartment-form](tickets/open/g10-apartment-form.md) | SAN-EM33-001 |
+| [fixed-invoices](tickets/fixed/fixed-invoices.md) | SAN-EM92-001 … 004, SAN-EM75-001, SAN-EM76-001 |
+| [fixed-apartments](tickets/fixed/fixed-apartments.md) | SAN-EM32-001, SAN-EM33-001, SAN-EM41-001, SAN-EM42-001, SAN-EM44-001, SAN-EM47-001 … 002, SAN-EM48-001, SAN-EM52-001, SAN-EM66-001, SAN-EM67-001 |
+| [fixed-wallet](tickets/fixed/fixed-wallet.md) | SAN-EM79-001 |
+| [fixed-cash-transfer](tickets/fixed/fixed-cash-transfer.md) | SAN-EM86-001 |
+| [fixed-sign-in](tickets/fixed/fixed-sign-in.md) | SAN-EM28-001 |
+| [fixed-dashboard](tickets/fixed/fixed-dashboard.md) | SAN-EM31-001 |
+| [fixed-contacts](tickets/fixed/fixed-contacts.md) | SAN-EM43-001 |
+| [fixed-settings](tickets/fixed/fixed-settings.md) | SAN-EM34-001, SAN-EM56-001, SAN-EM60-001 |
 
 ## How to read the evidence
 

@@ -10,7 +10,7 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 
 | Ticket | Title | Jira priority | Status (build -37) | Result | Case |
 |---|---|---|---|---|---|
-| [EM-43](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-43) | [Contact > Summary] Currency filter misaligned with Accounts Receivable header | Low | Fixed | Accounts Receivable title and Currency filter are on the same row | [SAN-EM43-001](#san-em43-001--contact-summary-currency-filter-is-aligned-with-the-accounts-receivable-title) |
+| [EM-43](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-43) | [Contact > Summary] Currency filter misaligned with Accounts Receivable header | Low | Fixed | Accounts Receivable title and Currency filter are on the same row (automated, build -74) | [SAN-EM43-001](#san-em43-001--contact-summary-currency-filter-is-aligned-with-the-accounts-receivable-title) |
 | [EM-45](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-45) | [Contact > Side Panel] NRC field is free text instead of Myanmar NRC dropdowns | High | Fixed | NRC is 3 dropdowns + number field; Resident ID is not required on New EM, unlike Old EM | [SAN-EM45-001](#san-em45-001--nrc-identity-is-three-dropdowns-plus-a-number-field) |
 
 ## Tickets
@@ -42,6 +42,8 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 1. Title `Accounts Receivable <total>` on the left, Currency filter on the right, same row, no extra blank space (ticket: consistent with Apartment/Estate Summary).
 2. Same layout.
 
+**Automated test:** [`SAN-EM43-001` in fixed-contacts.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-contacts.spec.ts) · tag `@sanity` `@EM-43` · run `APP=em npx playwright test --grep SAN-EM43-001` · contact 1 (Seed U Aung Kyaw) and Estate SEED-Z-001 as the reference layout; measures the title and filter positions; read-only, names masked in the screenshots.
+
 **Result (build -37, 2026-11-01):**
 
 | # | Old EM | New EM | |
@@ -50,6 +52,13 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 | 2 | — | Same layout | ✅ Same |
 
 **Conclusion:** Fixed.
+
+**Retest (build -74, 2026-11-06, automated): passed** (Chromium and Firefox, build `v0.4.1-74-g77cbcadf`)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | Title and Currency filter | Same row (other Summary pages) | Same row: title left, MMK filter right | ✅ Same |
+| 2 | Compared with Apartment Summary | Same layout | Same layout (within 4 px) | ✅ Same |
 
 **Evidence:**
 

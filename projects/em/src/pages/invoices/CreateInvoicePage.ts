@@ -9,7 +9,8 @@ export interface InvoiceLineInput {
   taxType: TaxType;
   unit: string;
   grossPrice: string;
-  discount: string;
+  /** Leave out for Incl. tax lines: Discount is locked there. */
+  discount?: string;
 }
 
 /** One item line of the invoice form (index is 0-based, the UI label is "Line <n>"). */
@@ -20,6 +21,8 @@ export class InvoiceLine {
   readonly unit: Locator;
   readonly grossPrice: Locator;
   readonly discount: Locator;
+  /** Incl. tax lines only: locked "Gross Price before tax" value next to the Gross Price input. */
+  readonly grossPriceBeforeTax: Locator;
   /** Read-only figures; each shows "Not calculated yet" until the line is calculated. */
   readonly discPrice: Locator;
   readonly tax: Locator;
@@ -32,6 +35,7 @@ export class InvoiceLine {
     this.unit = this.root.getByRole('textbox', { name: 'Unit' });
     this.grossPrice = this.root.getByRole('textbox', { name: 'Gross Price' });
     this.discount = this.root.getByRole('textbox', { name: 'Discount value' });
+    this.grossPriceBeforeTax = this.root.getByTestId(`line-net-unit-price-${index}`).locator('span').last();
     this.discPrice = this.root.getByTestId(`line-figure-discount-${index}`);
     this.tax = this.root.getByTestId(`line-figure-tax-${index}`);
     this.total = this.root.getByTestId(`line-figure-total-${index}`);
@@ -42,12 +46,16 @@ export class InvoiceLine {
     await this.page.getByRole('option', { name: taxType, exact: true }).click();
   }
 
-  /** Fills the line and leaves the Discount field: the figures are calculated on blur. */
+  /** Fills the line and leaves the last field: the figures are calculated on blur. */
   async fill(line: InvoiceLineInput): Promise<void> {
     await this.selectTaxType(line.taxType);
     if (line.description !== undefined) await this.description.fill(line.description);
     await this.unit.fill(line.unit);
     await this.grossPrice.fill(line.grossPrice);
+    if (line.discount === undefined) {
+      await this.grossPrice.blur();
+      return;
+    }
     await this.discount.fill(line.discount);
     await this.discount.blur();
   }
@@ -58,12 +66,23 @@ export class CreateInvoicePage {
   readonly paymentTermsLabel: Locator;
   readonly paymentTerms: Locator;
   readonly totals: Locator;
+  /** Apartment* dropdown; opens dialog "Apartments for Apartment" with a search box and a "Suggestions" listbox. */
+  readonly apartment: Locator;
+  readonly apartmentSearch: Locator;
+  readonly apartmentOptions: Locator;
+  /** Form-level % / Ks switch for line discounts (on = Ks). */
+  readonly discountInKs: Locator;
 
   constructor(private readonly page: Page) {
     this.heading = page.getByRole('heading', { name: 'Create Invoice', level: 1 });
     this.paymentTermsLabel = page.locator('label[for="invoice-payment-term"]');
     this.paymentTerms = page.getByRole('combobox', { name: 'Payment Terms' });
     this.totals = page.getByTestId('paper-totals');
+    this.apartment = page.getByRole('combobox', { name: 'Apartment', exact: true });
+    const apartmentDialog = page.getByRole('dialog', { name: 'Apartments for Apartment' });
+    this.apartmentSearch = apartmentDialog.getByRole('combobox', { name: 'Search apartments' });
+    this.apartmentOptions = apartmentDialog.getByRole('listbox', { name: 'Suggestions' }).getByRole('option');
+    this.discountInKs = page.getByRole('switch', { name: 'Discount in Ks' });
   }
 
   async goto(): Promise<void> {

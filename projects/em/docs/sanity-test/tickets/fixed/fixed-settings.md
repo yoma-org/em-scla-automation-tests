@@ -10,15 +10,15 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 
 | Ticket | Title | Jira priority | Status (build -37) | Result | Case |
 |---|---|---|---|---|---|
-| [EM-34](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-34) | [Settings > General Setting] Extra CoRef-related fields are displayed | High | Fixed | General Settings has only Old CoRef No., as in Old EM. | [SAN-EM34-001](#san-em34-001--general-settings-shows-only-old-coref-no) |
+| [EM-34](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-34) | [Settings > General Setting] Extra CoRef-related fields are displayed | High | Fixed | General Settings has only Old CoRef No., as in Old EM. (automated, build -74) | [SAN-EM34-001](#san-em34-001--general-settings-shows-only-old-coref-no) |
 | [EM-38](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-38) | [TC_Setting_08][TC_Setting_15] Parent-child hierarchy not shown in Category filter | High | Fixed | A new parent/child pair is shown as a hierarchy in the AR Category filter (parent as group heading). | [SAN-EM38-001](#-san-em38-001--category-filter-shows-the-parent-and-child-hierarchy-tc_setting_08-tc_setting_15) |
 | [EM-39](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-39) | [TC_Setting_07] Created Fund Category is not available in related filters and forms | High | Fixed | A newly created Fund Category is in the Funding Received form. | [SAN-EM39-001](#san-em39-001--new-fund-category-is-available-in-the-funding-received-form-tc_setting_07) |
 | [EM-40](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-40) | [TC_Setting_14] New parent expense category not displayed in Categories filter | High | Fixed | A newly created parent expense category is shown in the AR Category filter. | [SAN-EM40-001](#-san-em40-001--new-parent-expense-category-is-listed-in-the-ar-categories-filter-tc_setting_14) |
 | [EM-46](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-46) | [Settings > Zone and Building] Delete button should not exist | Medium | Fixed | Zones and Buildings have Edit only, no Delete, as in Old EM. | [SAN-EM46-001](#san-em46-001--zones-and-buildings-have-no-delete-action) |
-| [EM-56](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-56) | [Settings > Building] Duplicate building records can be created | High | Fixed | A duplicate building name in the same zone is blocked: Building Name Already Exists. | [SAN-EM56-001](#san-em56-001--duplicate-building-name-in-the-same-zone-is-blocked) |
+| [EM-56](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-56) | [Settings > Building] Duplicate building records can be created | High | Fixed | A duplicate building name in the same zone is blocked: Building Name Already Exists. (automated, build -74) | [SAN-EM56-001](#san-em56-001--duplicate-building-name-in-the-same-zone-is-blocked) |
 | [EM-57](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-57) | [Settings > Currency] Required fields missing in currency creation (e.g. Currency Status) | Medium | Fixed | Create Currency has Currencies, Name, Code, Symbol, Status, as in Old EM. | [SAN-EM57-001](#san-em57-001--create-currency-form-has-all-required-fields-including-status) |
 | [EM-58](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-58) | [TC_Setting_28] Check areas fail after creating a new payment method | High | Fixed | A newly created payment method is listed in the Cash & Bank Account form. | [SAN-EM58-001](#san-em58-001--new-payment-method-is-available-in-the-cash--bank-account-form-tc_setting_28) |
-| [EM-60](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-60) | [Settings > Account Classification] Manage Type section is missing | High | Fixed | Account Classification has Manage Type (noted: New EM also has Delete on Payment Method and Bank). | [SAN-EM60-001](#san-em60-001--account-classification-has-a-manage-type-section) |
+| [EM-60](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-60) | [Settings > Account Classification] Manage Type section is missing | High | Fixed | Account Classification has Manage Type (noted: New EM also has Delete on Payment Method and Bank). (automated, build -74) | [SAN-EM60-001](#san-em60-001--account-classification-has-a-manage-type-section) |
 | [EM-62](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-62) | [Side Panel] Roles, Cash & Bank Account, Currency, Payment Method, Staff forms should be page views | High | Fixed | Roles, Cash & Bank, Currency, Payment Method and Staff all open as pages. | [SAN-EM62-001](#san-em62-001--five-forms-open-as-page-views-instead-of-side-panels) |
 | [EM-63](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-63) | [Settings > Staff] Phone number field missing in staff creation form | Medium | Fixed | Create Staff has Phone (code +95). | [SAN-EM63-001](#san-em63-001--create-staff-form-has-a-phone-field) |
 | [EM-64](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-64) | [Settings > Staff] Status shown as Enable/Disable instead of Activate/Deactivate | Low | Fixed | Staff status is displayed as Activate / Deactivate. | [SAN-EM64-001](#san-em64-001--staff-status-is-displayed-as-activate--deactivate) |
@@ -54,6 +54,8 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 2. Only 1 field "Old CoRef No." (Enable/Disable) and Submit.
 3. None.
 
+**Automated test:** [`SAN-EM34-001` in fixed-settings.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-settings.spec.ts) · tag `@sanity` `@EM-34` · run `APP=em npx playwright test --grep SAN-EM34-001` · reads `/settings/general`; read-only.
+
 **Result (build -37, 2026-11-01):**
 
 | # | Old EM | New EM | |
@@ -63,6 +65,13 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 | 3 | None | None | ✅ Same |
 
 **Conclusion:** Fixed. New EM used to display extra CoRef fields that Old EM does not have.
+
+**Retest (build -74, 2026-11-06, automated): passed** (Chromium and Firefox, build `v0.4.1-74-g77cbcadf`)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | Fields | Only "Old CoRef No." (Enable/Disable) + Submit | Only "Old CoRef No." (Enable/Disable) + Submit | ✅ Same |
+| 2 | Other CoRef fields | None | None | ✅ Same |
 
 **Evidence:**
 
@@ -296,6 +305,8 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 2. Blocked with "Building Name Already Exists."
 3. Blocked with the same message.
 
+**Automated test:** [`SAN-EM56-001` in fixed-settings.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-settings.spec.ts) · tag `@sanity` `@EM-56` · run `APP=em npx playwright test --grep SAN-EM56-001` · picks an existing Enable building of an Enable zone from `/api/gw/areas` and clicks [Create] with the same Name and Zone. Chromium only. **Writes data only if the bug is back** (a duplicate building); the test then fails and names it.
+
 **Result (build -37, 2026-11-01):**
 
 | # | Old EM | New EM | |
@@ -307,6 +318,13 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 **Conclusion:** Fixed; the only difference is the trailing full stop. Duplicates would cause the wrong building to be picked when creating an apartment. Not tried: duplicates differing only by case or by leading/trailing spaces.
 
 **Test data created:** New EM building `QA-REPRO-EM-56 Tower` (Zone 1, Enable). Old EM: none (the duplicate was blocked).
+
+**Retest (build -74, 2026-11-06, automated): passed** (Chromium and Firefox, build `v0.4.1-74-g77cbcadf`)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | Same Name and Zone | Blocked: "Building Name Already Exists." | Blocked: "Building Name Already Exists" under Name (B2, Zone B), the panel stays open | ✅ Same |
+| 2 | Buildings after the try | No duplicate | Still one B2 in Zone B (`/api/gw/areas`) | ✅ Same |
 
 **Evidence:**
 
@@ -431,6 +449,8 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 1. Manage Currency, Manage Payment Method, Manage Type, Manage Bank.
 2. New, the list and Edit are available.
 
+**Automated test:** [`SAN-EM60-001` in fixed-settings.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-settings.spec.ts) · tag `@sanity` `@EM-60` · run `APP=em npx playwright test --grep SAN-EM60-001` · reads `/settings/classification`; read-only.
+
 **Result (build -37, 2026-11-01):**
 
 | # | Old EM | New EM | |
@@ -439,6 +459,13 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 | 2 | Available | Available (BANK, CASH, Petty Cash, Escrow, Operating) | ✅ Same |
 
 **Conclusion:** Fixed. Without Manage Type, account types cannot be managed (Type* is required when creating a Cash & Bank Account). Also noted: Manage on Payment Method and Bank is Edit only on Old EM, but Edit **+ Delete** (trash icon) on New EM; no ticket yet.
+
+**Retest (build -74, 2026-11-06, automated): passed** (Chromium and Firefox, build `v0.4.1-74-g77cbcadf`)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | Sections | Manage Currency, Payment Method, Type, Bank | Manage Currency, Manage Payment Method, **Manage Type**, Manage Bank | ✅ Same |
+| 2 | Manage Type | New, list, Edit | [New], list BANK, CASH, Petty Cash, Escrow, Operating, Edit on each row | ✅ Same |
 
 **Evidence:**
 

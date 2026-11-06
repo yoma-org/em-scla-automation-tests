@@ -79,7 +79,7 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 **Steps:**
 
 1. Create the transfer from the test data.
-2. Open the draft, click Approve › Confirm approve with the same user.
+2. Open the draft (header badge **JV** › Draft cash transfers › **Manage** icon of the row), click Approve › Confirm approve with the same user.
 
 **Expected result:**
 
@@ -95,10 +95,18 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 
 **Conclusion:** Fixed. A user with Self Approve can approve their own transfer.
 
-**Test data created:** JV-00014 (10 Ks).
+**Retest (build -53, 2026-11-05, automated):** ✅ Passed. Admin (Test Account 1) created draft #30 and self-approved it: "Cash Transfer has been approved successfully.", POSTED, JE #362, **JV-00019**. Posted on Jira as `VERIFIED_FIXED_v0.4.1-53-g9dcf5e14`.
+
+**Test data created:** JV-00014 (10 Ks); 2026-11-05 test runs: JV-00016 … JV-00019 (10 Ks each).
+
+**Automated:** [fixed-cash-transfer.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-cash-transfer.spec.ts), tag `@EM-86`. Runs as Admin (`self-approve` + `approve-cash-transfer`). Each run posts a new 10 Ks JV from CASH-0003 to BANK-0001 that cannot be deleted, with description `QA-REPRO-EM-86 self approve <timestamp>`.
 
 **Evidence:**
 
 - ![EM-86 new](../img/EM-86/01_NEW-uat_transfer-self-approved.png) — FIXED: the same user creates and self-approves, "Cash Transfer has been approved successfully.", POSTED (JE #309)
 - ![EM-86 old](../img/EM-86/02_OLD-uat_transfers-self-approved.png) — Old EM: transfers created and approved by the same user
+- ![EM-86 retest draft](../img/EM-86/03_NEW-uat_retest-2026-11-05_draft-30.png) — Retest -53: draft #30 opened by its creator, Approve enabled
+- ![EM-86 retest approved](../img/EM-86/04_NEW-uat_retest-2026-11-05_self-approved-toast.png) — Retest -53: "Cash Transfer has been approved successfully."
+- ![EM-86 retest posted](../img/EM-86/05_NEW-uat_retest-2026-11-05_JV-00019-posted.png) — Retest -53: JV-00019 Posted, JE #362, Created By Test Account 1
+- ![EM-86 retest register](../img/EM-86/06_NEW-uat_retest-2026-11-05_register.png) — Retest -53: JV-00019 in the Cash Transfer register
 ---

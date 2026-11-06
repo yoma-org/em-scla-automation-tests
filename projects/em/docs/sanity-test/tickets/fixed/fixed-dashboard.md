@@ -10,7 +10,7 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 
 | Ticket | Title | Jira priority | Status (build -37) | Result | Case |
 |---|---|---|---|---|---|
-| [EM-31](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-31) | [Dashboard] Page shows two scroll bars and large white space when scrolling | Medium | Fixed | One scroll bar, no white space at the bottom | [SAN-EM31-001](#san-em31-001--dashboard-has-one-scroll-bar-and-no-white-space-when-scrolled-to-the-bottom) |
+| [EM-31](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-31) | [Dashboard] Page shows two scroll bars and large white space when scrolling | Medium | Fixed | One scroll bar, no white space at the bottom (automated, build -74) | [SAN-EM31-001](#san-em31-001--dashboard-has-one-scroll-bar-and-no-white-space-when-scrolled-to-the-bottom) |
 
 ## Tickets
 
@@ -44,6 +44,8 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 2. There is 1 scrollable area.
 3. Content ends at the footer "© 2026 Star City" with no white area.
 
+**Automated test:** [`SAN-EM31-001` in fixed-dashboard.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-dashboard.spec.ts) · tag `@sanity` `@EM-31` · run `APP=em npx playwright test --grep SAN-EM31-001` · waits for every card to load, counts scrollable areas and scrolls the content frame to the bottom; read-only.
+
 **Result (build -37, 2026-11-01):**
 
 | # | Old EM | New EM | |
@@ -53,6 +55,14 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 | 3 | Ends at the footer, no white area | Ends at "What needs me" + footer, no white area | ✅ Same |
 
 **Conclusion:** Fixed. New EM scrolls the content frame and Old EM the whole page, but the behaviour matches: one scroll bar and no white area.
+
+**Retest (build -74, 2026-11-06, automated): passed** (Chromium and Firefox, build `v0.4.1-74-g77cbcadf`)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | Cards load | All cards load | AR, Cash & Bank and Wallet & Deposits load | ✅ Same |
+| 2 | Scrollable areas | 1 (the whole page) | 1 (`#main-content`); the window itself does not scroll | ✅ Same |
+| 3 | Bottom of the page | Ends at the footer | Ends at "© 2026 Star City", no white area below | ✅ Same |
 
 **Evidence:**
 
