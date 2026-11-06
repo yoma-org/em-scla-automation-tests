@@ -10,10 +10,13 @@
 #   - Jira issue moved to QA → Jira Automation calls this workflow with tags=@<key>, comment=true
 #     (setup: projects/em/docs/sanity-test/README.md#run-tests-when-a-ticket-is-fixed).
 #   - Mon–Fri 09:00 Vietnam (02:00 UTC): @sanity (catches regressions on fixed issues). No Jira comments.
-#   - Mon–Fri 14:30 Vietnam (07:30 UTC): every Jira issue in QA that has tests, results commented on each issue.
 #   - Push to main touching projects/em/: @sanity. Add @smoke here once smoke tests exist.
 #
-# Needs a GitHub environment "em-uat" with secrets BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD, and for
+# Jira is OFF for now. To turn it on: add the JIRA_* secrets below, then uncomment the 14:30 cron
+# (every Jira issue in QA that has tests, results commented on each issue). Until the secrets exist,
+# the "Comment results on Jira" step is skipped even if comment is ticked.
+#
+# Needs a GitHub environment "em-uat" with secrets BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD, and later for
 # Jira JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN. The runner must be able to reach the UAT URL.
 name: EM tests
 
@@ -35,7 +38,8 @@ on:
         default: chromium
   schedule:
     - cron: '0 2 * * 1-5' # 09:00 Vietnam (UTC+7): @sanity
-    - cron: '30 7 * * 1-5' # 14:30 Vietnam: Jira issues in QA + comments
+    # Jira off for now (needs JIRA_* secrets): 14:30 Vietnam, Jira issues in QA + comments
+    # - cron: '30 7 * * 1-5'
   push:
     branches: [main]
     paths:
@@ -111,8 +115,8 @@ jobs:
           node scripts/run-tags.mjs "$TAGS" --app em -- $extra
 
       - name: Comment results on Jira
-        # Only when comments are on, the tags name Jira issues, and the tests ran (pass or fail).
-        if: ${{ !cancelled() && env.COMMENT == 'true' && steps.run.outputs.tasks != '' && (steps.run.outcome == 'success' || steps.run.outcome == 'failure') }}
+        # Only when Jira is set up, comments are on, the tags name Jira issues, and the tests ran (pass or fail).
+        if: ${{ !cancelled() && env.JIRA_API_TOKEN != '' && env.COMMENT == 'true' && steps.run.outputs.tasks != '' && (steps.run.outcome == 'success' || steps.run.outcome == 'failure') }}
         run: node scripts/jira-tests.mjs comment --app em --tasks "${{ steps.run.outputs.tasks }}"
 
       - name: Summary
