@@ -19,6 +19,10 @@ import { CashTransferDetailPage } from '@pages/accounts/CashTransferDetailPage';
 import { GeneralSettingsPage } from '@pages/settings/GeneralSettingsPage';
 import { BuildingsPage } from '@pages/settings/BuildingsPage';
 import { AccountClassificationPage } from '@pages/settings/AccountClassificationPage';
+import { AccountTypeEditPage } from '@pages/settings/AccountTypeEditPage';
+import { CashBankAccountsPage } from '@pages/settings/CashBankAccountsPage';
+import { CashBankAccountEditPage } from '@pages/settings/CashBankAccountEditPage';
+import { CashBankAccountCreatePage } from '@pages/settings/CashBankAccountCreatePage';
 
 type PageFixtures = {
   cashTransfersPage: CashTransfersPage;
@@ -40,6 +44,10 @@ type PageFixtures = {
   generalSettingsPage: GeneralSettingsPage;
   buildingsPage: BuildingsPage;
   accountClassificationPage: AccountClassificationPage;
+  accountTypeEditPage: AccountTypeEditPage;
+  cashBankAccountsPage: CashBankAccountsPage;
+  cashBankAccountEditPage: CashBankAccountEditPage;
+  cashBankAccountCreatePage: CashBankAccountCreatePage;
 };
 
 export const test = base.extend<PageFixtures>({
@@ -117,5 +125,21 @@ export const test = base.extend<PageFixtures>({
 
   accountClassificationPage: async ({ page }, use) => {
     await use(new AccountClassificationPage(page));
+  },
+
+  accountTypeEditPage: async ({ page }, use) => {
+    await use(new AccountTypeEditPage(page));
+  },
+
+  cashBankAccountsPage: async ({ page }, use) => {
+    await use(new CashBankAccountsPage(page));
+  },
+
+  cashBankAccountEditPage: async ({ page }, use) => {
+    await use(new CashBankAccountEditPage(page));
+  },
+
+  cashBankAccountCreatePage: async ({ page }, use) => {
+    await use(new CashBankAccountCreatePage(page));
   }
 });

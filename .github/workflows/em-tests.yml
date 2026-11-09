@@ -1,6 +1,7 @@
-# EM tests, chosen by tag (projects/em/tests/). One workflow for every suite: sanity, smoke, E2E, regression.
+# EM tests, run by hand or from Jira, with any tags. Steps: em-run-tests.yml.
+# Keep this file name: Jira Automation calls .../actions/workflows/em-tests.yml/dispatches.
 #
-# Run by hand: Actions → EM tests → Run workflow, then type the tags (scripts/run-tags.mjs):
+# Run by hand: Actions → EM tests (manual / Jira) → Run workflow, then type the tags (scripts/run-tags.mjs):
 #   @sanity                 sanity suite          @smoke     smoke suite        @e2e   E2E flows
 #   @EM-92 @EM-93           tests of these Jira issues (space = OR)
 #   @sanity+@P1             sanity tests that are also P1 (+ = AND)
@@ -9,16 +10,12 @@
 # Automatic runs:
 #   - Jira issue moved to QA → Jira Automation calls this workflow with tags=@<key>, comment=true
 #     (setup: projects/em/docs/sanity-test/README.md#run-tests-when-a-ticket-is-fixed).
-#   - Mon–Fri 09:00 Vietnam (02:00 UTC): @sanity (catches regressions on fixed issues). No Jira comments.
-#   - Push to main touching projects/em/: @sanity. Add @smoke here once smoke tests exist.
 #
-# Jira is OFF for now. To turn it on: add the JIRA_* secrets below, then uncomment the 14:30 cron
-# (every Jira issue in QA that has tests, results commented on each issue). Until the secrets exist,
-# the "Comment results on Jira" step is skipped even if comment is ticked.
+# Jira is OFF for now. To turn it on: add the JIRA_* secrets to the "em-uat" environment, then uncomment
+# the 14:30 cron (every Jira issue in QA that has tests, results commented on each issue).
 #
-# Needs a GitHub environment "em-uat" with secrets BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD, and later for
-# Jira JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN. The runner must be able to reach the UAT URL.
-name: EM tests
+# Scheduled suites have their own workflows: em-sanity.yml, em-smoke.yml, em-e2e.yml, em-regression.yml.
+name: EM tests (manual / Jira)
 
 on:
   workflow_dispatch:
@@ -31,122 +28,34 @@ on:
         description: 'Comment the result on the Jira issues in the tags (@EM-…)'
         type: boolean
         default: false
+      environment:
+        description: 'Environment: em-uat (check issues) or em-test (testing)'
+        type: choice
+        options: [em-uat, em-test]
+        default: em-uat
       browser:
         description: 'Browser'
         type: choice
         options: [chromium, firefox]
         default: chromium
-  schedule:
-    - cron: '0 2 * * 1-5' # 09:00 Vietnam (UTC+7): @sanity
-    # Jira off for now (needs JIRA_* secrets): 14:30 Vietnam, Jira issues in QA + comments
-    # - cron: '30 7 * * 1-5'
-  push:
-    branches: [main]
-    paths:
-      - 'projects/em/**'
-      - 'shared/**'
-      - 'scripts/run-tags.mjs'
-      - 'scripts/jira-tests.mjs'
-      - 'playwright.config.ts'
-      - 'package*.json'
-      - '.github/workflows/em-tests.yml'
+  # Jira off for now (needs JIRA_* secrets): 14:30 Vietnam, Jira issues in QA + comments
+  # schedule:
+  #   - cron: '30 7 * * 1-5'
 
 concurrency:
-  group: em-tests-${{ github.ref }}-${{ inputs.tags || github.event.schedule || 'push' }}
+  group: em-tests-${{ inputs.tags || github.event.schedule }}
   cancel-in-progress: false
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    environment: em-uat
-    env:
-      APP: em
-      CI: 'true'
-      BASE_URL: ${{ secrets.BASE_URL }}
-      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
-      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-      BROWSER: ${{ inputs.browser || 'chromium' }}
-      QA_MODE: ${{ github.event.schedule == '30 7 * * 1-5' }}
-      COMMENT: ${{ inputs.comment == true || github.event.schedule == '30 7 * * 1-5' }}
-      # Typed by hand: no matching test is an error (probably a typo). Automatic runs: just skip.
-      NO_TESTS_OK: ${{ github.event_name != 'workflow_dispatch' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      - run: npx playwright install --with-deps ${{ env.BROWSER }}
-
-      - name: Traceability (case IDs, tags)
-        run: node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em
-
-      - name: Pick tags
-        id: pick
-        env:
-          TAGS_INPUT: ${{ inputs.tags }}
-        run: |
-          if [ "$QA_MODE" = "true" ]; then
-            # The Jira issues that are in QA and have tests, as tags (@EM-92 @EM-34).
-            GITHUB_OUTPUT=qa.out node scripts/jira-tests.mjs tasks --app em --status QA
-            tags=$(grep '^tasks=' qa.out | cut -d= -f2 | tr ',' ' ')
-            grep '^untested=' qa.out >> "$GITHUB_OUTPUT" || true
-          else
-            tags="${TAGS_INPUT:-@sanity}"
-          fi
-          echo "tags=$tags" >> "$GITHUB_OUTPUT"
-
-      - name: Run tests
-        id: run
-        if: steps.pick.outputs.tags != ''
-        env:
-          TAGS: ${{ steps.pick.outputs.tags }}
-        run: |
-          extra="--project=$BROWSER"
-          if [ "$NO_TESTS_OK" = "true" ]; then extra="$extra --pass-with-no-tests"; fi
-          node scripts/run-tags.mjs "$TAGS" --app em -- $extra
-
-      - name: Comment results on Jira
-        # Only when Jira is set up, comments are on, the tags name Jira issues, and the tests ran (pass or fail).
-        if: ${{ !cancelled() && env.JIRA_API_TOKEN != '' && env.COMMENT == 'true' && steps.run.outputs.tasks != '' && (steps.run.outcome == 'success' || steps.run.outcome == 'failure') }}
-        run: node scripts/jira-tests.mjs comment --app em --tasks "${{ steps.run.outputs.tasks }}"
-
-      - name: Summary
-        if: ${{ !cancelled() }}
-        env:
-          TAGS: ${{ steps.run.outputs.tags || steps.pick.outputs.tags }}
-          UNTESTED: ${{ steps.pick.outputs.untested }}
-        run: |
-          {
-            echo "### EM tests"
-            echo "- Tags: ${TAGS:-none}"
-            echo "- Browser: $BROWSER"
-            if [ -n "$UNTESTED" ]; then echo "- In QA on Jira but **no test yet**: $UNTESTED"; fi
-            echo "- Result: ${{ steps.run.outcome }}"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload HTML report
-        if: ${{ !cancelled() && steps.run.outcome != 'skipped' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: em-report
-          path: projects/em/playwright-report/
-          retention-days: 14
-
-      - name: Upload JUnit and JSON results
-        if: ${{ !cancelled() && steps.run.outcome != 'skipped' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: em-results
-          path: |
-            projects/em/test-results/junit.xml
-            projects/em/test-results/results.json
-          retention-days: 14
+    uses: ./.github/workflows/em-run-tests.yml
+    secrets: inherit
+    with:
+      suite: ${{ github.event_name == 'schedule' && 'jira-qa' || 'manual' }}
+      tags: ${{ inputs.tags }}
+      comment: ${{ inputs.comment == true }}
+      browser: ${{ inputs.browser || 'chromium' }}
+      environment: ${{ inputs.environment || 'em-uat' }}
+      jira_qa: ${{ github.event_name == 'schedule' }}
+      # Typed by hand: no matching test is an error (probably a typo). Scheduled Jira run: just skip.
+      no_tests_ok: ${{ github.event_name == 'schedule' }}

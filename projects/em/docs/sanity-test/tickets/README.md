@@ -16,8 +16,8 @@ Every bug ticket on Jira was reproduced on the UAT web: 117 tickets in the filte
 | Status | Tickets | Which |
 |---|---|---|
 | **Open** | 20 | 93, 94, 95, 96, 97, 99, 100, 101, 103, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117 |
-| **Partly open** | 11 | EM-35, 37, 55, 72, 73, 74, 85, 98, 102, 104, 105 |
-| **Fixed** | 57 | Listed under [All tickets](#all-tickets) |
+| **Partly open** | 9 | EM-35, 37, 55, 74, 85, 98, 102, 104, 105 |
+| **Fixed** | 59 | Listed under [All tickets](#all-tickets) |
 | **Fixed (partly verified)** | 1 | EM-83: the file is read correctly, but no valid date is available yet to stage a row. Retry from 02/11. |
 | **Blocked** | 1 | EM-29: needs an invited user and their mailbox |
 | **Total** | **90** | |
@@ -35,7 +35,7 @@ Every bug ticket on Jira was reproduced on the UAT web: 117 tickets in the filte
 | Group | Area | File | Tickets |
 |---|---|---|---|
 | G1 | API validation: Cash & Bank, Cash Transfer, Cash Outflow | [g1-api-validation](open/g1-api-validation.md) | 96, 98, 97 |
-| G2 | Cash & Bank Account screens | [g2-cash-bank-screens](open/g2-cash-bank-screens.md) | 94, 72, 73 |
+| G2 | Cash & Bank Account screens | [g2-cash-bank-screens](open/g2-cash-bank-screens.md) | 94 |
 | G3 | Invoice line amounts and precision | [g3-invoice-amounts](open/g3-invoice-amounts.md) | 112, 93, 113 |
 | G4 | USD and Unknown payment allocation | [g4-payment-allocation](open/g4-payment-allocation.md) | 116, 117, 114, 115, 104 |
 | G5 | How receipts show in lists, reports and S.O.A | [g5-receipt-display](open/g5-receipt-display.md) | 102, 109, 101, 74 |
@@ -49,7 +49,7 @@ Every bug ticket on Jira was reproduced on the UAT web: 117 tickets in the filte
 
 | Area | File | Tickets |
 |---|---|---|
-| Cash & Bank Account | [fixed-accounts](fixed/fixed-accounts.md) | 69, 70, 71, 88 |
+| Cash & Bank Account | [fixed-accounts](fixed/fixed-accounts.md) | 69, 70, 71, 72, 73, 88 |
 | Apartments | [fixed-apartments](fixed/fixed-apartments.md) | 32, 41, 42, 44, 47, 48, 52, 66, 67 |
 | Cash Outflow | [fixed-cash-outflow](fixed/fixed-cash-outflow.md) | 59 |
 | Cash Received | [fixed-cash-received](fixed/fixed-cash-received.md) | 84 |
@@ -78,8 +78,8 @@ Update Fix status, Owner, PR and UAT retest as fixes land. Fix status values: `T
 | G1 | [EM-98](open/g1-api-validation.md) | Partly open | API with `kind=BANK` only still creates a BANK account with no bank (id 66); `account_type_id` is now blocked. | To do |  |  |  |
 | G1 | [EM-97](open/g1-api-validation.md) | Open | Outflow 30,000 and Transfer 50,000 above a 10,000 balance still create drafts; Old EM blocks at the Amount field | To do |  |  |  |
 | G2 | [EM-94](open/g2-cash-bank-screens.md) | Open | Update Initial Balance fails with ERR_UNKNOWN; `PUT .../migrated-balance` returns 405. | To do |  |  |  |
-| G2 | [EM-72](open/g2-cash-bank-screens.md) | Partly open | Edit Cash fields match; Payment Method is a checkbox list instead of Old EM's multiselect. | To do |  |  |  |
-| G2 | [EM-73](open/g2-cash-bank-screens.md) | Partly open | Edit Bank fields match; Payment Method is a checkbox list and still shows a discontinued method. | To do |  |  |  |
+| G2 | [EM-72](fixed/fixed-accounts.md) | Fixed | Retest build -87 (11-09, automated) passed: CASH type settings checked first; fields match and Payment Method is now a dropdown showing the selected names. | Done |  |  | v0.4.1-87 OK (automated) |
+| G2 | [EM-73](fixed/fixed-accounts.md) | Fixed | Retest build -87 (11-09, automated) passed: BANK type settings checked first; fields match and Payment Method is now a dropdown showing the selected names. | Done |  |  | v0.4.1-87 OK (automated) |
 | G3 | [EM-112](open/g3-invoice-amounts.md) | Open | Discount 100% still gives 'Could not calculate the total / ERR_UNKNOWN'; Old EM clears the field | To do |  |  |  |
 | G3 | [EM-93](open/g3-invoice-amounts.md) | Open | INV-202610-00047 stays PARTIALLY_PAID with due 0.0042 (screen shows 0.00) | To do |  |  |  |
 | G3 | [EM-113](open/g3-invoice-amounts.md) | Open | Second Approve from a stale tab shows no 'Invoice has been already approved.' | To do |  |  |  |
@@ -200,8 +200,6 @@ Seen during the repro. None has a Jira ticket yet.
 | [EM-35](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-35) | [Settings > UO Pricing] New button allows creating extra UO Pricing records | High | Partly open | The New button is removed; the list still has 5 records (duplicate YESC, 2 Seed) and lacks Generator and Treated Water. | [g9-ui-data](open/g9-ui-data.md) |
 | [EM-37](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-37) | [UO] Incorrect error message when meter reading date equals the previous reading date | Medium | Partly open | Technical code is gone, but New EM shows "Invalid 'Reading Date'" instead of the Old EM sentence | [g8-uo-em-dates](open/g8-uo-em-dates.md) |
 | [EM-55](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-55) | [UO > Search] Search behaviour and UI differ from current EM | Medium | Partly open | Filter bar matches; the default list has no per-meter columns | [g8-uo-em-dates](open/g8-uo-em-dates.md) |
-| [EM-72](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-72) | [Cash & Bank Account > Edit > Edit Cash Account] Edit UI does not match current EM UAT | Highest | Partly open | Edit Cash fields match; Payment Method is a checkbox list instead of Old EM's multiselect. | [g2-cash-bank-screens](open/g2-cash-bank-screens.md) |
-| [EM-73](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-73) | [Cash & Bank Account > Edit > Edit Bank Account] Edit UI does not match current EM UAT | Highest | Partly open | Edit Bank fields match; Payment Method is a checkbox list and still shows a discontinued method. | [g2-cash-bank-screens](open/g2-cash-bank-screens.md) |
 | [EM-74](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-74) | [Cash Received > Unknown Received] Category field is not mandatory | Low | Partly open | Form matches Old EM (no Category field) but saves "No category" instead of "Uncategorized Receive" | [g5-receipt-display](open/g5-receipt-display.md) |
 | [EM-75](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-75) | [Invoices / Debit Note > Add Invoice] Inclusive Tax 5%/3% UI differs and allows discount | Highest | Fixed (build -74, 11-06) | Discount locked, line and footer match Old EM for Incl. 5% and 3% | [fixed-invoices](fixed/fixed-invoices.md) |
 | [EM-76](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-76) | [Apartments > Add Invoice] Inclusive Tax 5%/3% UI differs and allows discount | Highest | Fixed (build -74, 11-06) | From an apartment: Discount locked, line and footer match Old EM for Incl. 5% and 3% (automated) | [fixed-invoices](fixed/fixed-invoices.md) |
@@ -250,8 +248,10 @@ Seen during the repro. None has a Jira ticket yet.
 | [EM-67](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-67) | [Apartments > Create Apartment] Additional "Name (optional)" field should not be displayed | Medium | Fixed | "Name (optional)" is gone; Status* (ENABLE/DISABLE) is back since build -62, as on Old EM (automated, build -74) | [fixed-apartments](fixed/fixed-apartments.md) |
 | [EM-68](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-68) | [Apartments > Deposit > Add Deposit] Error on Post; deposit is not created | Highest | Fixed | Add Deposit is created (RV-00075 500 Ks, RV-00077 1 Ks); balance 501.00. | [fixed-deposit](fixed/fixed-deposit.md) |
 | [EM-69](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-69) | [Cash & Bank Account > List] List does not match current EM UAT | Medium | Fixed | The list matches Old EM (columns, content, Edit Initial Balance). | [fixed-accounts](fixed/fixed-accounts.md) |
-| [EM-70](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-70) | [Cash & Bank Account > New > Create New Cash Account] Create UI does not match current EM UAT | Highest | Fixed | Code removed; CASH has Name, Currency, Initial Balance, Payment Method, Description (Payment Method is still a checkbox list). | [fixed-accounts](fixed/fixed-accounts.md) |
-| [EM-71](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-71) | [Cash & Bank Account > New > Create New Bank Account] Create UI does not match current EM UAT | Highest | Fixed | Code removed; BANK shows Bank Name, Account Number, Enable Overdraft (Payment Method is still a checkbox list). | [fixed-accounts](fixed/fixed-accounts.md) |
+| [EM-70](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-70) | [Cash & Bank Account > New > Create New Cash Account] Create UI does not match current EM UAT | Highest | Fixed | Retest build -87 (11-09, automated) passed: CASH type settings checked first; no Code, fields match and Payment Method is now the "Select Payment Method" dropdown. | [fixed-accounts](fixed/fixed-accounts.md) |
+| [EM-71](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-71) | [Cash & Bank Account > New > Create New Bank Account] Create UI does not match current EM UAT | Highest | Fixed | Retest build -87 (11-09, automated) passed: BANK type settings checked first; no Code, fields match and Payment Method is now the "Select Payment Method" dropdown. | [fixed-accounts](fixed/fixed-accounts.md) |
+| [EM-72](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-72) | [Cash & Bank Account > Edit > Edit Cash Account] Edit UI does not match current EM UAT | Highest | Fixed (build -87, 11-09) | Retest build -87 (11-09, automated) passed: CASH type settings checked first; fields match and Payment Method is now a dropdown showing the selected names. | [fixed-accounts](fixed/fixed-accounts.md) |
+| [EM-73](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-73) | [Cash & Bank Account > Edit > Edit Bank Account] Edit UI does not match current EM UAT | Highest | Fixed (build -87, 11-09) | Retest build -87 (11-09, automated) passed: BANK type settings checked first; fields match and Payment Method is now a dropdown showing the selected names. | [fixed-accounts](fixed/fixed-accounts.md) |
 | [EM-77](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-77) | [Apartments > Wallet > Wallet Recharge] Redirects to Wallet Operations instead of apartment wallet | Medium | Fixed | After Recharge the user returns to Apartment › Wallet with the updated balance (RV-00078, 960.99 Ks). | [fixed-wallet](fixed/fixed-wallet.md) |
 | [EM-78](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-78) | [Apartments > Wallet > Wallet Transfer] "Transfer To" is free text instead of apartment dropdown | Medium | Fixed | "Transfer to *" is an apartment dropdown. | [fixed-wallet](fixed/fixed-wallet.md) |
 | [EM-79](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-79) | [Apartments > Wallet > Wallet Transfer] Transfer fails with a valid destination apartment | Highest | Fixed | Transfer of 10 Ks succeeds (WT-00006); automated retest passed on build -74 (WT-00019/20). | [fixed-wallet](fixed/fixed-wallet.md) |

@@ -1,0 +1,144 @@
+# Shared steps for every EM test workflow: install, run Playwright by tag, comment on Jira, upload reports.
+# Not run on its own. The suite workflows call it:
+#   em-sanity.yml · em-smoke.yml · em-e2e.yml · em-regression.yml · em-tests.yml (manual / Jira)
+#
+# Tags (scripts/run-tags.mjs): space = OR, + = AND, ! = NOT. E.g. "@EM-92 @EM-93", "@sanity+@P1", "@smoke+!@review".
+#
+# Runs against one GitHub environment (input "environment"), each with its own secrets
+# BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD, and for Jira JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN:
+#   em-uat   UAT, used to check Jira issues (sanity, manual / Jira runs)
+#   em-test  separate test environment (smoke, e2e, regression)
+# Until the JIRA_* secrets exist, the Jira step is skipped. The runner must be able to reach the URL.
+name: EM run tests (shared)
+
+on:
+  workflow_call:
+    inputs:
+      suite:
+        description: 'Name shown in the summary and on the report artifacts (sanity, smoke, e2e, regression, manual)'
+        type: string
+        required: true
+      tags:
+        description: 'Tag expression to run. Ignored when jira_qa is true.'
+        type: string
+        default: ''
+      environment:
+        description: 'GitHub environment to run against: em-uat (check issues) or em-test (testing)'
+        type: string
+        default: em-uat
+      browser:
+        type: string
+        default: chromium
+      comment:
+        description: 'Comment the result on the Jira issues named in the tags (@EM-…)'
+        type: boolean
+        default: false
+      jira_qa:
+        description: 'Run the tests of every Jira issue in QA (tags come from Jira, not from "tags")'
+        type: boolean
+        default: false
+      no_tests_ok:
+        description: 'Pass when no test matches. Off for tags typed by hand, where no match is probably a typo.'
+        type: boolean
+        default: true
+      timeout:
+        description: 'Job timeout in minutes'
+        type: number
+        default: 60
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout }}
+    environment: ${{ inputs.environment }}
+    env:
+      APP: em
+      CI: 'true'
+      TARGET_ENV: ${{ inputs.environment == 'em-test' && 'test' || '' }}
+      BASE_URL: ${{ secrets.BASE_URL }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      BROWSER: ${{ inputs.browser }}
+      QA_MODE: ${{ inputs.jira_qa }}
+      COMMENT: ${{ inputs.comment || inputs.jira_qa }}
+      NO_TESTS_OK: ${{ inputs.no_tests_ok }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps ${{ env.BROWSER }}
+
+      - name: Traceability (case IDs, tags)
+        run: node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em
+
+      - name: Pick tags
+        id: pick
+        env:
+          TAGS_INPUT: ${{ inputs.tags }}
+        run: |
+          if [ "$QA_MODE" = "true" ]; then
+            # The Jira issues that are in QA and have tests, as tags (@EM-92 @EM-34).
+            GITHUB_OUTPUT=qa.out node scripts/jira-tests.mjs tasks --app em --status QA
+            tags=$(grep '^tasks=' qa.out | cut -d= -f2 | tr ',' ' ')
+            grep '^untested=' qa.out >> "$GITHUB_OUTPUT" || true
+          else
+            tags="$TAGS_INPUT"
+          fi
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+
+      - name: Run tests
+        id: run
+        if: steps.pick.outputs.tags != ''
+        env:
+          TAGS: ${{ steps.pick.outputs.tags }}
+        run: |
+          extra="--project=$BROWSER"
+          if [ "$NO_TESTS_OK" = "true" ]; then extra="$extra --pass-with-no-tests"; fi
+          node scripts/run-tags.mjs "$TAGS" --app em -- $extra
+
+      - name: Comment results on Jira
+        # Only when Jira is set up, comments are on, the tags name Jira issues, and the tests ran (pass or fail).
+        if: ${{ !cancelled() && env.JIRA_API_TOKEN != '' && env.COMMENT == 'true' && steps.run.outputs.tasks != '' && (steps.run.outcome == 'success' || steps.run.outcome == 'failure') }}
+        run: node scripts/jira-tests.mjs comment --app em --tasks "${{ steps.run.outputs.tasks }}"
+
+      - name: Summary
+        if: ${{ !cancelled() }}
+        env:
+          TAGS: ${{ steps.run.outputs.tags || steps.pick.outputs.tags }}
+          UNTESTED: ${{ steps.pick.outputs.untested }}
+        run: |
+          {
+            echo "### EM ${{ inputs.suite }} tests"
+            echo "- Tags: ${TAGS:-none}"
+            echo "- Environment: ${{ inputs.environment }}"
+            echo "- Browser: $BROWSER"
+            if [ -n "$UNTESTED" ]; then echo "- In QA on Jira but **no test yet**: $UNTESTED"; fi
+            echo "- Result: ${{ steps.run.outcome }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload HTML report
+        if: ${{ !cancelled() && steps.run.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: em-${{ inputs.suite }}-report
+          path: projects/em/playwright-report/
+          retention-days: 14
+
+      - name: Upload JUnit and JSON results
+        if: ${{ !cancelled() && steps.run.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: em-${{ inputs.suite }}-results
+          path: |
+            projects/em/test-results/junit.xml
+            projects/em/test-results/results.json
+          retention-days: 14

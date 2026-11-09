@@ -1,0 +1,21 @@
+# EM smoke tests (@smoke): the main pages and flows still work. Steps: em-run-tests.yml.
+# Passes with nothing run until tests tagged @smoke exist.
+name: EM Smoke
+
+on:
+  push:
+    branches: [main] # every push to main, any file
+  workflow_dispatch:
+
+concurrency:
+  group: em-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/em-run-tests.yml
+    secrets: inherit
+    with:
+      suite: smoke
+      tags: '@smoke'
+      environment: em-test

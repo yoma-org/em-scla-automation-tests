@@ -1,13 +1,20 @@
 import { defineConfig, devices } from '@playwright/test';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { authFile } from './src/utils/Environment';
 
-// Each app loads its own env file: projects/<app>/.env (git-ignored, see .env.example).
-// In CI the same values come from secrets as plain env vars.
-const envFile = path.join(__dirname, '.env');
+// Each app loads its own env file (git-ignored, see .env.example). TARGET_ENV picks which one:
+//   (unset)          → .env       UAT, used to check Jira issues (sanity)
+//   TARGET_ENV=test  → .env.test  separate test environment (smoke, e2e, regression)
+// In CI the same values come from the GitHub environment's secrets as plain env vars.
+const target = process.env.TARGET_ENV;
+const envFile = path.join(__dirname, target ? `.env.${target}` : '.env');
 if (existsSync(envFile)) process.loadEnvFile(envFile);
+else if (target && !process.env.CI) {
+  throw new Error(`TARGET_ENV=${target} but ${envFile} is missing. Copy .env.example to .env.${target} and fill it in.`);
+}
 
-const adminState = path.join(__dirname, 'playwright', '.auth', 'admin.json');
+const adminState = authFile('admin');
 
 /**
  * See https://playwright.dev/docs/test-configuration.

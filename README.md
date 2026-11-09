@@ -64,8 +64,19 @@ npm run test:tags -- "@smoke" --app em --print        # only print the --grep re
 | `@review` | Expected result in question (non-blocking) |
 | `@EM-92` … | Jira issue the test checks |
 
-CI for `em`: `.github/workflows/em-tests.yml`. Actions → EM tests → Run workflow, type the tags,
-optionally tick *comment* to post the result on the Jira issues in the tags.
+CI for `em`: one workflow per suite, sharing the steps in `.github/workflows/em-run-tests.yml`.
+
+| Workflow | Runs | When |
+|---|---|---|
+| `em-sanity.yml` · EM Sanity | `@sanity` | push to `main` that changes the EM tests or code, Mon–Fri 09:00 Vietnam |
+| `em-smoke.yml` · EM Smoke | `@smoke` | every push to `main` |
+| `em-e2e.yml` · EM E2E | `@e2e` | Mon–Fri 01:00 Vietnam |
+| `em-regression.yml` · EM Regression | every test except `@sanity` (`@P1+!@sanity @P2+!@sanity @P3+!@sanity`) | Saturday 01:00 Vietnam |
+| `em-tests.yml` · EM tests (manual / Jira) | the tags you type | by hand, or from Jira |
+
+Each suite workflow can also be started by hand. For any tags: Actions → EM tests (manual / Jira) → Run workflow,
+type the tags, optionally tick *comment* to post the result on the Jira issues in the tags.
+A suite with no tests yet passes without running anything.
 
 ## Adding an app
 
