@@ -68,7 +68,7 @@ CI for `em`: one workflow per suite, sharing the steps in `.github/workflows/em-
 
 | Workflow | Runs | When |
 |---|---|---|
-| `em-sanity.yml` · EM Sanity | `@sanity` | push to `main` that changes the EM tests or code, Mon–Fri 09:00 Vietnam |
+| `em-sanity.yml` · EM Sanity | `@sanity` | by hand only (some tests post real transactions on UAT) |
 | `em-smoke.yml` · EM Smoke | `@smoke` | every push to `main` |
 | `em-e2e.yml` · EM E2E | `@e2e` | Mon–Fri 01:00 Vietnam |
 | `em-regression.yml` · EM Regression | every test except `@sanity` (`@P1+!@sanity @P2+!@sanity @P3+!@sanity`) | Saturday 01:00 Vietnam |

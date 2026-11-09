@@ -142,14 +142,13 @@ APP=em npx playwright test --grep "SAN-EM92-002"     # one case, by ID
 
 `node .claude/skills/playwright-skill/scripts/check-traceability.mjs --app em` checks that every `SAN-…` test is a case heading here, sits in `tests/sanity/` and has the right tags. It also prints how many sanity cases are automated.
 
-**CI:** [`.github/workflows/em-sanity.yml`](../../../../.github/workflows/em-sanity.yml) for the scheduled and push runs, [`.github/workflows/em-tests.yml`](../../../../.github/workflows/em-tests.yml) for runs by hand and from Jira. Both use the shared steps in [`em-run-tests.yml`](../../../../.github/workflows/em-run-tests.yml).
+**CI:** [`.github/workflows/em-sanity.yml`](../../../../.github/workflows/em-sanity.yml) to run the whole sanity suite by hand (no automatic runs), [`.github/workflows/em-tests.yml`](../../../../.github/workflows/em-tests.yml) for runs by hand and from Jira. Both use the shared steps in [`em-run-tests.yml`](../../../../.github/workflows/em-run-tests.yml).
 
 > **Jira is off for now.** No `JIRA_*` secrets are set, the 14:30 run is commented out in the workflow, and the Jira comment step is skipped. To turn it on: add the secrets below, uncomment the `30 7 * * 1-5` cron, and set up the Jira Automation rule.
 
 | When | What runs | Jira comment |
 |---|---|---|
-| Mon–Fri 09:00 Vietnam (EM Sanity) | `@sanity`, to catch regressions on fixed tasks | No |
-| Push to `main` that changes the EM tests or code (EM Sanity); docs-only pushes do not run it, since some tests post real transactions on UAT | `@sanity` | No |
+| By hand: Actions → EM Sanity → Run workflow (no push or scheduled runs, since some tests post real transactions on UAT) | `@sanity` | No |
 | By hand: Actions → EM tests (manual / Jira) → Run workflow | The **tags** you type (see below) | Later, if `comment` is ticked |
 | *(Jira off)* A task moves to **QA** (Jira Automation, set up below) | Tests of that task | Yes |
 | *(Jira off)* Mon–Fri 14:30 Vietnam | Every task in QA that has tests | Yes |
