@@ -62,6 +62,9 @@ test('SAN-EM<n>-001 <case title from the doc>',
 - Add a precondition guard with a clear message when data could make the test meaningless
   (e.g. "`<apartment>` needs MMK receivables for the switch to show").
 - `evidence(page, 'NN_NEW_<what>', [mask…])` screenshots at the key moments; they become the Jira images.
+  Every shot gets an info bar at the bottom (`NEW EM · build · page URL · time GMT+7 · EM-<n>`), since
+  screenshots have no address bar. Take the shot after the page has finished loading (e.g. wait for a
+  control to be enabled), so it does not show a half-loaded form.
   Pass a `mask` locator for any personal data on screen (owner/tenant names, NRC, phone, e.g.
   `apartmentSummaryTab.contactDetails`), so the shot can be posted without manual redaction.
   Look at every image before uploading it.
@@ -96,7 +99,10 @@ In the ticket's section:
 
 Ask before posting; a comment is visible to the team.
 
-- First line: `VERIFIED_PASSED_<build>` (pass) or `VERIFIED_FAILED_<build>` (fail).
+- First line: `VERIFIED_PASSED_<build>` (pass) or `VERIFIED_FAILED_<build>` (fail), as a heading in
+  Jira's **Bold green** for a pass and **Bold red** for a fail:
+  `<h3><span style="color: #006644">VERIFIED_PASSED_<build></span></h3>` /
+  `<h3><span style="color: #bf2600">VERIFIED_FAILED_<build></span></h3>`.
 - One short line per step with its result; put each screenshot **directly under its step** with a
   caption, plus the Old EM baseline image if one exists.
 - Save the screenshots as `projects/em/docs/sanity-test/tickets/img/EM-<n>/NN_NEW-uat_retest-<date>_<what>.png`

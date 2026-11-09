@@ -18,5 +18,8 @@ export const Routes = {
   cashTransferApprove: (id: number | string) => `/accounts/transfers/${id}/approve`,
   generalSettings: '/settings/general',
   buildings: '/settings/buildings',
-  accountClassification: '/settings/classification'
+  accountClassification: '/settings/classification',
+  cashBankAccounts: '/settings/accounts',
+  cashBankAccountNew: '/settings/accounts/new',
+  cashBankAccountEdit: (id: number | string) => `/settings/accounts/${id}/edit`
 } as const;
