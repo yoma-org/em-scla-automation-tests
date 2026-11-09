@@ -1,23 +1,10 @@
 # EM sanity tests (@sanity): fixed Jira issues stay fixed. Steps: em-run-tests.yml.
+# Manual only: Actions → EM Sanity → Run workflow. No push or scheduled runs, because some
+# sanity tests post real transactions on UAT (EM-86 cash transfer, EM-79 wallet transfer).
+# For a subset (one issue, P1 only, Firefox) use EM tests (manual / Jira).
 name: EM Sanity
 
 on:
-  # Only when the tests or what they run on change: some sanity tests post real transactions
-  # on UAT (EM-86 cash transfer, EM-79 wallet transfer), so a docs-only push should not run them.
-  push:
-    branches: [main]
-    paths:
-      - 'projects/em/src/**'
-      - 'projects/em/tests/**'
-      - 'projects/em/playwright.config.ts'
-      - 'shared/**'
-      - 'scripts/run-tags.mjs'
-      - 'playwright.config.ts'
-      - 'package*.json'
-      - '.github/workflows/em-sanity.yml'
-      - '.github/workflows/em-run-tests.yml'
-  schedule:
-    - cron: '0 2 * * 1-5' # Mon–Fri 09:00 Vietnam (UTC+7)
   workflow_dispatch:
 
 concurrency:
