@@ -1,0 +1,25 @@
+# EM full regression: every test except sanity. Steps: em-run-tests.yml.
+# There is no @regression tag (the traceability check rejects it): every catalog case is
+# regression, so the suite is "all tests with a priority tag, minus @sanity". Sanity is left
+# out because those tests check Jira issues against UAT data, and regression runs on em-test.
+# Passes with nothing run until such tests exist.
+name: EM Regression
+
+on:
+  schedule:
+    - cron: '0 18 * * 5' # weekly, Saturday 01:00 Vietnam (UTC+7)
+  workflow_dispatch: # e.g. before a release
+
+concurrency:
+  group: em-regression
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/em-run-tests.yml
+    secrets: inherit
+    with:
+      suite: regression
+      tags: '@P1+!@sanity @P2+!@sanity @P3+!@sanity'
+      environment: em-test
+      timeout: 180

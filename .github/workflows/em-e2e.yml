@@ -1,0 +1,22 @@
+# EM end-to-end flows (@e2e). Steps: em-run-tests.yml.
+# Passes with nothing run until tests tagged @e2e exist.
+name: EM E2E
+
+on:
+  schedule:
+    - cron: '0 18 * * 0-4' # nightly, Mon–Fri 01:00 Vietnam (UTC+7)
+  workflow_dispatch:
+
+concurrency:
+  group: em-e2e
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/em-run-tests.yml
+    secrets: inherit
+    with:
+      suite: e2e
+      tags: '@e2e'
+      environment: em-test
+      timeout: 90

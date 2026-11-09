@@ -74,7 +74,7 @@ Follow the skill's `references/test-case-conventions.md` (titles, `tc` / `source
 annotations, tags, E2E flows, `@review`, data variants, CI gates). EM specifics:
 
 - **Sanity suite** (New EM vs Old EM, Jira bug repros): cases in `docs/sanity-test/`,
-  tests in `tests/sanity/`, tag `@sanity`, CI `.github/workflows/em-tests.yml`. Use
+  tests in `tests/sanity/`, tag `@sanity`, CI `.github/workflows/em-sanity.yml` (any tags by hand: `em-tests.yml`). Use
   `sanity()` from `@helpers/sanity` for tags and annotations. See `docs/sanity-test/README.md#automation`.
 - The target is **New EM** (Next.js, Radix-style comboboxes, `data-testid` on figures), not
   the Vue/PrimeVue em-web described below. Confirm locators on the live page.

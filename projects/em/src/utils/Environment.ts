@@ -21,7 +21,10 @@ export function credentials(role: Role): { email: string; password: string } {
   return { email: required(`${prefix}_EMAIL`), password: required(`${prefix}_PASSWORD`) };
 }
 
-// projects/em/playwright/.auth/<role>.json (git-ignored)
+// projects/em/playwright/.auth/<role>.json, or .auth/<TARGET_ENV>/<role>.json (git-ignored).
+// One folder per environment, so a UAT login is never reused on the test environment.
 export function authFile(role: Role): string {
-  return path.join(__dirname, '..', '..', 'playwright', '.auth', `${role}.json`);
+  const target = process.env.TARGET_ENV;
+  const dir = path.join(__dirname, '..', '..', 'playwright', '.auth', ...(target ? [target] : []));
+  return path.join(dir, `${role}.json`);
 }
