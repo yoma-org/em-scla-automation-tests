@@ -12,7 +12,7 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 |---|---|---|---|---|---|
 | [EM-77](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-77) | [Apartments > Wallet > Wallet Recharge] Redirects to Wallet Operations instead of apartment wallet | Medium | Fixed | After Recharge the user returns to Apartment › Wallet with the updated balance (RV-00078, 960.99 Ks). | [SAN-EM77-001](#san-em77-001--wallet-recharge-returns-to-the-apartment-wallet-and-shows-the-updated-balance) |
 | [EM-78](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-78) | [Apartments > Wallet > Wallet Transfer] "Transfer To" is free text instead of apartment dropdown | Medium | Fixed | "Transfer to *" is an apartment dropdown. | [SAN-EM78-001](#san-em78-001--wallet-transfer-transfer-to-is-a-dropdown-of-enabled-apartments) |
-| [EM-79](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-79) | [Apartments > Wallet > Wallet Transfer] Transfer fails with a valid destination apartment | Highest | Fixed | Transfer of 10 Ks succeeds (WT-00006). | [SAN-EM79-001](#-san-em79-001--wallet-transfer-to-a-valid-apartment-posts-and-reduces-the-source-wallet) |
+| [EM-79](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-79) | [Apartments > Wallet > Wallet Transfer] Transfer fails with a valid destination apartment | Highest | Fixed | Transfer of 10 Ks succeeds (WT-00006); automated retest passed on build -74 (WT-00019/20). | [SAN-EM79-001](#-san-em79-001--wallet-transfer-to-a-valid-apartment-posts-and-reduces-the-source-wallet) |
 | [EM-80](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-80) | [Apartments > Wallet > Wallet Transfer] Location field should not be displayed | Medium | Fixed | The Wallet Transfer form has no Location field. | [SAN-EM80-001](#san-em80-001--wallet-transfer-form-has-no-location-field) |
 | [EM-81](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-81) | [Apartments > Wallet > Wallet Refund] Admin with self-approval cannot approve refund | High | Fixed | Refund is self-approved (PV-00027) and the wallet is reduced by 50. | [SAN-EM81-001](#-san-em81-001--admin-with-self-approval-approves-their-own-wallet-refund-and-the-wallet-is-reduced) |
 | [EM-89](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-89) | [Wallet / Deposit] Business logic not aligned with current EM; approval state should not be required | Highest | Fixed | Recharge and Add Deposit post immediately, with no approval. | [SAN-EM89-001](#-san-em89-001--wallet-recharge-and-add-deposit-post-immediately-with-no-approval-state) |
@@ -135,14 +135,16 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 
 **Steps:**
 
-1. Open the source apartment, tab Wallet, click [Wallet Transfer] (`/wallet/transfers`).
-2. Enter the test data and click [Post 10.00 Ks].
+1. Open the source apartment, tab Wallet, click [Wallet Transfer] (dialog opens on the apartment page since build -74; no "From apartment" field).
+2. Enter the test data and click [Submit] (was [Post 10.00 Ks] before build -74).
 3. Open the source apartment wallet.
 
 **Expected result:**
 
 1. The transfer completes successfully.
 2. The source wallet is reduced by 10.
+
+**Automated test:** [`SAN-EM79-001` in fixed-wallet.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-wallet.spec.ts) · tag `@sanity` `@EM-79` · run `APP=em npx playwright test --grep SAN-EM79-001` · source `QA-REPRO-EM-56 Tower-R32-101` → `Estate SEED-Z-002`; **posts a real 10 Ks transfer per browser per run** (no undo)
 
 **Result (build -37, 2026-11-01):**
 
@@ -152,6 +154,15 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 | 2 | Not re-run; ticket does not state this check | "Transfer out #WT-00006 · 10.00" | ⛔ Not run |
 
 **Conclusion:** Fixed. The transfer posts and the source wallet shows the transfer out. The re-run created no new transfer and re-captured WT-00006, still Posted. Old EM ran the transfer only (WT-100117).
+
+**Retest (build v0.4.1-74-g77cbcadf, 2026-11-06, automated): passed** (chromium + firefox)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | Transfer completes | Wallet Transfer 1 Ks A1-000 → A1-001 succeeds (WT-100117) | [Submit] shows "Posted as WT-00019 — 10.00 Ks" / WT-00020; register row Posted, From QA-REPRO-EM-56 Tower-R32-101, To Estate SEED-Z-002, 10.00 Ks | ✅ |
+| 2 | Source wallet reduced by 10 | Not re-run | "Transfer out #WT-00019" CR 10.00 Ks, running balance 891.99 → 881.99 (WT-00020: 871.99 → 861.99) | ✅ |
+
+Also noted: the Wallet Transfer form changed in build -74 — it opens as a dialog on the apartment page, the "From apartment" field is gone and [Post 10.00 Ks] is now [Submit]; the test was updated. Transfers created on 2026-11-06: WT-00016 (manual, while exploring the new form), WT-00017/18 (a run that failed only on the parallel-browser balance check, since fixed), WT-00019/20. Source wallet now 861.99 Ks.
 
 **Test data created:** Wallet transfer WT-00006 (10 Ks).
 

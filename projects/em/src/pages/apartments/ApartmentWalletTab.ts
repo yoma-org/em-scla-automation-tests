@@ -39,6 +39,11 @@ export class ApartmentWalletTab {
     return this.transactions.getByRole('row').filter({ hasText: /Transfer out/ }).filter({ hasText: `#${ref}` });
   }
 
+  /** The row just above, whose Balance is the running balance before this row. */
+  previousRow(row: Locator): Locator {
+    return row.locator('xpath=preceding-sibling::tr[1]');
+  }
+
   /** Cell of a transactions row by column: Date, Description, DR, CR, Balance. */
   cell(row: Locator, column: 'Date' | 'Description' | 'DR' | 'CR' | 'Balance'): Locator {
     const index = { Date: 0, Description: 1, DR: 2, CR: 3, Balance: 4 }[column];

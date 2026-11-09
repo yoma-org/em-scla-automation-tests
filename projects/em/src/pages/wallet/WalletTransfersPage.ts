@@ -1,5 +1,6 @@
-// src/pages/wallet/WalletTransfersPage.ts — Wallet Transfers register and the "Wallet Transfer" dialog (/wallet/transfers)
-// The dialog posts a journal entry at once: there is no approval step and no undo.
+// src/pages/wallet/WalletTransfersPage.ts — Wallet Transfers register (/wallet/transfers) and the "Wallet Transfer" dialog
+// The dialog also opens in place from the apartment Wallet tab (build -74+): the source is that apartment,
+// with no "From apartment" field. [Submit] posts a journal entry at once: there is no approval step and no undo.
 import { type Locator, type Page } from '@playwright/test';
 import { Routes } from '@constants/Routes';
 
@@ -9,13 +10,12 @@ export class WalletTransfersPage {
   readonly dialog: Locator;
   readonly form: Locator;
   readonly currency: Locator;
-  readonly fromApartment: Locator;
   readonly transferTo: Locator;
   readonly amount: Locator;
   readonly remark: Locator;
-  /** Label follows the amount: "Post 10.00 Ks". */
-  readonly postButton: Locator;
-  /** Hint next to [Post], e.g. "Choose the apartment to transfer to." */
+  /** [Submit] posts the transfer (was "Post 10.00 Ks" before build -74). */
+  readonly submitButton: Locator;
+  /** Hint next to [Submit], e.g. "Choose the apartment to transfer to." */
   readonly formStatus: Locator;
   /** Shown in the form after a post: "Posted as WT-00008 — 10.00 Ks". The dialog stays open and resets. */
   readonly postedMessage: Locator;
@@ -26,12 +26,11 @@ export class WalletTransfersPage {
     this.dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Wallet Transfer', level: 2 }) });
     this.form = page.getByRole('form', { name: 'New wallet transfer' });
     this.currency = this.form.getByRole('combobox', { name: 'Currency' });
-    this.fromApartment = this.form.getByRole('textbox', { name: 'From apartment' });
     this.transferTo = this.form.getByRole('combobox', { name: 'Transfer to' });
     this.amount = this.form.getByRole('textbox', { name: 'Amount' });
     this.remark = this.form.getByRole('textbox', { name: 'Remark' });
-    this.postButton = this.form.getByRole('button', { name: /^Post\b/ });
-    this.formStatus = this.form.getByRole('status');
+    this.submitButton = this.form.getByRole('button', { name: 'Submit' });
+    this.formStatus = this.form.getByRole('status').filter({ hasNotText: /^Posted as/ });
     this.postedMessage = this.form.getByText(/^Posted as WT-\d+/);
   }
 

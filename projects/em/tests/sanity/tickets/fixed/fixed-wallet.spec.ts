@@ -37,14 +37,14 @@ test.describe('Sanity · EM-79 Wallet Transfer', () => {
       await test.step('1. Open the source apartment, tab Wallet, click [Wallet Transfer]', async () => {
         await wallet.walletTransferLink.click();
         await expect(transfers.form).toBeVisible();
-        await expect(transfers.fromApartment).toHaveValue(source.name);
+        // The dialog opens on the apartment page; the source is that apartment (no "From" field since build -74).
+        await expect(transfers.submitButton).toBeDisabled();
       });
 
-      await test.step(`2. Transfer ${amount} Ks to ${destination} and click [Post ${amount} Ks]`, async () => {
+      await test.step(`2. Transfer ${amount} Ks to ${destination} and click [Submit]`, async () => {
         await transfers.fill({ to: destination, amount: '10', remark: `QA-REPRO-EM-79 ${new Date().toISOString()}` });
-        await expect(transfers.postButton).toHaveText(`Post ${amount} Ks`);
-        await expect(transfers.postButton).toBeEnabled();
-        await transfers.postButton.click();
+        await expect(transfers.submitButton).toBeEnabled();
+        await transfers.submitButton.click();
         // Expected 1: the transfer completes (the bug was an error here and nothing posted).
         // New EM keeps the dialog open and shows "Posted as WT-00008 — 10.00 Ks".
         await expect(transfers.postedMessage, 'transfer posted').toBeVisible();
@@ -59,9 +59,12 @@ test.describe('Sanity · EM-79 Wallet Transfer', () => {
         const row = wallet.transferOutRow(ref);
         await expect(row, `"Transfer out #${ref}" row on the source wallet`).toHaveCount(1);
         expect(parseAmount(await wallet.cell(row, 'CR').innerText()), `${ref} CR`).toBe(amount);
-        // Expected 2: the wallet is reduced by the amount. Soft, because another test that moves
-        // this wallet at the same time would change the total; the CR row above is the hard check.
-        expect.soft(await wallet.currentBalanceAmount(), 'Current Balance').toBe(subtractAmount(balanceBefore, amount));
+        // Expected 2: the wallet is reduced by the amount. Checked on the running balance of the row,
+        // not the page total, because a parallel run (other browser) moves the same wallet.
+        const before = parseAmount(await wallet.cell(wallet.previousRow(row), 'Balance').innerText());
+        expect(parseAmount(await wallet.cell(row, 'Balance').innerText()), `${ref} running balance`)
+          .toBe(subtractAmount(before, amount));
+        expect(Number(await wallet.currentBalanceAmount()), 'Current Balance').toBeLessThanOrEqual(Number(subtractAmount(balanceBefore, amount)));
         await row.scrollIntoViewIfNeeded();
         await evidence(page, `02_NEW_${ref}_source-wallet`);
       });
