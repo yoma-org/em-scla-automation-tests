@@ -1,7 +1,9 @@
-# EM full regression: every test except sanity. Steps: em-run-tests.yml.
+# EM full regression: every test except the Jira ticket tests. Steps: em-run-tests.yml.
 # There is no @regression tag (the traceability check rejects it): every catalog case is
-# regression, so the suite is "all tests with a priority tag, minus @sanity". Sanity is left
-# out because those tests check Jira issues against UAT data, and regression runs on em-test.
+# regression, so the suite is "all tests with a priority tag, minus @open / @fixed". The ticket
+# tests (SAN-EM…, tagged @open / @fixed) are left out because they check Jira issues against UAT
+# data, and regression runs on em-test. Catalog cases with a Jira link are tagged @sanity too and
+# stay in regression: they create their own data.
 # Passes with nothing run until such tests exist.
 name: EM Regression
 
@@ -20,6 +22,6 @@ jobs:
     secrets: inherit
     with:
       suite: regression
-      tags: '@P1+!@sanity @P2+!@sanity @P3+!@sanity'
+      tags: '@P1+!@open+!@fixed @P2+!@open+!@fixed @P3+!@open+!@fixed'
       environment: em-test
       timeout: 180

@@ -54,7 +54,9 @@ test('E2E-01 order to payment', {
   (`docs/sanity-test/tickets/open/g3-x.md` → `tests/sanity/tickets/open/g3-x.spec.ts`). They are tagged
   `@sanity` + the doc's priority (+ `@critical` for ★) + `@open` / `@fixed` from the ticket folder, carry a `tc` annotation (plus `jira`
   and `doc` when known) and are run with `--grep @sanity`. `check-traceability.mjs` checks
-  them against the doc headings instead of the catalog. `@sanity` is used on nothing else.
+  them against the doc headings instead of the catalog. The only other tests tagged `@sanity` are
+  catalog cases that guard a Jira issue (`testCase({ …, jira: ['EM-39'] })` adds it), so a sanity
+  run also checks those tickets; they stay in `tests/<feature>/`.
 - Which tests to run is chosen by tag, with no extra tier tags. People and CI select with one
   tag expression, `npm run test:tags -- "<tags>" --app <app>` (`scripts/run-tags.mjs`: space =
   OR, `+` = AND, `!` = NOT, whole-word match), which builds the `--grep` below.

@@ -10,14 +10,17 @@ export interface CatalogCase {
   smoke?: boolean;
   critical?: boolean;
   review?: string;
-  /** Jira issues the case guards, e.g. ['EM-39'] → tag @EM-39 and a jira annotation. */
+  /**
+   * Jira issues the case guards, e.g. ['EM-39'] → tags @sanity and @EM-39 and a jira annotation.
+   * @sanity puts the case in sanity runs too ("is the ticket still fixed?").
+   */
   jira?: string[];
 }
 
 export function testCase({ id, source, priority, smoke, critical, review, jira = [] }: CatalogCase) {
   return {
     tag: [
-      ...(smoke ? ['@smoke'] : []), `@${priority}`, ...(critical ? ['@critical'] : []),
+      ...(smoke ? ['@smoke'] : []), ...(jira.length ? ['@sanity'] : []), `@${priority}`, ...(critical ? ['@critical'] : []),
       ...(review ? ['@review'] : []), ...jira.map(j => `@${j}`)
     ],
     annotation: [

@@ -71,7 +71,7 @@ CI for `em`: one workflow per suite, sharing the steps in `.github/workflows/em-
 | `em-sanity.yml` · EM Sanity | `@sanity` | by hand only (some tests post real transactions on UAT) |
 | `em-smoke.yml` · EM Smoke | `@smoke` | every push to `main` |
 | `em-e2e.yml` · EM E2E | `@e2e` | Mon–Fri 01:00 Vietnam |
-| `em-regression.yml` · EM Regression | every test except `@sanity` (`@P1+!@sanity @P2+!@sanity @P3+!@sanity`) | Saturday 01:00 Vietnam |
+| `em-regression.yml` · EM Regression | every test except the Jira ticket tests `@open` / `@fixed` (`@P1+!@open+!@fixed @P2+!@open+!@fixed @P3+!@open+!@fixed`) | Saturday 01:00 Vietnam |
 | `em-tests.yml` · EM tests (manual / Jira) | the tags you type | by hand, or from Jira |
 
 Each suite workflow can also be started by hand. For any tags: Actions → EM tests (manual / Jira) → Run workflow,
