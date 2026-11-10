@@ -29,6 +29,8 @@ import { PaymentMethodCreatePage } from '@pages/settings/PaymentMethodCreatePage
 import { CategoryPickers } from '@pages/CategoryPickers';
 import { ReportCategoryFilter } from '@pages/reports/ReportCategoryFilter';
 import { PaymentMethodPickers } from '@pages/payments/PaymentMethodPickers';
+import { UoPricingPage } from '@pages/settings/UoPricingPage';
+import { CashOutflowPage } from '@pages/accounts/CashOutflowPage';
 
 type PageFixtures = {
   cashTransfersPage: CashTransfersPage;
@@ -62,9 +64,17 @@ type PageFixtures = {
   categoryPickers: CategoryPickers;
   reportCategoryFilter: ReportCategoryFilter;
   paymentMethodPickers: PaymentMethodPickers;
+  uoPricingPage: UoPricingPage;
+  cashOutflowPage: CashOutflowPage;
 };
 
 export const test = base.extend<PageFixtures>({
+  uoPricingPage: async ({ page }, use) => {
+    await use(new UoPricingPage(page));
+  },
+  cashOutflowPage: async ({ page }, use) => {
+    await use(new CashOutflowPage(page));
+  },
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
   },

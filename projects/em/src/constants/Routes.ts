@@ -23,6 +23,7 @@ export const Routes = {
   cashBankAccountNew: '/settings/accounts/new',
   cashBankAccountEdit: (id: number | string) => `/settings/accounts/${id}/edit`,
   paymentMethodNew: '/settings/classification/payment-methods/new',
+  uoPricing: '/settings/service-items',
   categories: (kind: CategoryKind) => `/settings/${kind}-categories`,
   categoryEdit: (kind: CategoryKind, id: number | string) => `/settings/${kind}-categories/${id}/edit`,
   arWorklist: '/receivables/worklist',

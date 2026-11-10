@@ -133,6 +133,44 @@ for (const c of cases) {
   });
 }
 
+test.describe('Sanity · EM-88 Cash and Bank: bank fields and Payment Method', () => {
+  test('SAN-EM88-001 New account has Payment Method; Type BANK shows Bank Name, Account Number, Enable Overdraft',
+    sanity({ id: 'SAN-EM88-001', priority: 'P1', doc }),
+    async ({ page, cashBankAccountCreatePage: create }) => {
+      // Read-only: picks Type = BANK in the form but never clicks [Create].
+      await test.step('1. Payment Method is present', async () => {
+        await create.goto();
+        await expect(create.paymentMethod).toBeVisible();
+        await expect(create.paymentMethod).toBeEnabled();
+        expect.soft(await create.fieldLabels(), 'Payment Method field').toContain('Payment Method');
+      });
+
+      await test.step('2. Select Bank Name*, Account Number* and Enable Overdraft (No/Yes) are displayed', async () => {
+        await create.selectType('BANK');
+        await expect(create.type).toHaveText('BANK');
+        await expect.soft(create.bankName, 'Select Bank Name').toBeVisible();
+        await expect.soft(create.accountNumber, 'Account Number').toBeVisible();
+        await expect.soft(create.enableOverdraft, 'Enable Overdraft').toBeVisible();
+        const required = await create.requiredLabels();
+        expect.soft(required, 'Select Bank Name is required').toContain('Select Bank Name');
+        expect.soft(required, 'Account Number is required').toContain('Account Number');
+        await create.enableOverdraft.click();
+        const options = page.getByRole('option');
+        await expect(options.first()).toBeVisible();
+        // The case asks for both options, not an order (New EM lists Yes first).
+        expect.soft((await options.allInnerTexts()).map(t => t.trim()).sort(), 'Enable Overdraft options').toEqual(['No', 'Yes']);
+        await evidence(page, '01_NEW_new-account-type-bank_overdraft-options');
+        await page.keyboard.press('Escape');
+        await create.enableOverdraft.scrollIntoViewIfNeeded();
+        await evidence(page, '02_NEW_new-account-type-bank');
+      });
+
+      await test.step('3. Payment Method has no * as in Old EM', async () => {
+        expect.soft(await create.requiredLabels(), 'Payment Method is not marked required').not.toContain('Payment Method');
+      });
+    });
+});
+
 interface CreateAccountCase {
   ticket: string;
   id: string;
