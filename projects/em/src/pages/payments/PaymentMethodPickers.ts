@@ -54,10 +54,11 @@ export class PaymentMethodPickers {
   async firstContactId(): Promise<string> {
     await this.page.goto(Routes.contacts);
     const links = this.page.getByRole('main').locator('a[href^="/estates/contacts/"]');
-    await links.first().waitFor();
-    // Skip links such as /estates/contacts/new: take the first one that ends in an id.
-    const hrefs = await links.evaluateAll(as => as.map(a => a.getAttribute('href') ?? ''));
-    const id = hrefs.map(h => /^\/estates\/contacts\/(\d+)$/.exec(h)?.[1]).find(Boolean);
+    // Rows load after the page; skip links such as /estates/contacts/new and wait for one that ends in an id.
+    const firstId = async () => (await links.evaluateAll(as => as.map(a => a.getAttribute('href') ?? '')))
+      .map(h => /^\/estates\/contacts\/(\d+)$/.exec(h)?.[1]).find(Boolean);
+    await expect.poll(firstId, { message: 'a contact row in the Contacts list', timeout: 15_000 }).toBeTruthy();
+    const id = await firstId();
     if (!id) throw new Error('no contact link in the Contacts list');
     return id;
   }

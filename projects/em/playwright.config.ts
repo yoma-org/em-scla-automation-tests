@@ -51,13 +51,6 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: adminState },
       dependencies: ['setup']
-    },
-    // Tests run on Chrome only. Firefox is there only when asked for: BROWSER=firefox
-    // (CI sets it from the "browser" input of em-tests.yml).
-    ...(process.env.BROWSER === 'firefox' ? [{
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'], viewport: { width: 1440, height: 900 }, storageState: adminState },
-      dependencies: ['setup']
-    }] : [])
+    }
   ]
 });

@@ -6,6 +6,8 @@ blob-report/
 **/playwright/.cache/
 **/playwright/.auth/
 .playwright-mcp/
+# Evidence screenshots for Jira tickets (projects/<app>/evidence/<case>/…), kept on this machine only
+**/evidence/
 
 # Secrets (root and per app)
 .env
