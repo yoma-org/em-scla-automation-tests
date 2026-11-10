@@ -8,7 +8,7 @@ Regression = every non-obsolete test case, in three tiers. Pick the tier by how 
 
 | Tier | Content | When to run | Test cases |
 |---|---|---|---|
-| **R1 — Critical** | All ★ critical + all P1 | Every merge to main / nightly | 225 |
+| **R1 — Critical** | All ★ critical + all P1 | Every merge to main / nightly | 230 |
 | **R2 — Core** | R1 + all P2 | Before each release candidate | 528 |
 | **R3 — Full** | Everything (incl. P3 field / UI validation) + all data variants | Before production release / major refactor | 599 cases (1539 incl. variants) |
 
@@ -42,11 +42,11 @@ Cases with status **Review** stay in the suite but are tagged; a failure there m
 | 20 | [Wallet — Opening / Closing Balance](../features/balances/20-wallet-ob-cb.md) | 13 | 13 | 13 | 0 | 0 | 13 | 0 | 0 | 117 |
 | 21 | [Deposit — Opening / Closing Balance](../features/balances/21-deposit-ob-cb.md) | 13 | 13 | 13 | 0 | 0 | 13 | 0 | 0 | 37 |
 | 22 | [Account Statement — Opening / Closing Balance](../features/balances/22-account-statement-ob-cb.md) | 11 | 11 | 11 | 0 | 0 | 11 | 0 | 0 | 222 |
-| 23 | [Settings (master data & configuration)](../features/23-settings.md) | 50 | 3 | 3 | 43 | 4 | 50 | 0 | 4 | 74 |
+| 23 | [Settings (master data & configuration)](../features/23-settings.md) | 50 | 3 | 8 | 38 | 4 | 50 | 0 | 4 | 74 |
 | 24 | [Role & Permission](../features/24-role-permission.md) | 76 | 29 | 29 | 47 | 0 | 76 | 0 | 11 | 81 |
 | 25 | [Global Search](../features/25-global-search.md) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 9 |
 | 26 | [External API](../features/26-api.md) | 27 | 11 | 11 | 14 | 2 | 27 | 0 | 6 | 75 |
-| | **Total** | **599** | **208** | **225** | **303** | **71** | **590** | **9** | **53** | **1539** |
+| | **Total** | **599** | **208** | **230** | **298** | **71** | **590** | **9** | **53** | **1539** |
 
 ## Manual-only cases (9)
 

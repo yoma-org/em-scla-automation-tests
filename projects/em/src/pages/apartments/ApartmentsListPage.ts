@@ -31,6 +31,15 @@ export class ApartmentsListPage {
     if (await loadError.isVisible()) throw new Error('New EM shows "Zones could not be loaded" under the Zone filter');
   }
 
+  /** Id of the first apartment in the register (for checks that only open a form and never submit). */
+  async firstApartmentId(): Promise<string> {
+    const link = this.table.locator('a[href^="/estates/"]').filter({ hasNotText: /^$/ }).first();
+    await link.waitFor();
+    const id = /^\/estates\/(\d+)/.exec((await link.getAttribute('href')) ?? '')?.[1];
+    if (!id) throw new Error('no apartment link in the Apartments register');
+    return id;
+  }
+
   async zoneOptions(): Promise<string[]> {
     return (await this.suggestions.getByRole('option').allInnerTexts()).map(s => s.trim());
   }

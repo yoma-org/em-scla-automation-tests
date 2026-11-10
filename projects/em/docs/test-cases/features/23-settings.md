@@ -4,7 +4,7 @@
 
 <!-- generated:summary (npm run cases:build) — edit the test cases below, not this block -->
 **Test cases:** 50 (+24 data-variant rows)  
-**Priority:** P1 3 · P2 43 · P3 4 · **★ Critical:** 3 · **Smoke:** 1 · **E2E:** 18 · **Auto:** 50 · **Manual:** 0 · **Review:** 4
+**Priority:** P1 8 · P2 38 · P3 4 · **★ Critical:** 3 · **Smoke:** 6 · **E2E:** 18 · **Auto:** 50 · **Manual:** 0 · **Review:** 4
 
 ## Summary
 
@@ -16,21 +16,21 @@
 | [SET-004](#-set-004--reject-negative-unit-price-when-editing-uo-pricing) | ★ Reject negative unit price when editing UO pricing | UO pricing | P1 | Regression | Auto-UI | Active |  |
 | [SET-005](#set-005--sort-list-columns-ascendingdescending--by-setting-entity) | Sort list columns ascending/descending — by setting entity | List sorting | P3 | Regression | Auto-UI | Active | 8 |
 | [SET-006](#set-006--add-parent-income-category-and-verify-it-appears-in-invoicedncredit-note-forms) | Add parent income category and verify it appears in invoice/DN/credit note forms | Income category | P2 | E2E · Regression | Auto-UI | Active |  |
-| [SET-007](#set-007--create-fund-type-income-category-verify-it-appears-only-in-funding-received-form) | Create Fund-type income category; verify it appears only in Funding Received form | Income category | P2 | E2E · Regression | Auto-UI | Active |  |
-| [SET-008](#set-008--add-child-income-category-under-a-parent-category) | Add child income category under a parent category | Income category | P2 | Regression | Auto-UI | Active |  |
+| [SET-007](#set-007--create-fund-type-income-category-verify-it-appears-only-in-funding-received-form) | Create Fund-type income category; verify it appears only in Funding Received form | Income category | P1 | Smoke · E2E · Regression | Auto-UI | Active |  |
+| [SET-008](#set-008--add-child-income-category-under-a-parent-category) | Add child income category under a parent category | Income category | P1 | Smoke · Regression | Auto-UI | Active |  |
 | [SET-009](#set-009--reorder-parent-categories-by-drag-and-drop--by-category-type) | Reorder parent categories by drag and drop — by category type | Category sorting | P3 | Regression | Auto-UI | Active | 2 |
 | [SET-010](#set-010--reorder-categories-via-sort-number-in-edit-form--by-category-type-and-level) | Reorder categories via sort number in edit form — by category type and level | Category sorting | P3 | Regression | Auto-UI | Active | 4 |
 | [SET-011](#set-011--enter-key-does-not-submit-the-create-form--by-setting-entity) | Enter key does not submit the create form — by setting entity | Form submit guard | P3 | Regression | Auto-UI | Active | 10 |
 | [SET-012](#set-012--disable-income-category-and-verify-it-is-hidden-in-new-invoice-form) | Disable income category and verify it is hidden in new invoice form | Income category | P2 | E2E · Regression | Auto-UI | Active |  |
-| [SET-013](#set-013--add-parent-expense-category-and-verify-it-appears-in-cash-outflow-form-only) | Add parent expense category and verify it appears in Cash Outflow form only | Expense category | P2 | E2E · Regression | Auto-UI | Active |  |
-| [SET-014](#set-014--add-child-expense-category-under-a-parent-category) | Add child expense category under a parent category | Expense category | P2 | Regression | Auto-UI | Active |  |
+| [SET-013](#set-013--add-parent-expense-category-and-verify-it-appears-in-cash-outflow-form-only) | Add parent expense category and verify it appears in Cash Outflow form only | Expense category | P1 | Smoke · E2E · Regression | Auto-UI | Active |  |
+| [SET-014](#set-014--add-child-expense-category-under-a-parent-category) | Add child expense category under a parent category | Expense category | P1 | Smoke · Regression | Auto-UI | Active |  |
 | [SET-015](#set-015--disable-expense-category-and-verify-it-is-hidden-in-cash-outflow-form) | Disable expense category and verify it is hidden in Cash Outflow form | Expense category | P2 | E2E · Regression | Auto-UI | Review |  |
 | [SET-016](#set-016--add-currency-from-default-currency-list-codesymbol-auto-filled) | Add currency from default currency list (code/symbol auto-filled) | Currency | P2 | Regression | Auto-UI | Active |  |
 | [SET-017](#set-017--add-custom-currency-type-others) | Add custom currency type ("Others") | Currency | P2 | Regression | Auto-UI | Active |  |
 | [SET-018](#set-018--disable-currency-hidden-from-transaction-forms-but-kept-in-reports) | Disable currency; hidden from transaction forms but kept in reports | Currency | P2 | E2E · Regression | Auto-UI | Active |  |
 | [SET-019](#set-019--default-currency-namecodesymbol-cannot-be-edited-status-only) | Default currency name/code/symbol cannot be edited (status only) | Currency | P2 | Regression | Auto-UI | Active |  |
 | [SET-020](#set-020--edit-custom-currency-name-code-and-symbol) | Edit custom currency name, code and symbol | Currency | P2 | Regression | Auto-UI | Active |  |
-| [SET-021](#set-021--add-payment-method-and-verify-it-appears-in-bank-account-create-form) | Add payment method and verify it appears in bank account create form | Payment method | P2 | E2E · Regression | Auto-UI | Active |  |
+| [SET-021](#set-021--add-payment-method-and-verify-it-appears-in-bank-account-create-form) | Add payment method and verify it appears in bank account create form | Payment method | P1 | Smoke · E2E · Regression | Auto-UI | Active |  |
 | [SET-022](#set-022--edit-payment-method) | Edit payment method | Payment method | P2 | Regression | Auto-UI | Active |  |
 | [SET-023](#set-023--disable-payment-method-hidden-from-transaction-forms-but-kept-in-reports) | Disable payment method; hidden from transaction forms but kept in reports | Payment method | P2 | E2E · Regression | Auto-UI | Active |  |
 | [SET-024](#set-024--add-account-type) | Add account type | Account type | P2 | Regression | Auto-UI | Active |  |
@@ -282,7 +282,7 @@ login the System first.
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
-| P2 | E2E · Regression | Auto-UI | Active | Setting r23 (TC_Setting_07) |
+| P1 | Smoke · E2E · Regression | Auto-UI | Active | Setting r23 (TC_Setting_07) |
 
 **Scenario group:** Income and Expense Category
 
@@ -317,7 +317,7 @@ login the System first and need to create at lease one parent income category.
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
-| P2 | Regression | Auto-UI | Active | Setting r24 (TC_Setting_08) |
+| P1 | Smoke · Regression | Auto-UI | Active | Setting r24 (TC_Setting_08) |
 
 **Scenario group:** Income and Expense Category
 
@@ -532,7 +532,7 @@ login the System first and system must have at least one income category.
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
-| P2 | E2E · Regression | Auto-UI | Active | Setting r30 (TC_Setting_14) |
+| P1 | Smoke · E2E · Regression | Auto-UI | Active | Setting r30 (TC_Setting_14) |
 
 **Scenario group:** Income and Expense Category
 
@@ -570,7 +570,7 @@ login the System first.
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
-| P2 | Regression | Auto-UI | Active | Setting r31 (TC_Setting_15) |
+| P1 | Smoke · Regression | Auto-UI | Active | Setting r31 (TC_Setting_15) |
 
 **Scenario group:** Income and Expense Category
 
@@ -855,7 +855,7 @@ login the System first and system must have at least one currency information.
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
-| P2 | E2E · Regression | Auto-UI | Active | Setting r50 (TC_Setting_28) |
+| P1 | Smoke · E2E · Regression | Auto-UI | Active | Setting r50 (TC_Setting_28) |
 
 **Scenario group:** Account Classification
 
