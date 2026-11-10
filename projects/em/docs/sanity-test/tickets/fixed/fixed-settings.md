@@ -2,7 +2,7 @@
 
 [← Ticket index](../README.md) · [Sanity index](../../README.md)
 
-**Tickets:** 13 · **Fixed:** 13
+**Tickets:** 14 · **Fixed:** 14
 
 These tickets are fixed on build -37. Their cases are now regression checks.
 
@@ -11,6 +11,7 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 | Ticket | Title | Jira priority | Status (build -37) | Result | Case |
 |---|---|---|---|---|---|
 | [EM-34](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-34) | [Settings > General Setting] Extra CoRef-related fields are displayed | High | Fixed | General Settings has only Old CoRef No., as in Old EM. (automated, build -74) | [SAN-EM34-001](#san-em34-001--general-settings-shows-only-old-coref-no) |
+| [EM-35](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-35) | [Settings > UO Pricing] New button allows creating extra UO Pricing records | High | Fixed | No [New]; exactly the 4 fixed types with Edit only. (automated, build -100) | [SAN-EM35-001](#san-em35-001--uo-pricing-has-only-the-4-fixed-types-and-no-new-button) |
 | [EM-38](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-38) | [TC_Setting_08][TC_Setting_15] Parent-child hierarchy not shown in Category filter | High | Fixed | A new parent/child pair is shown as a hierarchy in the AR Category filter (parent as group heading). | [SAN-EM38-001](#-san-em38-001--category-filter-shows-the-parent-and-child-hierarchy-tc_setting_08-tc_setting_15) |
 | [EM-39](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-39) | [TC_Setting_07] Created Fund Category is not available in related filters and forms | High | Fixed | A newly created Fund Category is in the Funding Received form. | [SAN-EM39-001](#san-em39-001--new-fund-category-is-available-in-the-funding-received-form-tc_setting_07) |
 | [EM-40](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-40) | [TC_Setting_14] New parent expense category not displayed in Categories filter | High | Fixed | A newly created parent expense category is shown in the AR Category filter. | [SAN-EM40-001](#-san-em40-001--new-parent-expense-category-is-listed-in-the-ar-categories-filter-tc_setting_14) |
@@ -77,6 +78,62 @@ These tickets are fixed on build -37. Their cases are now regression checks.
 
 - ![EM-34 new](../img/EM-34/01_NEW-uat_general-settings.png) — FIXED: only "Old CoRef No." remains, no extra CoRef fields
 - ![EM-34 old](../img/EM-34/02_OLD-uat_general-settings.png) — Old EM: one Old CoRef No. setting + Submit
+---
+
+### EM-35 · [Settings > UO Pricing] New button allows creating extra UO Pricing records
+
+[EM-35](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-35) · Jira priority High · Status **Fixed** (build -100)
+
+**Reported:** A New button in UO Pricing allowed extra records, although UO Pricing should only contain 4 predefined master data types.
+
+#### SAN-EM35-001 · UO Pricing has only the 4 fixed types and no New button
+
+| Priority | Suites | Automation | Status | Source |
+|---|---|---|---|---|
+| P1 | Sanity · Regression | Auto-UI | Active | EM-35 repro (TC-EM-35-01), 2026-11-01 |
+
+**Preconditions:**
+
+1. Logged in as an Admin user.
+
+**Steps:**
+
+1. Open Settings › UO Pricing (`/settings/service-items`).
+2. Look for [New].
+3. Compare the list with the 4 master types.
+
+**Expected result:**
+
+1. The UO Pricing list opens.
+2. No [New] button.
+3. Exactly 4 rows: Electricity (YESC), Electricity (Generator), Treated Water, Raw Water; each with Edit only.
+
+**Automated test:** [`SAN-EM35-001` in fixed-settings.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-settings.spec.ts) · tag `@sanity` `@EM-35` · run `APP=em npx playwright test --grep SAN-EM35-001` · read-only: opens Settings › UO Pricing, never clicks Edit.
+
+**Result (build -37, 2026-11-01):**
+
+| # | Old EM | New EM | |
+|---|---|---|---|
+| 1 | List | Opens | ✅ Same |
+| 2 | No [New] | **No [New]** | ✅ Same |
+| 3 | 4 rows: Electricity (YESC), Electricity (Generator), Treated Water, Raw Water; Edit only | **5 rows**: Electricity (YESC) 100, Electricity (YESC) 1,000, Raw water, Seed Water, Seed Electricity; Generator and Treated Water missing | ❌ Differs |
+
+**Conclusion:** Partly open. [New] is gone, but the catalogue is not back to the 4 master types: it keeps extra records (duplicate YESC, Seed) and lacks 2 master types, so UO is charged against the wrong list until the data is cleaned up. A direct API POST to create UO Pricing was not tried.
+
+**Retest (build -100, 2026-11-10, automated): passed** (Chromium, build `v0.4.1-100-g1a97b9a6`)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | UO Pricing list | Opens | Opens | ✅ Same |
+| 2 | [New] button | None | None | ✅ Same |
+| 3 | Rows | Electricity (YESC), Electricity (Generator), Treated Water, Raw Water; Edit only | Electricity (YESC) 100, Electricity (Generator) 100, Raw Water 6, Treated Water 3; Edit only | ✅ Same |
+
+**Conclusion (build -100):** Fixed. The extra records (second YESC, Seed Water, Seed Electricity) are gone and Generator / Treated Water are back. Not checked: a direct API POST to create UO Pricing, and the UO import template's duplicate YESC column (see EM-82 / EM-83).
+
+**Evidence:**
+
+- ![EM-35 new](../img/EM-35/01_NEW-uat_uo-pricing-list.png) — STILL BUG: 5 records instead of the 4 fixed types (no Generator / Treated Water; extra YESC 1,000 + 2 Seed items)
+- ![EM-35 old](../img/EM-35/02_OLD-uat_uo-pricing-list.png) — Old EM: exactly 4 fixed types, no [New] button
 ---
 
 ### EM-38 · [TC_Setting_08][TC_Setting_15] Parent-child hierarchy not shown in Category filter

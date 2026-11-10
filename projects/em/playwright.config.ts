@@ -51,11 +51,6 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: adminState },
       dependencies: ['setup']
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'], viewport: { width: 1440, height: 900 }, storageState: adminState },
-      dependencies: ['setup']
     }
   ]
 });

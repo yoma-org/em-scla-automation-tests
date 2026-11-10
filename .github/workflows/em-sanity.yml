@@ -1,6 +1,7 @@
 # EM sanity tests (@sanity): fixed Jira issues stay fixed. Steps: em-run-tests.yml.
 # Manual only: Actions → EM Sanity → Run workflow. No push or scheduled runs, because some
-# sanity tests post real transactions on UAT (EM-86 cash transfer, EM-79 wallet transfer).
+# sanity tests post real transactions on UAT (EM-86 cash transfer, EM-79 wallet transfer), and the
+# Settings smoke cases with a Jira link (SET-007/008/013/014/021) create categories and a payment method.
 # For a subset (one issue, P1 only, Firefox) use EM tests (manual / Jira).
 name: EM Sanity
 

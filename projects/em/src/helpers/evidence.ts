@@ -1,5 +1,7 @@
 // src/helpers/evidence.ts — screenshot attached to the test report; these become the Jira retest images.
 import { test, type Locator, type Page } from '@playwright/test';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 const BAR_ID = '__qa-evidence-bar';
 
@@ -49,6 +51,13 @@ export async function evidence(page: Page, name: string, mask: Locator[] = []): 
   try {
     const body = await page.screenshot({ animations: 'disabled', mask, maskColor: '#000' });
     await test.info().attach(name, { body, contentType: 'image/png' });
+    // Also as a plain file for Jira: projects/em/evidence/<case id>/<name>.png (git-ignored).
+    // Same name every run, so a new run replaces the old shot instead of piling up.
+    const info = test.info();
+    const caseId = info.annotations.find(a => a.type === 'tc')?.description ?? info.title.split(' ')[0];
+    const dir = path.join(__dirname, '..', '..', 'evidence', caseId);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, `${name}.png`), body);
   } finally {
     await removeInfoBar(page);
   }

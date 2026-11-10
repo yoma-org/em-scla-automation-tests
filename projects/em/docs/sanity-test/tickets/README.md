@@ -16,8 +16,8 @@ Every bug ticket on Jira was reproduced on the UAT web: 117 tickets in the filte
 | Status | Tickets | Which |
 |---|---|---|
 | **Open** | 20 | 93, 94, 95, 96, 97, 99, 100, 101, 103, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117 |
-| **Partly open** | 9 | EM-35, 37, 55, 74, 85, 98, 102, 104, 105 |
-| **Fixed** | 59 | Listed under [All tickets](#all-tickets) |
+| **Partly open** | 8 | EM-37, 55, 74, 85, 98, 102, 104, 105 |
+| **Fixed** | 60 | Listed under [All tickets](#all-tickets) |
 | **Fixed (partly verified)** | 1 | EM-83: the file is read correctly, but no valid date is available yet to stage a row. Retry from 02/11. |
 | **Blocked** | 1 | EM-29: needs an invited user and their mailbox |
 | **Total** | **90** | |
@@ -42,7 +42,7 @@ Every bug ticket on Jira was reproduced on the UAT web: 117 tickets in the filte
 | G6 | Reports and AR | [g6-reports-ar](open/g6-reports-ar.md) | 107, 108, 99, 95, 100 |
 | G7 | Deposit | [g7-deposit](open/g7-deposit.md) | 103, 105 |
 | G8 | UO, EM and reading dates | [g8-uo-em-dates](open/g8-uo-em-dates.md) | 110, 111, 37, 55 |
-| G9 | UI and stray data | [g9-ui-data](open/g9-ui-data.md) | 85, 35 |
+| G9 | UI and stray data | [g9-ui-data](open/g9-ui-data.md) | 85 |
 | Blocked | Needs a person to run it | [blocked](open/blocked.md) | 29 |
 
 **Fixed.** These cases are now regression checks, grouped by screen.
@@ -60,7 +60,7 @@ Every bug ticket on Jira was reproduced on the UAT web: 117 tickets in the filte
 | Estate Management fee | [fixed-em](fixed/fixed-em.md) | 51, 54, 91 |
 | Invoices / Debit Note | [fixed-invoices](fixed/fixed-invoices.md) | 49, 53, 75, 76, 92 |
 | Reports | [fixed-reports](fixed/fixed-reports.md) | 36, 106 |
-| Settings | [fixed-settings](fixed/fixed-settings.md) | 34, 38, 39, 40, 46, 56, 57, 58, 60, 62, 63, 64, 65 |
+| Settings | [fixed-settings](fixed/fixed-settings.md) | 34, 35, 38, 39, 40, 46, 56, 57, 58, 60, 62, 63, 64, 65 |
 | Sign In & Account | [fixed-sign-in](fixed/fixed-sign-in.md) | 28, 30, 87 |
 | Utility Operations & Meter Reset | [fixed-uo](fixed/fixed-uo.md) | 50, 90 |
 | UO Import | [fixed-uo-import](fixed/fixed-uo-import.md) | 82, 83 |
@@ -104,7 +104,7 @@ Update Fix status, Owner, PR and UAT retest as fixes land. Fix status values: `T
 | G8 | [EM-37](open/g8-uo-em-dates.md) | Partly open | Technical code is gone, but New EM shows "Invalid 'Reading Date'" instead of the Old EM sentence | To do |  |  |  |
 | G8 | [EM-55](open/g8-uo-em-dates.md) | Partly open | Filter bar matches; the default list has no per-meter columns | To do |  |  |  |
 | G9 | [EM-85](open/g9-ui-data.md) | Partly open | Overlap is gone; Apartment dropdown overflows the screen and cannot be scrolled | To do |  |  |  |
-| G9 | [EM-35](open/g9-ui-data.md) | Partly open | The New button is removed; the list still has 5 records (duplicate YESC, 2 Seed) and lacks Generator and Treated Water. | To do |  |  |  |
+| — | [EM-35](fixed/fixed-settings.md) | Fixed | New button allowed extra UO Pricing records (duplicate YESC, Seed); Generator / Treated Water missing | Done |  |  | v0.4.1-100 OK (automated, 2026-11-10) |
 | — | [EM-33](fixed/fixed-apartments.md) | Fixed | Zone/Building lists offered "Zone"/"Building"; Status missing on Create | Done |  |  | v0.4.1-43 failed (2026-11-02); v0.4.1-62 OK (2026-11-05) |
 | — | [EM-92](fixed/fixed-invoices.md) | Fixed | Disc. Price showed 0.00, line Total included tax, Payment Terms required and empty | Done |  |  | v0.4.1-43 OK (2026-11-02); v0.4.1-74 OK (automated, 2026-11-06) |
 | — | [EM-75](fixed/fixed-invoices.md) | Fixed | Incl. tax allowed Discount; line Disc. Price / Total differed from Old EM | Done |  |  | v0.4.1-74 OK (automated, 2026-11-06) |
@@ -197,7 +197,7 @@ Seen during the repro. None has a Jira ticket yet.
 | [EM-115](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-115) | [Make Payment] Wallet still selectable when paying in USD | Medium | Open | Pay In USD still offers Wallet | [g4-payment-allocation](open/g4-payment-allocation.md) |
 | [EM-116](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-116) | [Make Payment > USD] 1-cent difference across invoices (no rounding adjustment) | Medium | Open | $1 for 3 invoices of 1,000 Ks allocates 0.33 × 3 = $0.99 | [g4-payment-allocation](open/g4-payment-allocation.md) |
 | [EM-117](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-117) | [Cash Received > Unknown Receipt > Assign] USD to MMK invoice loses the conversion description | Medium | Open | Description is '—' in the log (Old EM writes the conversion) | [g4-payment-allocation](open/g4-payment-allocation.md) |
-| [EM-35](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-35) | [Settings > UO Pricing] New button allows creating extra UO Pricing records | High | Partly open | The New button is removed; the list still has 5 records (duplicate YESC, 2 Seed) and lacks Generator and Treated Water. | [g9-ui-data](open/g9-ui-data.md) |
+| [EM-35](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-35) | [Settings > UO Pricing] New button allows creating extra UO Pricing records | High | Fixed | No [New]; exactly the 4 fixed types with Edit only. (automated, build -100) | [fixed-settings](fixed/fixed-settings.md) |
 | [EM-37](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-37) | [UO] Incorrect error message when meter reading date equals the previous reading date | Medium | Partly open | Technical code is gone, but New EM shows "Invalid 'Reading Date'" instead of the Old EM sentence | [g8-uo-em-dates](open/g8-uo-em-dates.md) |
 | [EM-55](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-55) | [UO > Search] Search behaviour and UI differ from current EM | Medium | Partly open | Filter bar matches; the default list has no per-meter columns | [g8-uo-em-dates](open/g8-uo-em-dates.md) |
 | [EM-74](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-74) | [Cash Received > Unknown Received] Category field is not mandatory | Low | Partly open | Form matches Old EM (no Category field) but saves "No category" instead of "Uncategorized Receive" | [g5-receipt-display](open/g5-receipt-display.md) |
@@ -237,7 +237,7 @@ Seen during the repro. None has a Jira ticket yet.
 | [EM-56](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-56) | [Settings > Building] Duplicate building records can be created | High | Fixed | A duplicate building name in the same zone is blocked: Building Name Already Exists. (automated, build -74) | [fixed-settings](fixed/fixed-settings.md) |
 | [EM-57](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-57) | [Settings > Currency] Required fields missing in currency creation (e.g. Currency Status) | Medium | Fixed | Create Currency has Currencies, Name, Code, Symbol, Status, as in Old EM. | [fixed-settings](fixed/fixed-settings.md) |
 | [EM-58](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-58) | [TC_Setting_28] Check areas fail after creating a new payment method | High | Fixed | A newly created payment method is listed in the Cash & Bank Account form. | [fixed-settings](fixed/fixed-settings.md) |
-| [EM-59](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-59) | [Cash Outflow] Extra Payment Method and Location fields not in current EM | High | Fixed | Form no longer has Payment Method / Location | [fixed-cash-outflow](fixed/fixed-cash-outflow.md) |
+| [EM-59](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-59) | [Cash Outflow] Extra Payment Method and Location fields not in current EM | High | Fixed | Form no longer has Payment Method / Location; fields and * match Old EM (automated, build -100) | [fixed-cash-outflow](fixed/fixed-cash-outflow.md) |
 | [EM-60](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-60) | [Settings > Account Classification] Manage Type section is missing | High | Fixed | Account Classification has Manage Type (noted: New EM also has Delete on Payment Method and Bank). (automated, build -74) | [fixed-settings](fixed/fixed-settings.md) |
 | [EM-61](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-61) | [Cash Transfer] Extra fields (Amount Received MMK, Conversion Rate, Currency, Location) not in current EM | Highest | Fixed | The 4 extra fields are gone | [fixed-cash-transfer](fixed/fixed-cash-transfer.md) |
 | [EM-62](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-62) | [Side Panel] Roles, Cash & Bank Account, Currency, Payment Method, Staff forms should be page views | High | Fixed | Roles, Cash & Bank, Currency, Payment Method and Staff all open as pages. | [fixed-settings](fixed/fixed-settings.md) |
@@ -261,7 +261,7 @@ Seen during the repro. None has a Jira ticket yet.
 | [EM-84](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-84) | [Cash Received > Unknown Receipt Allocation] Amount not credited to wallet when apartment has no open invoices | Highest | Fixed | Remainder 919.99 goes to the wallet (run with an apartment that has 1 open invoice) | [fixed-cash-received](fixed/fixed-cash-received.md) |
 | [EM-86](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-86) | [Cash Transfer] User with self-approval permission cannot approve own transfer | High | Fixed | Self-approved transfer #25 is POSTED (JV-00014) | [fixed-cash-transfer](fixed/fixed-cash-transfer.md) |
 | [EM-87](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-87) | [Sign In > Forgot Your Password] Feature shown but not supported in current EM | Low | Fixed | Sign In page no longer has the link | [fixed-sign-in](fixed/fixed-sign-in.md) |
-| [EM-88](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-88) | [Cash and Bank] Bank fields not shown when Type = Bank; Payment Method field missing | Highest | Fixed | Payment Method is present; BANK shows all bank fields. | [fixed-accounts](fixed/fixed-accounts.md) |
+| [EM-88](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-88) | [Cash and Bank] Bank fields not shown when Type = Bank; Payment Method field missing | Highest | Fixed | Payment Method is present; BANK shows all bank fields. (automated, build -100) | [fixed-accounts](fixed/fixed-accounts.md) |
 | [EM-89](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-89) | [Wallet / Deposit] Business logic not aligned with current EM; approval state should not be required | Highest | Fixed | Recharge and Add Deposit post immediately, with no approval. | [fixed-wallet](fixed/fixed-wallet.md) |
 | [EM-90](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-90) | [UO] Self-approve does not work; UO cannot be approved to generate invoices | Highest | Fixed | Self-approving UO #18 produces invoice #148 | [fixed-uo](fixed/fixed-uo.md) |
 | [EM-91](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-91) | [MFO] Self-approve does not work for Estate Management Fee (MFO) | Highest | Fixed | Self-approving EM #12 produces invoice #147 | [fixed-em](fixed/fixed-em.md) |

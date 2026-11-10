@@ -232,6 +232,8 @@ for (const t of tests.values()) {
   if (row.critical === 'Y') expected.add('@critical');
   if (row.smoke === 'Y' && row.row_type === 'canonical') expected.add('@smoke');
   if (row.status === 'Review') expected.add('@review');
+  // A catalog case that guards a Jira issue also runs in sanity runs.
+  if (ann('jira').length) expected.add('@sanity');
   const actual = new Set(MANAGED_TAGS.filter(tag => tags.has(tag)));
   const missing = [...expected].filter(tag => !actual.has(tag));
   const extra = [...actual].filter(tag => !expected.has(tag));

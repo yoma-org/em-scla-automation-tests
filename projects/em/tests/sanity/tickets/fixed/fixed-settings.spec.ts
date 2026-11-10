@@ -32,6 +32,34 @@ test.describe('Sanity · EM-34 General Settings', () => {
     });
 });
 
+/** Old EM: the 4 fixed UO Pricing types (order not checked). */
+const UO_PRICING_TYPES = ['Electricity (YESC)', 'Electricity (Generator)', 'Treated Water', 'Raw Water'];
+
+test.describe('Sanity · EM-35 UO Pricing allows extra records', () => {
+  // Read-only: opens Settings › UO Pricing; never clicks Edit.
+  test('SAN-EM35-001 UO Pricing has only the 4 fixed types and no New button',
+    sanity({ id: 'SAN-EM35-001', priority: 'P1', doc }),
+    async ({ page, uoPricingPage: uo }) => {
+      await test.step('1. The UO Pricing list opens', async () => {
+        await uo.goto();
+        await expect(uo.table).toBeVisible();
+        await evidence(page, '01_NEW_uo-pricing-list');
+      });
+
+      await test.step('2. No [New] button', async () => {
+        await expect.soft(uo.newButton, 'no [New] button on UO Pricing').toHaveCount(0);
+      });
+
+      await test.step('3. Exactly 4 rows: Electricity (YESC), Electricity (Generator), Treated Water, Raw Water; each with Edit only', async () => {
+        const items = await uo.items();
+        expect.soft(items.map(i => i.name).sort(), 'UO Pricing rows').toEqual([...UO_PRICING_TYPES].sort());
+        for (const i of items) {
+          expect.soft(i.actions, `"${i.name}" Manage actions`).toEqual([`Edit ${i.name}`]);
+        }
+      });
+    });
+});
+
 test.describe('Sanity · EM-56 Duplicate building', () => {
   test.beforeEach(async ({ browserName }) => {
     // Both browsers would add a duplicate each if the bug is back; one run is enough.

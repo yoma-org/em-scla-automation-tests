@@ -23,6 +23,14 @@ import { AccountTypeEditPage } from '@pages/settings/AccountTypeEditPage';
 import { CashBankAccountsPage } from '@pages/settings/CashBankAccountsPage';
 import { CashBankAccountEditPage } from '@pages/settings/CashBankAccountEditPage';
 import { CashBankAccountCreatePage } from '@pages/settings/CashBankAccountCreatePage';
+import { CategoriesPage } from '@pages/settings/CategoriesPage';
+import { CategoryEditPage } from '@pages/settings/CategoryEditPage';
+import { PaymentMethodCreatePage } from '@pages/settings/PaymentMethodCreatePage';
+import { CategoryPickers } from '@pages/CategoryPickers';
+import { ReportCategoryFilter } from '@pages/reports/ReportCategoryFilter';
+import { PaymentMethodPickers } from '@pages/payments/PaymentMethodPickers';
+import { UoPricingPage } from '@pages/settings/UoPricingPage';
+import { CashOutflowPage } from '@pages/accounts/CashOutflowPage';
 
 type PageFixtures = {
   cashTransfersPage: CashTransfersPage;
@@ -48,9 +56,25 @@ type PageFixtures = {
   cashBankAccountsPage: CashBankAccountsPage;
   cashBankAccountEditPage: CashBankAccountEditPage;
   cashBankAccountCreatePage: CashBankAccountCreatePage;
+  incomeCategoriesPage: CategoriesPage;
+  expenseCategoriesPage: CategoriesPage;
+  incomeCategoryEditPage: CategoryEditPage;
+  expenseCategoryEditPage: CategoryEditPage;
+  paymentMethodCreatePage: PaymentMethodCreatePage;
+  categoryPickers: CategoryPickers;
+  reportCategoryFilter: ReportCategoryFilter;
+  paymentMethodPickers: PaymentMethodPickers;
+  uoPricingPage: UoPricingPage;
+  cashOutflowPage: CashOutflowPage;
 };
 
 export const test = base.extend<PageFixtures>({
+  uoPricingPage: async ({ page }, use) => {
+    await use(new UoPricingPage(page));
+  },
+  cashOutflowPage: async ({ page }, use) => {
+    await use(new CashOutflowPage(page));
+  },
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
   },
@@ -141,5 +165,37 @@ export const test = base.extend<PageFixtures>({
 
   cashBankAccountCreatePage: async ({ page }, use) => {
     await use(new CashBankAccountCreatePage(page));
+  },
+
+  incomeCategoriesPage: async ({ page }, use) => {
+    await use(new CategoriesPage(page, 'income'));
+  },
+
+  expenseCategoriesPage: async ({ page }, use) => {
+    await use(new CategoriesPage(page, 'expense'));
+  },
+
+  incomeCategoryEditPage: async ({ page }, use) => {
+    await use(new CategoryEditPage(page, 'income'));
+  },
+
+  expenseCategoryEditPage: async ({ page }, use) => {
+    await use(new CategoryEditPage(page, 'expense'));
+  },
+
+  paymentMethodCreatePage: async ({ page }, use) => {
+    await use(new PaymentMethodCreatePage(page));
+  },
+
+  categoryPickers: async ({ page }, use) => {
+    await use(new CategoryPickers(page));
+  },
+
+  reportCategoryFilter: async ({ page }, use) => {
+    await use(new ReportCategoryFilter(page));
+  },
+
+  paymentMethodPickers: async ({ page }, use) => {
+    await use(new PaymentMethodPickers(page));
   }
 });

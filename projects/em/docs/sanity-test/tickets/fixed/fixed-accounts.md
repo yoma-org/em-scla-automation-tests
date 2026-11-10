@@ -15,7 +15,7 @@ These tickets are fixed on build -37 (EM-72 and EM-73 on build -87, 2026-11-09).
 | [EM-71](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-71) | [Cash & Bank Account > New > Create New Bank Account] Create UI does not match current EM UAT | Highest | Fixed | Retest build -87 (11-09, automated) passed: BANK type settings checked first; no Code, fields match and Payment Method is now the "Select Payment Method" dropdown. | [SAN-EM71-001](#san-em71-001--new-account-with-type-bank-matches-old-em-fields-and-has-no-code) |
 | [EM-72](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-72) | [Cash & Bank Account > Edit > Edit Cash Account] Edit UI does not match current EM UAT | Highest | Fixed (build -87) | Retest build -87 (11-09, automated) passed: CASH type settings checked first; fields match and Payment Method is now a dropdown showing the selected names. | [SAN-EM72-001](#san-em72-001--edit-cash-account-matches-old-em-fields-and-payment-method-control) |
 | [EM-73](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-73) | [Cash & Bank Account > Edit > Edit Bank Account] Edit UI does not match current EM UAT | Highest | Fixed (build -87) | Retest build -87 (11-09, automated) passed: BANK type settings checked first; fields match and Payment Method is now a dropdown showing the selected names. | [SAN-EM73-001](#san-em73-001--edit-bank-account-matches-old-em-fields-and-payment-method-control) |
-| [EM-88](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-88) | [Cash and Bank] Bank fields not shown when Type = Bank; Payment Method field missing | Highest | Fixed | Payment Method is present; BANK shows all bank fields. | [SAN-EM88-001](#san-em88-001--new-account-has-payment-method-type-bank-shows-bank-name-account-number-enable-overdraft) |
+| [EM-88](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-88) | [Cash and Bank] Bank fields not shown when Type = Bank; Payment Method field missing | Highest | Fixed | Payment Method is present; BANK shows all bank fields. (automated, build -100) | [SAN-EM88-001](#san-em88-001--new-account-has-payment-method-type-bank-shows-bank-name-account-number-enable-overdraft) |
 
 ## Tickets
 
@@ -220,6 +220,8 @@ These tickets are fixed on build -37 (EM-72 and EM-73 on build -87, 2026-11-09).
 2. Select Bank Name*, Account Number* and Enable Overdraft (No/Yes) are displayed.
 3. Payment Method has no * as in Old EM (the ticket says "required"; see Conclusion).
 
+**Automated test:** [`SAN-EM88-001` in fixed-accounts.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-accounts.spec.ts) · tag `@sanity` `@EM-88` · run `APP=em npx playwright test --grep SAN-EM88-001` · read-only: picks Type = BANK on the New form and opens Enable Overdraft, never clicks [Create].
+
 **Result (build -37, 2026-11-01):**
 
 | # | Old EM | New EM | |
@@ -229,6 +231,16 @@ These tickets are fixed on build -37 (EM-72 and EM-73 on build -87, 2026-11-09).
 | 3 | Label has no * | No *; same as Old EM | ✅ Same |
 
 **Conclusion:** Fixed, matches Old EM. Also noted: the ticket's "Payment Method field is required" does not match Old EM, whose label has no *; BA confirmation is needed.
+
+**Retest (build -100, 2026-11-10, automated): passed** (Chromium, build `v0.4.1-100-g1a97b9a6`)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | Payment Method field | Present | Present (dropdown "Select Payment Method") | ✅ Same |
+| 2 | Type = BANK shows | Select Bank Name*, Account Number*, Enable Overdraft (No/Yes) | Same | ✅ Same |
+| 3 | Payment Method required mark | No * | No * | ✅ Same |
+
+Also noted: Enable Overdraft lists Yes before No (default No); the case does not set an order.
 
 **Evidence:**
 

@@ -54,8 +54,8 @@ Consolidated test-case catalog for the **Estate Management System (EM)** rebuild
 |---|---|
 | Test cases | **599** (+940 data-variant rows = 1539 rows) |
 | ★ Critical business flow | 208 |
-| Priority P1 / P2 / P3 | 225 / 303 / 71 |
-| Smoke / E2E-tagged | 56 / 198 (+ 12 composed [E2E flows](suites/e2e-critical-flows.md)) |
+| Priority P1 / P2 / P3 | 230 / 298 / 71 |
+| Smoke / E2E-tagged | 61 / 198 (+ 12 composed [E2E flows](suites/e2e-critical-flows.md)) |
 | Automatable / Manual | 590 / 9 |
 | Review (open question) / Obsolete | 53 / 0 |
 
@@ -63,7 +63,7 @@ Consolidated test-case catalog for the **Estate Management System (EM)** rebuild
 
 | Suite | File | Size | Purpose |
 |---|---|---|---|
-| Smoke | [suites/smoke.md](suites/smoke.md) | 56 cases | Every deploy — can EM still bill, collect and report? |
+| Smoke | [suites/smoke.md](suites/smoke.md) | 61 cases | Every deploy — can EM still bill, collect and report? |
 | E2E | [suites/e2e-critical-flows.md](suites/e2e-critical-flows.md) | 12 flows | ★ Critical business flows chained across modules |
 | Regression | [suites/regression.md](suites/regression.md) | R1 / R2 / R3 tiers | Coverage per feature; manual-only list |
 
@@ -100,7 +100,7 @@ Consolidated test-case catalog for the **Estate Management System (EM)** rebuild
 | 25 | [Global Search](features/25-global-search.md) | 1 | 0 | 0 | 0 | 1 | 0 |
 | | **Platform** | | | | | | |
 | 01 | [Login & Authentication](features/01-login.md) | 6 | 1 | 1 | 1 | 6 | 0 |
-| 23 | [Settings (master data & configuration)](features/23-settings.md) | 50 | 3 | 3 | 1 | 50 | 0 |
+| 23 | [Settings (master data & configuration)](features/23-settings.md) | 50 | 3 | 8 | 6 | 50 | 0 |
 | 24 | [Role & Permission](features/24-role-permission.md) | 76 | 29 | 29 | 5 | 76 | 0 |
 | 26 | [External API](features/26-api.md) | 27 | 11 | 11 | 4 | 27 | 0 |
 <!-- /generated:overview -->

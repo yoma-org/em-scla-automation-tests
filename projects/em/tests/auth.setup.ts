@@ -10,7 +10,8 @@ for (const role of roles) {
 
     await loginPage.goto();
     await loginPage.login(email, password);
-    await expect(page).not.toHaveURL(/\/login/);
+    // The test env (Vercel) can take ~8 s from [Sign in] to /dashboard.
+    await expect(page).not.toHaveURL(/\/login/, { timeout: 30_000 });
 
     // Login can succeed while every API call is refused (e.g. ERR_PASSWORD_CHANGE_REQUIRED).
     // Fail here with the reason, instead of letting every test fail on an empty page.
