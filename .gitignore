@@ -16,3 +16,6 @@ blob-report/
 
 # Claude Code personal settings (permissions on this machine)
 .claude/settings.local.json
+
+# macOS
+.DS_Store
