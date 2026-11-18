@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@pages/*": ["./src/pages/*"],
+      "@components/*": ["./src/components/*"],
+      "@fixtures": ["./src/fixtures/index.ts"],
+      "@fixtures/*": ["./src/fixtures/*"],
+      "@helpers/*": ["./src/helpers/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@constants/*": ["./src/constants/*"],
+      "@data/*": ["./src/data/*"],
+      "@shared/*": ["../../shared/*"]
+    }
+  },
+  "include": ["src", "tests", "playwright.config.ts", "../../shared"]
+}

@@ -1,0 +1,732 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Old EM: reported issues, checked</title><style>
+:root{--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--bg:#fff;--soft:#f6f8fa;--accent:#0969da}
+@media (prefers-color-scheme:dark){:root{--fg:#e6edf3;--muted:#9198a1;--border:#3d444d;--bg:#0d1117;--soft:#151b23;--accent:#4493f8}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:32px 24px 80px}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:2em}
+h3{font-size:1.2em;margin-top:1.6em}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+code{background:var(--soft);padding:.15em .4em;border-radius:6px;font-size:85%}
+pre{background:var(--soft);padding:12px;border-radius:6px;overflow:auto}pre code{background:none;padding:0}
+table{border-collapse:collapse;margin:1em 0;display:block;overflow-x:auto;max-width:100%}
+th,td{border:1px solid var(--border);padding:6px 12px;vertical-align:top}th{background:var(--soft);text-align:left}
+tr:nth-child(2n) td{background:color-mix(in srgb,var(--soft) 60%,transparent)}
+img{max-width:100%;border:1px solid var(--border);border-radius:6px;margin:6px 0}
+blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:.25em solid var(--border)}
+hr{border:0;border-top:1px solid var(--border);margin:2em 0}
+details{border:1px solid var(--border);border-radius:8px;margin:12px 0;background:var(--soft)}
+details>summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none;user-select:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"▶";display:inline-block;margin-right:8px;font-size:.75em;transition:transform .15s}
+details[open]>summary::before{transform:rotate(90deg)}
+details[open]>summary{border-bottom:1px solid var(--border)}
+details>*:not(summary){margin-left:14px;margin-right:14px}
+.toolbar{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;gap:8px;justify-content:flex-end;z-index:5}
+.toolbar button{font:inherit;font-size:13px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--soft);color:var(--fg);cursor:pointer}
+</style></head>
+<body><div class="toolbar"><button onclick="document.querySelectorAll('details').forEach(d=>d.open=true)">Expand all</button><button onclick="document.querySelectorAll('details').forEach(d=>d.open=false)">Collapse all</button></div><main><h1 id="old-em-reported-issues-checked">Old EM: reported issues, checked</h1>
+<p>The IT solution manager and the testers reported issues they believe exist in Old EM, without being sure. Each one was checked on <strong>Old EM UAT</strong> (https://www.uat.ted.synergy.yomaland360.com) by running the test cases that target it, on <strong>12–13 Nov 2026</strong>.</p>
+<p>Use this page to confirm with the people who reported them: <em>"Is this the issue you meant?"</em> For each issue, the steps to reproduce it by hand are in a collapsed box; open it only when you need it.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Count</th>
+<th>Issues</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Group 1 · Confirmed</strong> (Old EM really has the problem)</td>
+<td>7</td>
+<td>Payment concurrency · UO duplicate invoices · SOA next-month balance · Initial balance edit · Wallet payment after credit note · Invoice calculation · Missing Created By / Approved By</td>
+</tr>
+<tr>
+<td><strong>Group 2 · Not reproduced</strong> (Old EM behaved correctly in our tests)</td>
+<td>5</td>
+<td>Back-dated transactions · Wallet payment after wallet transfer · Wallet transfer after RV · Account Statement with cash transfer first in the day · Data left after rejecting a credit note</td>
+</tr>
+<tr>
+<td><strong>Not checked</strong></td>
+<td>1</td>
+<td>Database data transformation</td>
+</tr>
+</tbody>
+</table>
+<p>Notes on how the tests were run:</p>
+<ul>
+<li>Every test creates its own apartment, account and documents (names start with <code>QE</code>), so other testers' data cannot change the results.</li>
+<li>Old EM UAT has one test account. Where an issue needs <strong>two users</strong>, the tests used <strong>two sessions of the same admin</strong>, and the same admin made and approved documents.</li>
+<li>Full test output and all screenshots: <a href="old-em-issues.html">old-em-issues.md</a>. Test cases: <a href="../../em/docs/test-cases/README.md">projects/em/docs/test-cases/</a>.</li>
+</ul>
+<p><strong>Pattern worth telling the developers:</strong> three of the confirmed issues (1.3, 1.4, 1.5) are correct in the current period and wrong only in the <strong>next period's opening balance</strong> (next day or next month). Old EM seems to store an opening balance and not recalculate it after some changes. They may share one cause.</p>
+<hr />
+<h2 id="group-1--confirmed">Group 1 · Confirmed</h2>
+<h3 id="11-two-payments-of-the-same-invoice-at-the-same-moment-are-not-handled-safely">1.1 Two payments of the same invoice at the same moment are not handled safely</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester: "Balance Issue (… Concurrency)"</td>
+</tr>
+<tr>
+<td><strong>What happens</strong></td>
+<td>When two users pay the same invoice at the same moment, Old EM can accept <strong>both</strong> payments: the invoice is paid twice, overpaid, or its due amount is overwritten. Other times one payment fails with <strong>"Internal Server Error"</strong> instead of a clear message. It depends on timing.</td>
+</tr>
+<tr>
+<td><strong>Fails at</strong></td>
+<td>The second user's <strong>Confirm</strong> on Make Payment. Expected: refused with "This invoice has already been paid in full" (or "Please refresh and try again").</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>CONC-001 ❌ · CONC-003 ❌ · CONC-004 ❌ · OB-WAL-012 ❌ · OB-ACS-010 ❌ (money safe, wrong message)</td>
+</tr>
+</tbody>
+</table>
+<p>What the tests saw:</p>
+<table>
+<thead>
+<tr>
+<th>Case</th>
+<th>Situation</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CONC-001</td>
+<td>Both users pay a 1,000 Ks invoice in full</td>
+<td>Earlier runs, 3 of 3 races: <strong>both accepted</strong>: SOA shows payments 1,000 + 1,000, Balance Due −1,000, account +2,000. Final run: the second user got "Internal Server Error".</td>
+</tr>
+<tr>
+<td>CONC-003</td>
+<td>Users pay 400 and 500 of a 1,000 Ks invoice</td>
+<td>Earlier runs: both accepted, but the invoice due and AR show <strong>500 instead of 100</strong>. Final run: one got "Internal Server Error".</td>
+</tr>
+<tr>
+<td>CONC-004</td>
+<td>Users pay 500 and 600 of a 1,000 Ks invoice</td>
+<td>Earlier runs, 3 of 3: <strong>both accepted</strong>: 1,100 paid, Balance Due −100. Final run: the second got "Internal Server Error".</td>
+</tr>
+<tr>
+<td>OB-WAL-012</td>
+<td>Two wallet refunds of the full wallet balance</td>
+<td>Both refund <strong>drafts</strong> are created (case: the second should be refused). Approval still blocks the second one, so the wallet never goes below 0.</td>
+</tr>
+<tr>
+<td>OB-ACS-010</td>
+<td>Two cash outflows of the full account balance</td>
+<td>Money safe: only one is approved. The second approval sometimes gets "Internal Server Error" instead of "Insufficient Balance".</td>
+</tr>
+</tbody>
+</table>
+<p>Paying one after the other is handled correctly: the second payment is refused.</p>
+<details>
+<summary>Steps to check by hand (CONC-001)</summary>
+<p>You need two browser windows logged in at the same time: two users, or the same user in Chrome and in a private window.</p>
+<ol>
+<li>Create an apartment, then create and approve an invoice of <strong>1,000 Ks</strong> for it (Invoices / Debit Note › Create Invoice › Approve).</li>
+<li>In <strong>both</strong> windows: Apartments › the apartment › <strong>Invoices</strong> tab › <strong>Make Payment</strong>.</li>
+<li>In both windows fill the form the same way: Currency MMK, a location, Payment Method Cash, Received In = a cash account, tick the invoice to pay <strong>1,000</strong> in full.</li>
+<li>Click <strong>Confirm</strong> in both windows <strong>at the same moment</strong> (one person with two mice, or two people counting down).</li>
+<li>Check the apartment <strong>S.O.A</strong> tab, the invoice status and the account balance.</li>
+</ol>
+<ul>
+<li><strong>Expected:</strong> one payment of 1,000; the other window shows "This invoice has already been paid in full. No further payments are required."; Balance Due 0; the account +1,000.</li>
+<li><strong>Bug:</strong> two payments of 1,000, Balance Due −1,000, account +2,000; or one window shows "Internal Server Error".</li>
+<li>It may need several tries: the two clicks must reach the server within a fraction of a second.</li>
+</ul>
+</details>
+<details>
+<summary>Screenshots</summary>
+<p><img alt="CONC-001 SOA" src="img/CONC-001-2.jpg" />
+<img alt="CONC-001 failure" src="img/CONC-001-4.jpg" />
+<img alt="CONC-004 SOA" src="img/CONC-004-2.jpg" />
+<img alt="OB-WAL-012 drafts" src="img/OB-WAL-012-1.jpg" /></p>
+</details>
+<hr />
+<h3 id="12-one-uo-import-file-with-two-rows-for-the-same-apartment-creates-two-invoices">1.2 One UO import file with two rows for the same apartment creates two invoices</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>IT solution manager: "UO invoice duplication when bulk upload"; tester: "UO Bulk Issue"</td>
+</tr>
+<tr>
+<td><strong>What happens</strong></td>
+<td>If the import file has <strong>two rows for the same apartment in the same month</strong>, Old EM imports both ("2 UO Entry imported.") with no error. The apartment gets <strong>two UO entries and two invoices</strong>. The second row is also calculated from the old reading (e.g. "18 − 10 = 8" next to "15 − 10 = 5"), so <strong>the same usage is billed twice</strong>.</td>
+</tr>
+<tr>
+<td><strong>Fails at</strong></td>
+<td>The upload step: the second row should be rejected.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>UOI-013 ❌ (all 4 variants, every run) · UOI-029 ✅ · UOI-028 ✅ · UO-008 ✅</td>
+</tr>
+</tbody>
+</table>
+<p>Other ways of getting duplicates were checked and are handled:</p>
+<ul>
+<li>Uploading the <strong>same file again</strong> is rejected ("There is already a record with 'Reading Date' in the same month…").</li>
+<li>Two uploads <strong>at the same moment</strong> are usually blocked, but with an <strong>"Internal Server Error"</strong> message. Once, during a manual try, both went through and the apartment got two invoices (Inv-202611-00134 and -00135).</li>
+<li><strong>Bulk Approve</strong> of UO drafts creates exactly one invoice per draft.</li>
+</ul>
+<details>
+<summary>Steps to check by hand (UOI-013)</summary>
+<ol>
+<li>Create an apartment and give it an approved UO reading for <strong>last month</strong> (UO › New, reading 10 for each meter, then approve). Old EM refuses an import for an apartment with no earlier reading.</li>
+<li>UO › <strong>Import</strong> › download the template.</li>
+<li>Fill <strong>two rows for the same apartment</strong> with reading dates in <strong>this month</strong>, for example row 1 = reading 15 dated the 1st, row 2 = reading 18 dated today.</li>
+<li>Upload the file.</li>
+<li>Check the import message, the UO list, and the apartment's <strong>Invoices</strong> tab and <strong>S.O.A</strong>.</li>
+</ol>
+<ul>
+<li><strong>Expected:</strong> row 1 imported; row 2 rejected (same month as the first); one new invoice.</li>
+<li><strong>Bug:</strong> "2 UO Entry imported."; two UO entries and two new invoices; the SOA shows both.</li>
+</ul>
+</details>
+<details>
+<summary>Screenshots</summary>
+<p><img alt="UOI-013 UO list" src="img/UOI-013-1.jpg" />
+<img alt="UOI-013 apartment invoices" src="img/UOI-013-2.jpg" />
+<img alt="UOI-013 different units SOA" src="img/UOI-013_Same_month_25_02_different_units-3.jpg" /></p>
+</details>
+<hr />
+<h3 id="13-soa-next-months-opening-balance-leaves-out-a-bulk-approved-uo-invoice">1.3 SOA: next month's opening balance leaves out a bulk-approved UO invoice</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>IT solution manager: "SOA periodic balances are wrong"; tester: "Opening &amp; Closing Balance Mismatch Issue"</td>
+</tr>
+<tr>
+<td><strong>What happens</strong></td>
+<td>After a UO invoice made by <strong>Bulk Approve</strong> is paid from the wallet, the SOA is right for the current month, but <strong>next month opens at 882.00 instead of 2,100.00</strong>. Next month counts the payment (−1,218) but not the invoice (+1,218).</td>
+</tr>
+<tr>
+<td><strong>Fails at</strong></td>
+<td>Apartment › S.O.A › <strong>next month</strong>, Opening Balance.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>OB-SOA-017 [UO bulk approve → Wallet Payment] ❌ · 7 other OB-SOA-017 pairs ✅ · OB-SOA-010 ✅</td>
+</tr>
+</tbody>
+</table>
+<p>The other sequences checked were all correct: Invoice → UO import, UO import → Make Payment, UO import → Wallet Payment, manual UO → UO import, Make Payment → Wallet Payment, Wallet Payment → Invoice, Wallet Payment → UO import, Wallet Payment of one or several invoices.</p>
+<details>
+<summary>Steps to check by hand (OB-SOA-017, UO bulk approve → Wallet Payment)</summary>
+<ol>
+<li>Create an apartment. Create and approve an invoice dated <strong>last month</strong> for 2,000 Ks, so this month opens with a balance (2,100 in our run, including earlier charges).</li>
+<li>Recharge the apartment's wallet (Wallet tab › Recharge) with enough to pay a UO invoice, e.g. 5,000 Ks.</li>
+<li>Create a <strong>UO draft</strong> for the apartment (UO › New).</li>
+<li>Approve it with <strong>Bulk Approve</strong>: UO › draft list › tick the draft › Bulk Approve. Note the invoice amount (1,218 Ks in our run).</li>
+<li>Make Payment for that UO invoice with Payment Method <strong>Wallet</strong>.</li>
+<li>Open the apartment <strong>S.O.A</strong> for <strong>this month</strong>: note the closing balance (2,100).</li>
+<li>Switch the month to <strong>next month</strong>: read the Opening Balance.</li>
+</ol>
+<ul>
+<li><strong>Expected:</strong> next month's Opening Balance = this month's closing balance (2,100.00).</li>
+<li><strong>Bug:</strong> 882.00 (= 2,100 − 1,218): the payment is counted, the invoice is not.</li>
+</ul>
+</details>
+<details>
+<summary>Screenshots</summary>
+<p><img alt="SOA this month" src="img/OB-SOA-017_1st_UO_bulk_approve_2nd_Wallet_Payment_WP-1.jpg" />
+<img alt="SOA next month" src="img/OB-SOA-017_1st_UO_bulk_approve_2nd_Wallet_Payment_WP-2.jpg" /></p>
+</details>
+<hr />
+<h3 id="14-editing-an-accounts-initial-balance-is-not-carried-into-the-next-day">1.4 Editing an account's initial balance is not carried into the next day</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester: "Balance Issue (Initial Balance Edit…)"</td>
+</tr>
+<tr>
+<td><strong>What happens</strong></td>
+<td>After editing the initial balance of an account that <strong>already has transactions</strong>, the account list, the dashboard and <strong>today's</strong> Account Statement show the new balance (51,100). But <strong>tomorrow's</strong> statement still opens at the <strong>old</strong> balance (11,100).</td>
+</tr>
+<tr>
+<td><strong>Fails at</strong></td>
+<td>Reports › Account Statement › the account › <strong>tomorrow's date</strong>, Opening Balance.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>CBA-010 ❌ · CBA-009 ✅ (editing before any transaction is fine)</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>Steps to check by hand (CBA-010)</summary>
+<ol>
+<li>Cash &amp; Bank Account › <strong>New</strong>: Cash, MMK, initial balance <strong>10,000</strong>.</li>
+<li>Record a receipt into it, e.g. Cash Received › Funding Received of <strong>1,100</strong>, so the closing balance is 11,100.</li>
+<li>Cash &amp; Bank Account › edit the account › change the initial balance to <strong>50,000</strong> › save. The list now shows the closing balance 51,100.</li>
+<li>Reports › <strong>Account Statement</strong> › the account › <strong>today</strong>: closing balance 51,100.</li>
+<li>Open the statement for <strong>tomorrow</strong>. The date picker blocks future days; change the dates in the address bar: <code>/reports/account-statements/&lt;account id&gt;/&lt;tomorrow&gt;/&lt;tomorrow&gt;</code>.</li>
+</ol>
+<ul>
+<li><strong>Expected:</strong> tomorrow's Opening Balance = today's closing balance = 51,100.00.</li>
+<li><strong>Bug:</strong> 11,100.00, the balance before the edit.</li>
+</ul>
+</details>
+<details>
+<summary>Screenshots</summary>
+<p><img alt="statement today" src="img/CBA-010-1.jpg" />
+<img alt="statement tomorrow" src="img/CBA-010-2.jpg" /></p>
+</details>
+<hr />
+<h3 id="15-wallet-next-months-opening-balance-ignores-a-wallet-payment-made-after-a-credit-note">1.5 Wallet: next month's opening balance ignores a wallet payment made after a credit note</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester, Wallet Issue 1: "An issue occurs when a 'Wallet Payment' follows a 'Credit Note'" (status: can reproduce)</td>
+</tr>
+<tr>
+<td><strong>What happens</strong></td>
+<td>Credit note <strong>+50,000</strong>, then a wallet payment <strong>−10,500</strong>: this month is right (closes at 39,500), but <strong>next month opens at 50,000</strong> instead of 39,500. The payment is lost.</td>
+</tr>
+<tr>
+<td><strong>Fails at</strong></td>
+<td>Apartment › Wallet › <strong>next month</strong>, Opening Balance.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>OB-WAL-011 [Credit Note → Wallet Payment] ❌</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>Steps to check by hand (OB-WAL-011, CN → WP)</summary>
+<ol>
+<li>Create an apartment (wallet balance 0).</li>
+<li>Apartment › <strong>Wallet</strong> › add a <strong>Credit Note</strong> of 50,000 Ks; approve it (top bar <strong>CN</strong> › draft › Approve). The wallet shows 50,000.</li>
+<li>Create and approve an invoice of <strong>10,500 Ks</strong> for the apartment.</li>
+<li>Make Payment for it with Payment Method <strong>Wallet</strong>.</li>
+<li>Wallet tab, <strong>this month</strong>: closing balance and Current Balance 39,500.</li>
+<li>Switch the Wallet tab to <strong>next month</strong>: read the Opening Balance.</li>
+</ol>
+<ul>
+<li><strong>Expected:</strong> 39,500.00.</li>
+<li><strong>Bug:</strong> 50,000.00.</li>
+</ul>
+</details>
+<details>
+<summary>Screenshots</summary>
+<p><img alt="wallet this month" src="img/OB-WAL-011_1st_Credit_Note_CN_then_2nd_Wallet_Payment_WP-2.jpg" />
+<img alt="wallet next month" src="img/OB-WAL-011_1st_Credit_Note_CN_then_2nd_Wallet_Payment_WP-3.jpg" /></p>
+</details>
+<hr />
+<h3 id="16-invoice-form-loses-the-typed-gross-price-or-discount">1.6 Invoice form loses the typed Gross Price or discount</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester: "Invoice Calculation (Decimal/Rounding issue)"</td>
+</tr>
+<tr>
+<td><strong>What happens</strong></td>
+<td>Not a rounding error: rounding is correct. The invoice form asks the server to recalculate the totals after each change, and the server's answers <strong>overwrite the fields the user typed</strong>. When answers arrive out of order, <strong>Gross Price is wiped</strong> ("The Gross Price field is required" under a field that shows a value, or Total 0) or <strong>the discount is dropped</strong>. Some invoices are refused; some are saved <strong>without the discount</strong> (3,090.00 instead of 2,781.00).</td>
+</tr>
+<tr>
+<td><strong>Fails at</strong></td>
+<td>Create Invoice, after typing Gross Price / Discount, and on <strong>Create</strong>.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>INV-038 ❌ (all 4 variants, every run) · INV-001 ❌ (3 to 5 of 10 runs)</td>
+</tr>
+</tbody>
+</table>
+<p>What the tests saw:</p>
+<ul>
+<li>In the final run, the fields changed <strong>in every sample within 6 seconds</strong>, the first change 16 ms after typing. On screen: Disc. Price 1,500.000 instead of 1,350, Total 3,000.000 instead of 2,700, Tax 90 instead of 81.</li>
+<li>Saved without the discount: 3,090.00 instead of 2,781.00; 1,029.99 instead of 926.99; 103.10 instead of 103.05.</li>
+<li>When a draft did save correctly, the draft, approved invoice, AR, SOA, contact, Invoices report and PDF all agreed.</li>
+</ul>
+<details>
+<summary>Steps to check by hand (INV-038, base row)</summary>
+<ol>
+<li>Invoices / Debit Note › <strong>Create Invoice</strong>; select an apartment, an income category, currency MMK.</li>
+<li>Item: Tax Type "3% Tax", Unit <strong>2</strong>, Gross Price <strong>1,500</strong>, Discount <strong>10 %</strong>. Type at a normal speed, then click outside.</li>
+<li><strong>Watch the line for a few seconds</strong> without touching anything. Expected: Disc. Price 1,350, Total 2,700, Tax 81, Grand Total 2,781.00.</li>
+<li>Click <strong>Create</strong>; open the draft in the Inv/DN draft list and compare its total with the form.</li>
+<li>Repeat 5 times.</li>
+</ol>
+<ul>
+<li><strong>Bug:</strong> Gross Price empties by itself, or "The Gross Price field is required" shows under a filled field, or Total goes to 0, or the discount disappears; or the draft is saved as 3,090.00.</li>
+</ul>
+</details>
+<details>
+<summary>Screenshots</summary>
+<p><img alt="INV-038 form at failure" src="img/INV-038-4.jpg" />
+<img alt="INV-038 variant 2 at failure" src="img/INV-038_Unit_3_Gross_Price_333_33_Discount_10_Grand_Total_926_99-4.jpg" /></p>
+</details>
+<hr />
+<h3 id="17-created-by--approved-by-missing-from-some-lists">1.7 "Created By" / "Approved By" missing from some lists</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester: "Missing Audit Trails: 'Approved By' and 'Created By' fields are missing in some transactions"</td>
+</tr>
+<tr>
+<td><strong>What happens</strong></td>
+<td>The names are always on the <strong>voucher / detail page</strong> and in the <strong>reports</strong>, but some <strong>lists</strong> do not show them.</td>
+</tr>
+<tr>
+<td><strong>Fails at</strong></td>
+<td>Opening the document's list after approval.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>RPT-036 ❌ for 7 of 12 document types · ✅ for 5</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>List checked</th>
+<th>Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Invoice, Debit Note, UO invoice, EM debit note</td>
+<td>Invoices / Debit Note list</td>
+<td><strong>Approved By</strong> (no column)</td>
+</tr>
+<tr>
+<td>Cash Transfer (JV)</td>
+<td>Cash Transfer › Recent Transfers</td>
+<td><strong>Approved By</strong> (no column)</td>
+</tr>
+<tr>
+<td>Credit Note (CN)</td>
+<td>Apartment › Wallet tab</td>
+<td><strong>Created By and Approved By</strong></td>
+</tr>
+<tr>
+<td>Wallet Transfer (WT)</td>
+<td>Apartment › Wallet tab</td>
+<td><strong>Created By</strong></td>
+</tr>
+<tr>
+<td>Make Payment RV, Unknown Received RV, Cash Outflow PV, Wallet Refund PV, Deposit Withdraw PV</td>
+<td>Their lists</td>
+<td>Nothing missing ✅</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>Steps to check by hand (RPT-036)</summary>
+<p>For each document type in the table:</p>
+<ol>
+<li>Create the document and approve it if it needs approval.</li>
+<li>Open its <strong>list</strong> (see the table) and look for Created By / Approved By on its row.</li>
+<li>Open its detail page and its <strong>Voucher</strong> / PDF; then the matching report (Invoices, Transactions, Cash Received, Cash Outflow, Credit Note).</li>
+</ol>
+<ul>
+<li><strong>Expected:</strong> Created By (and Approved By when approval applies) everywhere.</li>
+<li><strong>Bug:</strong> missing in the lists marked above; present on vouchers and reports.</li>
+<li>Ask the reporter which screen they meant: if it is a list, this is it. If they meant a voucher or a report, we did not find it missing.</li>
+</ul>
+</details>
+<details>
+<summary>Screenshots</summary>
+<p><img alt="invoice list" src="img/RPT-036-1.jpg" />
+<img alt="invoice detail" src="img/RPT-036-3.jpg" />
+<img alt="credit note in wallet tab" src="img/RPT-036_Document_Credit_Note_CN_approved-1.jpg" /></p>
+</details>
+<hr />
+<h2 id="group-2--not-reproduced">Group 2 · Not reproduced</h2>
+<p>These passed in our tests. Old EM behaved as the test cases expect. Ask the reporter for the exact steps or data. The issue may need conditions we did not create, such as old data or a specific order of actions.</p>
+<h3 id="21-back-dated-transactions-keep-balances-continuous">2.1 Back-dated transactions keep balances continuous</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester: "Balance Issue (… Backdated Transaction …)"</td>
+</tr>
+<tr>
+<td><strong>What we checked</strong></td>
+<td>Back-dated <strong>invoices</strong> in the SOA (1st, middle and last day of last month, 3 categories); back-dated <strong>cash transfers</strong> in the Account Statement (3 days back); back-dated <strong>wallet recharges</strong> (1st, middle, last day of last month, MMK and USD, with and without overflow). Every day / month: Opening Balance = previous Closing Balance.</td>
+</tr>
+<tr>
+<td><strong>Why it passes</strong></td>
+<td>All balances were continuous. The back-dated documents were added after documents that already existed, in date order.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>OB-SOA-003 ✅ (3) · OB-ACS-006 ✅ (2) · OB-WAL-002 ✅ (4)</td>
+</tr>
+<tr>
+<td><strong>Ask the reporter</strong></td>
+<td>Which document type and which screen? Was the back-dated document approved late (e.g. a PV or credit note approved days after its date)? That case was not run here (OB-WAL-004, OB-WAL-006, OB-DEP-004, OB-ACS-004).</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>Steps to check by hand (OB-SOA-003)</summary>
+<ol>
+<li>Create an apartment with one invoice dated this month.</li>
+<li>Create and approve an invoice dated the <strong>1st of last month</strong>, then one on the <strong>15th</strong>, then one on the <strong>last day</strong> of last month.</li>
+<li>Apartment › S.O.A: check last month (rows in date order, running balance) and this month.</li>
+</ol>
+<ul>
+<li><strong>Expected and seen:</strong> this month's Opening Balance = last month's closing balance; each row's balance = previous row ± amount.</li>
+</ul>
+</details>
+<hr />
+<h3 id="22-wallet-payment-after-a-wallet-transfer">2.2 Wallet Payment after a Wallet Transfer</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester, Wallet Issue 2: "An issue occurs when a 'Wallet Payment' follows a 'Wallet Transfer'" (status: cannot reproduce)</td>
+</tr>
+<tr>
+<td><strong>What we checked</strong></td>
+<td>Wallet Transfer <strong>in</strong> then Wallet Payment, and Wallet Transfer <strong>out</strong> then Wallet Payment. Both wallets, this month and next month, plus the SOA.</td>
+</tr>
+<tr>
+<td><strong>Why it passes</strong></td>
+<td>Every balance, running balance and next month's opening balance was right.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>OB-WAL-011 [WT Cash In → WP] ✅ · [WT Cash Out → WP] ✅</td>
+</tr>
+<tr>
+<td><strong>Ask the reporter</strong></td>
+<td>The same pattern was confirmed after a <strong>credit note</strong> (1.5). Was the original report maybe about a credit note, or a transfer between apartments of different owners or currencies?</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>Steps to check by hand (OB-WAL-011, WT → WP)</summary>
+<ol>
+<li>Apartment A: recharge the wallet with 50,000. Apartment B: create an invoice of 10,500.</li>
+<li>Wallet tab of A › <strong>Wallet Transfer</strong> 20,000 to B.</li>
+<li>Apartment B › Make Payment of the invoice with <strong>Wallet</strong>.</li>
+<li>Check both wallets this month and <strong>next month</strong> (Opening Balance), and B's S.O.A.</li>
+</ol>
+<ul>
+<li><strong>Expected and seen:</strong> A 30,000; B 20,000 − 10,500 = 9,500, also as next month's opening.</li>
+</ul>
+</details>
+<hr />
+<h3 id="23-wallet-transfer-after-a-receipt-rv">2.3 Wallet Transfer after a receipt (RV)</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester, Wallet Issue 3: "An issue occurs when a 'Wallet Transfer' follows an RV" (status: cannot reproduce)</td>
+</tr>
+<tr>
+<td><strong>What we checked</strong></td>
+<td>Wallet recharge (RV), then Wallet Transfer in, and then Wallet Transfer out; both wallets this month and next month.</td>
+</tr>
+<tr>
+<td><strong>Why it passes</strong></td>
+<td>All balances right.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>OB-WAL-011 [RV → WT Cash In] ✅ · [RV → WT Cash Out] ✅</td>
+</tr>
+<tr>
+<td><strong>Ask the reporter</strong></td>
+<td>Was the RV an <strong>Unknown Received</strong> assigned to the wallet, or in another currency? Only a direct wallet recharge was used here.</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>Steps to check by hand (OB-WAL-011, RV → WT)</summary>
+<ol>
+<li>Apartment A › Wallet › <strong>Recharge</strong> 50,000 (cash account).</li>
+<li>Wallet › <strong>Wallet Transfer</strong> 20,000 to apartment B.</li>
+<li>Check both wallets this month and next month.</li>
+</ol>
+<ul>
+<li><strong>Expected and seen:</strong> A 30,000, B 20,000; next month opens with the same values.</li>
+</ul>
+</details>
+<hr />
+<h3 id="24-account-statement-when-a-cash-transfer-is-the-first-transaction-of-the-day">2.4 Account Statement when a Cash Transfer is the first transaction of the day</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester, Account Statement: "An error occurs if 'Cash Transfer' is the very first transaction of the day" (status: code fixed, data correction scripts not run yet)</td>
+</tr>
+<tr>
+<td><strong>What we checked</strong></td>
+<td>A new account whose <strong>first transaction ever</strong> is a Cash Transfer (JV), in and out; statements from yesterday to tomorrow.</td>
+</tr>
+<tr>
+<td><strong>Why it passes</strong></td>
+<td>The statement opens without error and the balances are continuous. This matches "the code has been fixed".</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>OB-ACS-005 ✅ (2)</td>
+</tr>
+<tr>
+<td><strong>Not checked</strong></td>
+<td><strong>Existing data</strong> created before the fix. The reporter says the data correction scripts have not been run: those accounts may still show the problem. A developer should confirm which accounts/days are affected and that the script has run.</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>Steps to check by hand (OB-ACS-005)</summary>
+<ol>
+<li>Create two new cash accounts (one with 10,000, one with 0).</li>
+<li>Cash Transfer 3,000 from the first to the second; approve the JV (top bar <strong>JV</strong>).</li>
+<li>Reports › Account Statement › each account › today, yesterday and tomorrow.</li>
+</ol>
+<ul>
+<li><strong>Expected and seen:</strong> no error; today's opening = yesterday's closing; tomorrow's opening = today's closing.</li>
+<li>To check old data: open the statement of an existing account on a day whose first transaction was a Cash Transfer before the fix.</li>
+</ul>
+</details>
+<hr />
+<h3 id="25-data-left-behind-when-a-credit-note-draft-is-rejected">2.5 Data left behind when a credit note draft is rejected</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester: "Incomplete Deletion on Rejection: when a credit note draft is rejected, only the Credit Note table row is deleted, not the Cash Transaction row"</td>
+</tr>
+<tr>
+<td><strong>What we checked</strong></td>
+<td>Add a credit note (draft), <strong>Remove</strong> it from the CN draft list as approver, then the draft list and counter, wallet balance and transactions, SOA, Credit Note report, and a wallet payment of the full balance afterwards. Also deleting a draft as its creator.</td>
+</tr>
+<tr>
+<td><strong>Why it passes</strong></td>
+<td>Nothing of the removed credit note is visible anywhere, and the wallet payment used only the real balance.</td>
+</tr>
+<tr>
+<td><strong>Test cases</strong></td>
+<td>WAL-033 ✅ · WAL-017 ✅</td>
+</tr>
+<tr>
+<td><strong>Limit</strong></td>
+<td>The issue is about a <strong>database table</strong>. A leftover row that no screen or balance reads cannot be seen from the UI. <strong>A developer should check the database</strong> (<code>cash transactions</code> for the removed CN id). If the row is there but not used anywhere, the issue is real but has no visible effect today.</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>Steps to check by hand (WAL-033)</summary>
+<ol>
+<li>Apartment with a wallet balance of 50,000.</li>
+<li>Wallet › add a <strong>Credit Note</strong> of 10,000 (draft).</li>
+<li>Top bar <strong>CN</strong> › the draft › <strong>Remove</strong>.</li>
+<li>Check: CN draft list and counter, Wallet tab (balance 50,000, no CN line), S.O.A, Reports › Credit Note.</li>
+<li>Pay an invoice of 50,000 with the Wallet method; the wallet must end at 0.00.</li>
+<li>Developer: query the cash transaction table for the removed credit note.</li>
+</ol>
+</details>
+<hr />
+<h2 id="not-checked">Not checked</h2>
+<h3 id="database-data-transformation">Database data transformation</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reported</strong></td>
+<td>Tester: "Displaying transformed/formatted data to the user instead of showing raw database data directly"</td>
+</tr>
+<tr>
+<td><strong>Why not checked</strong></td>
+<td>The note does not say which screen shows raw data, so no test case could be written.</td>
+</tr>
+<tr>
+<td><strong>Ask the reporter</strong></td>
+<td>One example: the screen, the field, what it shows now, and what it should show. Seen in New EM testing: the Account Statement showed raw text in some fields.</td>
+</tr>
+</tbody>
+</table></main></body></html>

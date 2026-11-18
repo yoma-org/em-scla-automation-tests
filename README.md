@@ -8,6 +8,7 @@ skill and the planner / generator / healer agents are shared.
 |---|---|---|
 | EM (Estate Management) | [projects/em/](projects/em/) | [PROJECT.md](projects/em/PROJECT.md) |
 | SCLA | [projects/scla/](projects/scla/) | [PROJECT.md](projects/scla/PROJECT.md) |
+| Old EM (baseline: runs the EM cases on the old system) | [projects/old-em/](projects/old-em/) | [PROJECT.md](projects/old-em/PROJECT.md) · [report](projects/old-em/report/old-em-issues.md) |
 
 ## Layout
 

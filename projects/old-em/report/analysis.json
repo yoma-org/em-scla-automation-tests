@@ -1,0 +1,190 @@
+{
+  "intro": "**Why this report.** New EM is tested against the GT test cases, which describe how Old EM should behave. When a New EM test fails, we need to know whether Old EM passes the same case. If Old EM fails it too, the failure is an existing Old EM issue (or the case is wrong), not a regression of the rebuild. Each failure below needs a decision: **fix it in New EM** (Old EM is wrong), or **update the test case** (the case is wrong and Old EM is right).\n\n**Scope.** Two runs. (1) The 61 smoke cases, the P1 happy paths across all 7 business stages: access, master data, billing, collection, wallet and deposit, cash management, balances and reports, plus access control. Every test creates its own data (`QE OLD …` apartments, contacts and accounts) and checks only that data, so other testers on UAT do not change the results. The full run took 33 minutes; the unstable cases were rerun twice more. (2) 22 cases that target the Old EM issues reported by the IT solution manager and testers (see *Reported issues* below), 62 test runs with their data variants.",
+  "areas": {
+    "Make Payment": "Paying an invoice from the wallet works (invoice paid, wallet and AR reduced), but no receipt voucher (RV) appears in Cash Received. The two wallet-payment cases disagree on this point.",
+    "Cash Received (RV / Unknown / Funding)": "Unknown Received can only be deposited into bank accounts, while the case deposits into a cash account.",
+    "Role & Permission": "Cash Outflow approvers need an extra, undocumented category permission before they can see drafts.",
+    "Cash & Bank Account": "Editing the initial balance after transactions is not carried into the next day's Account Statement; the account Type also has no default.",
+    "Payment Concurrency (1 Inv × 2 RV, 1 RV × 2 Inv)": "Two simultaneous payments of the same invoice are both accepted: double payment, overpayment and wrong due amounts.",
+    "UO Import (bulk meter readings)": "Two rows for the same apartment and month in one file are both imported: the same usage is billed twice.",
+    "Invoice & Debit Note": "The invoice form randomly loses the typed Gross Price or discount, so invoices are refused or saved without the discount.",
+    "Reports": "Created By / Approved By are missing from some lists (Invoices - Debit Note, Recent Transfers, apartment Wallet tab).",
+    "SOA — Opening / Closing Balance": "After a bulk-approved UO invoice paid from the wallet, the next month's SOA opening balance leaves out the invoice.",
+    "Wallet — Opening / Closing Balance": "After a credit note and a wallet payment, the next month's wallet opening balance ignores the payment. A full-balance refund draft can be created twice (approval still blocks it)."
+  },
+  "PAY-005": {
+    "why": "Paying an invoice with the **Wallet** method creates a wallet payment voucher (`WP-…`) in the apartment SOA and Wallet tab. The case also expects a **new RV in the Cash Received list**, and Old EM creates none. Everything else in the case passes: SOA row, WP in the Wallet tab, invoice status Paid, wallet balance and AR reduced.",
+    "impact": "If an RV is required, Cash Received and the receipt reports miss wallet-paid invoices. If not, the case is wrong. The cash was already received as an RV when the wallet was recharged, so a second RV would count the same money twice. [WAL-020](../../em/docs/test-cases/features/16-wallet.md), the same payment seen from the wallet side, also expects \"RV in SOA\", and Old EM shows the WP there.",
+    "decision": "Should a wallet payment create an RV? Recommended answer: **no**. Then update PAY-005 expected result 2 and WAL-020 expected result 2 to \"WP created\", and New EM should behave like Old EM."
+  },
+  "CR-002": {
+    "why": "The case records an Unknown Received into **\"[Cash MMK] 2C2P Account\"**. On Old EM's Unknown Received form, the *Deposit In* list offers **only bank accounts** (0 cash accounts out of 84), even for a cash account with every payment method enabled. With a bank account, the rest of the case passes: RV listed for allocation, serial RV number, account balance +10,000.",
+    "impact": "Cash collected from an unknown payer cannot be recorded into a cash-in-hand account in Old EM.",
+    "decision": "May Unknown Received go to a cash account? If **yes**, this is an Old EM defect that New EM should fix. If **no**, change the case's test data to a bank account."
+  },
+  "RBAC-061": {
+    "why": "A role with Cash Outflow **Menu + View + Approve** (what the case lists) opens the PV draft list, but the drafts are **hidden**. They appear, and can then be approved or removed, only after the role is also given the draft's expense category under *Settings › Roles › Assign Categories* (here \"Payment - Estate Management\").",
+    "impact": "An approver set up exactly as the permission matrix says sees an empty draft list and cannot approve payments. Nothing on screen explains why.",
+    "decision": "Is the category scope intended? If **yes**, add the category requirement to RBAC-061 and the permission documentation, and New EM must apply the same scoping. If **no**, it is an Old EM defect."
+  },
+  "CBA-001": {
+    "why": "Step 5 says the account **Type is \"Cash\" by default**. Old EM's New Account form shows \"Select Type\" with no default. The expected result itself passes: the new account shows Initial Balance and Closing Balance of 100,000.00 Ks in the list.",
+    "impact": "Low. The user has one more field to choose.",
+    "decision": "Default the Type to Cash in New EM, or remove step 5 from the case."
+  },
+  "INV-001": {
+    "why": "The invoice form loses typed values. The totals are calculated by the server (`POST /api/invoices/amount`) after every change of Unit or Discount and when leaving Gross Price, and each answer overwrites the Gross Price and Discount fields. When answers come back out of order, Gross Price is wiped (\"The Gross Price field is required\" under a field that shows a value, or line Total 0) or the discount is dropped. What is saved depends on the moment Create is clicked. Reproduced in 3 of 10 and 5 of 10 repeated runs; one draft was saved as 3,090.00 Ks while the form showed 2,781.00 Ks.",
+    "impact": "A resident can be billed without the discount, or the user has to retype the invoice. Nothing on screen warns about the wrong amount.",
+    "decision": "Old EM defect (reported as \"Invoice Calculation\"). New EM must calculate the totals so that a late answer can never overwrite what the user typed. INV-038 covers it."
+  },
+  "DASH-001": {
+    "status": "UNSTABLE",
+    "why": "In the full run, the Dashboard was still loading after 15 seconds (screenshot below). It passed on both reruns, and the figures are correct once loaded.",
+    "impact": "Performance only. UAT holds very large totals (see observations), which may make the dashboard slow.",
+    "decision": "None for the rebuild, unless the dashboard is also slow in production."
+  },
+  "WAL-020": {
+    "status": "UNSTABLE",
+    "why": "In the full run, the Make Payment form's Currency still showed \"Select Currency\" when the test checked the default. It shows MMK once the apartment's data has loaded, and the case passed on both reruns.",
+    "impact": "Slow loading on UAT. A user who acts before the form has loaded sees an empty currency."
+  },
+  "observations": [
+    {
+      "title": "Not checked: \"Database data transformation\"",
+      "text": "The note (show formatted data to users instead of raw database data) has no test case: it needs a concrete example of a screen that shows raw data."
+    },
+    {
+      "title": "Accounts Receivable list hides debit notes by default",
+      "text": "With the Type filter on its default \"All Type\", the AR list shows invoices only. Debit notes appear only after choosing Type = Debit Note. The AR cases passed because the tests choose the type. Worth confirming: a user reading the default list underestimates receivables."
+    },
+    {
+      "title": "Totals on UAT are unrealistic",
+      "text": "Dashboard and AR show about 115,408,155,126,597,300 Ks (1.15 × 10¹⁷) owed. At that size the AR total differs from Current + Overdue by 6 Ks, which looks like floating-point rounding. It is test data on UAT, but it suggests Old EM adds money in floating point. New EM should use exact decimals."
+    },
+    {
+      "title": "New roles are sometimes refused until saved twice",
+      "text": "During test development (not in the final run), a newly created role was sometimes refused by the back end (403), and its user was signed out. It worked after the role was saved again with no changes. This looks like a permission cache that is not refreshed."
+    },
+    {
+      "title": "Old EM has no approver notification",
+      "text": "Cases CO-001, INV-001 and others expect \"notification to approver\". Old EM only increases the draft counters in the top bar (UO, EM, Inv/DN, PV, …). The tests check those counters."
+    },
+    {
+      "title": "A global setting changed during the run",
+      "text": "Settings › General › \"Old CoRef No.\" was switched to Enable on UAT by someone during the session (not by these tests). Invoice, debit note and deposit invoice forms then require an \"Old CoRef No.\" field. The tests fill it when it is shown."
+    },
+    {
+      "title": "Success messages differ from the cases' wording",
+      "text": "For example, the case says \"Invoice approved successfully with ref number\" and Old EM shows \"Invoice has been approved successfully\". The tests accept Old EM's wording; the cases can be aligned."
+    }
+  ],
+  "INV-038": {
+    "why": "Same cause as INV-001. In every run, typed Gross Price / Discount were wiped within 0.3 to 4 seconds without any input; per variant 1 to 5 of the 5 creations were refused (\"Gross Price field is required\") and some drafts were saved without the discount: 3,090.00 instead of 2,781.00, 1,029.99 instead of 926.99, 103.10 instead of 103.05. The rounding itself is correct: when a draft is saved with the right inputs, 926.99, 1.08 and 103.05 come out right and the draft, approved invoice, AR, SOA, contact, Invoices report and PDF all agree.",
+    "impact": "Wrong invoice amounts (discount lost) and refused invoices, at random.",
+    "decision": "Old EM defect: fix in New EM. The case is in Review only for the rounding rule, which Old EM applies correctly (round the total to 2 decimals)."
+  },
+  "RPT-036": {
+    "why": "Created By / Approved By are missing on some lists: the Invoices - Debit Note list has no Approved By column (invoice, debit note, UO invoice, EM debit note); Recent Transfers has no Approved By column (Cash Transfer JV); the apartment Wallet tab shows neither name for a Credit Note and no Created By for a Wallet Transfer. The document detail / voucher and the reports (Invoices, Transactions, Credit Note) always show both names. Receipts (RV) and payment vouchers (PV) pass.",
+    "impact": "Users cannot see from the lists who approved a document; they must open each voucher or a report.",
+    "decision": "Confirm which lists must show Created By / Approved By, then add them in New EM. Note: no second Old EM account was available, so maker and approver are the same user."
+  },
+  "CBA-010": {
+    "why": "After editing the initial balance of an account that already has transactions, the account list, the dashboard Cash & Bank Balance and today's Account Statement all show the new closing balance (51,100). But the statement for **tomorrow** opens at **11,100**, the balance before the edit: today's closing does not equal tomorrow's opening.",
+    "impact": "From the next day the Account Statement starts from a wrong balance and every later day is off by the edited amount.",
+    "decision": "Old EM defect (reported as \"Balance issue: initial balance edit\"). Fix in New EM; decide also whether editing the initial balance after transactions should be allowed at all (source-issues.md D6)."
+  },
+  "OB-SOA-017 [1st=UO(bulk approve); 2nd=Wallet Payment (WP)]": {
+    "why": "A UO invoice created by **Bulk Approve** (1,218 Ks) and then paid from the wallet: November is right (opens 2,100, +1,218, −1,218, closes 2,100). December's Opening Balance shows **882.00**, expected **2,100.00** (882 = 2,100 − 1,218): the next month counts the payment but leaves out the bulk-approved invoice. The other 7 sequences run (UO import, manual UO, Make Payment, WP, Invoice) are correct.",
+    "impact": "The apartment's SOA for the following months is wrong; the resident appears to owe less.",
+    "decision": "Old EM defect (reported as \"SOA periodic balances are wrong\"). Fix in New EM."
+  },
+  "OB-WAL-011 [1st=Credit Note(CN); then 2nd=Wallet Payment(WP)]": {
+    "why": "Credit note +50,000 then a Wallet Payment of 10,500: within November the wallet is right (closes at 39,500, Current Balance 39,500). The Opening Balance of 01/12/2026 shows **50,000.00**, expected **39,500.00**: the next month ignores the wallet payment.",
+    "impact": "The wallet statement of the following months shows more money than the resident has.",
+    "decision": "Old EM defect (reported as \"Wallet Payment after Credit Note\"). Fix in New EM."
+  },
+  "CONC-001": {
+    "why": "Two users pay the same 1,000 Ks invoice in full at the same moment. Old EM does not handle it the same way twice: in 3 of 3 earlier races (12–13 Nov) **both payments were accepted** (SOA payments [1,000, 1,000], Balance Due −1,000, account +2,000); in the final run (13 Nov) the second payment failed with **HTTP 500 \"Internal Server Error\"** and only one was posted. The case expects the second user to see \"This invoice has already been paid in full\"; that message never appeared.",
+    "impact": "Invoices paid twice or overpaid, wrong due amounts and AR.",
+    "decision": "Old EM defect (reported as \"Balance issue: concurrency\"): New EM must lock the invoice (or re-check the due amount) when a payment is saved."
+  },
+  "CONC-003": {
+    "why": "Two partial payments (400 and 500) of a 1,000 Ks invoice at the same moment; the case expects both to be accepted (due 100). Earlier races: both accepted but the due amount and AR showed **500 instead of 100** (one update overwrote the other). Final run: one payment failed with **HTTP 500**, so only 500 was paid.",
+    "impact": "Invoices paid twice or overpaid, wrong due amounts and AR.",
+    "decision": "Old EM defect (reported as \"Balance issue: concurrency\"): New EM must lock the invoice (or re-check the due amount) when a payment is saved."
+  },
+  "CONC-004": {
+    "why": "Two partial payments that together exceed the invoice (500 + 600 on 1,000 Ks); the case expects the second to be asked to refresh. Earlier races (3 of 3): **both accepted**, 1,100 paid, Balance Due −100. Final run: the second failed with **HTTP 500** instead of the refresh message.",
+    "impact": "Invoices paid twice or overpaid, wrong due amounts and AR.",
+    "decision": "Old EM defect (reported as \"Balance issue: concurrency\"): New EM must lock the invoice (or re-check the due amount) when a payment is saved."
+  },
+  "OB-WAL-012": {
+    "why": "Two wallet refund drafts of the full wallet balance (100,000) are both created; the case expects the second to be refused. Money stays safe: when both drafts are approved together, one is refused with \"Insufficient Balance\" and the wallet ends at 0.",
+    "impact": "Low: approval still blocks the overdraw; the approver sees a draft that cannot be approved.",
+    "decision": "Decide whether the balance check must happen when the draft is created (as the case says) or only at approval (Old EM)."
+  },
+  "UOI-013": {
+    "why": "One import file with **two rows for the same apartment in the same month**: Old EM imports both (\"2 UO Entry imported.\"), with no error for the second row. The apartment gets 2 UO entries and 2 invoices instead of 1, and the second row is also calculated from the old reading (\"18 − 10 = 8\" next to \"15 − 10 = 5\"), so the same usage is billed twice. Failed for all 4 variants in 3 of 3 runs. Re-uploading the same file and two uploads at the same moment were blocked in the test runs (the loser gets HTTP 500 \"Internal Server Error\"), but during a manual try two simultaneous uploads of the same file both went through and created 2 invoices.",
+    "impact": "Residents are billed twice for utilities.",
+    "decision": "Old EM defect (reported as \"UO invoice duplication when bulk upload\"). New EM must reject a second row for the same apartment and month within one file and lock concurrent uploads."
+  },
+  "issues": {
+    "Balance issue: concurrency": {
+      "verdict": "CONFIRMED",
+      "text": "Paying the same invoice from two sessions at the same moment is not handled safely. In 8 races on 12–13 Nov, both payments were accepted (invoice paid twice, overpaid, or due amount overwritten). In the final run the losing payment failed with HTTP 500 \"Internal Server Error\" instead of a proper message. The result depends on timing. Approving cash outflows and wallet refunds is protected (second approval refused, sometimes with HTTP 500 instead of \"Insufficient Balance\"). The tests used two sessions of the same admin, because no second Old EM account was available."
+    },
+    "UO invoice duplication when bulk upload / UO Bulk Issue": {
+      "verdict": "CONFIRMED",
+      "text": "Main cause: a single import file with two rows for the same apartment and month creates two UO entries and two invoices. Re-uploading the same file is blocked; two simultaneous uploads are usually blocked (with an HTTP 500 error message), but once both went through in a manual try."
+    },
+    "SOA periodic balances are wrong / OB-CB mismatch": {
+      "verdict": "CONFIRMED",
+      "text": "For a UO invoice made by Bulk Approve and then paid from the wallet, the next month's Opening Balance leaves out the invoice. 9 other sequences were correct. **Pattern across today's findings:** all three balance errors are in the *next period's* Opening Balance (SOA next month, wallet next month, account statement next day) while the current period is right. Old EM seems to keep a stored opening balance that is not recalculated after some changes; worth checking in the code."
+    },
+    "SOA periodic balances are wrong / OB-CB mismatch / backdated transaction": {
+      "verdict": "NOT REPRODUCED",
+      "text": "Back-dated invoices (first, middle and last day of last month, 3 categories) keep the SOA continuous."
+    },
+    "Balance issue: initial balance edit": {
+      "verdict": "CONFIRMED",
+      "text": "Editing the initial balance after transactions is not carried into the next day's Account Statement opening balance. Editing before any transaction is fine."
+    },
+    "Balance issue: backdated transaction": {
+      "verdict": "NOT REPRODUCED",
+      "text": "Back-dated cash transfers (JV) and back-dated wallet recharges keep the Account Statement and the wallet continuous."
+    },
+    "Wallet: Wallet Payment after Credit Note (can reproduce)": {
+      "verdict": "CONFIRMED",
+      "text": "The next month's wallet Opening Balance ignores a wallet payment made after a credit note."
+    },
+    "Wallet: Wallet Payment after Wallet Transfer (cannot reproduce)": {
+      "verdict": "NOT REPRODUCED",
+      "text": "Both Wallet Transfer in and out, followed by a Wallet Payment, keep both wallets and the SOA correct."
+    },
+    "Wallet: Wallet Transfer after RV (cannot reproduce)": {
+      "verdict": "NOT REPRODUCED",
+      "text": "A wallet recharge followed by a Wallet Transfer in or out keeps both wallets correct."
+    },
+    "Account Statement: error when Cash Transfer is the first transaction of the day (code fixed, data not corrected)": {
+      "verdict": "NOT REPRODUCED",
+      "text": "On new accounts the statement opens without error and stays continuous (consistent with \"code fixed\"). Existing data created before the fix was not checked; the data correction script is still needed."
+    },
+    "Incomplete deletion on rejection (credit note)": {
+      "verdict": "NOT REPRODUCED (on screen)",
+      "text": "After a draft credit note is removed, nothing is left in the wallet, SOA or Credit Note report, and a wallet payment uses only the real balance. A leftover row in the cash transaction table that does not affect any balance or report cannot be seen from the UI: a developer should check the database."
+    },
+    "Invoice calculation (decimal/rounding)": {
+      "verdict": "CONFIRMED",
+      "text": "Not a rounding error: the rounding is correct. The invoice form's server-side recalculation overwrites typed values when answers arrive out of order, so Gross Price is wiped or the discount is dropped, at random (30 to 50 % of creations)."
+    },
+    "Missing audit trails (Created By / Approved By)": {
+      "verdict": "CONFIRMED",
+      "text": "Missing on lists: Invoices - Debit Note (no Approved By), Recent Transfers (no Approved By), apartment Wallet tab (no names for credit notes, no Created By for wallet transfers). Vouchers and reports show both names."
+    }
+  },
+  "OB-ACS-010": {
+    "why": "Two cash outflows of the full account balance (100,000) approved at the same moment: the money is safe (one PV approved, account ends at 0, one PV row in the statement). But in 1 of 2 races the losing approval got **HTTP 500 \"Internal Server Error\"** instead of the expected \"Insufficient Balance\" message (the other race showed the correct message). Both drafts are also accepted at creation; the balance is only checked at approval.",
+    "impact": "Low: no wrong money, but the approver sees a server error instead of the reason.",
+    "decision": "New EM should refuse the second debit with a clear \"Insufficient balance\" message."
+  }
+}
