@@ -21,10 +21,11 @@ export function credentials(role: Role): { email: string; password: string } {
   return { email: required(`${prefix}_EMAIL`), password: required(`${prefix}_PASSWORD`) };
 }
 
-// projects/em/playwright/.auth/<role>.json, or .auth/<TARGET_ENV>/<role>.json (git-ignored).
+// projects/em/playwright/.auth/<TARGET_ENV>/<role>.json (git-ignored); UAT keeps .auth/<role>.json.
 // One folder per environment, so a UAT login is never reused on the test environment.
+// TARGET_ENV defaults to 'test', as in playwright.config.ts.
 export function authFile(role: Role): string {
-  const target = process.env.TARGET_ENV;
-  const dir = path.join(__dirname, '..', '..', 'playwright', '.auth', ...(target ? [target] : []));
+  const target = process.env.TARGET_ENV || 'test';
+  const dir = path.join(__dirname, '..', '..', 'playwright', '.auth', ...(target === 'uat' ? [] : [target]));
   return path.join(dir, `${role}.json`);
 }

@@ -6,8 +6,8 @@
 #
 # Runs against one GitHub environment (input "environment"), each with its own secrets
 # BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD, and for Jira JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN:
-#   em-uat   UAT, used to check Jira issues (sanity, manual / Jira runs)
-#   em-test  separate test environment (smoke, e2e, regression)
+#   em-test  test environment: the default for every suite (user decision 2026-11-19)
+#   em-uat   UAT, only when chosen explicitly
 # Until the JIRA_* secrets exist, the Jira step is skipped. The runner must be able to reach the URL.
 name: EM run tests (shared)
 
@@ -23,9 +23,9 @@ on:
         type: string
         default: ''
       environment:
-        description: 'GitHub environment to run against: em-uat (check issues) or em-test (testing)'
+        description: 'GitHub environment to run against: em-test (default) or em-uat'
         type: string
-        default: em-uat
+        default: em-test
       browser:
         type: string
         default: chromium
@@ -54,7 +54,7 @@ jobs:
     env:
       APP: em
       CI: 'true'
-      TARGET_ENV: ${{ inputs.environment == 'em-test' && 'test' || '' }}
+      TARGET_ENV: ${{ inputs.environment == 'em-uat' && 'uat' || 'test' }}
       BASE_URL: ${{ secrets.BASE_URL }}
       ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}

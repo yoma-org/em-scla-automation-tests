@@ -11,7 +11,7 @@
 #   - Jira issue moved to QA → Jira Automation calls this workflow with tags=@<key>, comment=true
 #     (setup: projects/em/docs/sanity-test/README.md#run-tests-when-a-ticket-is-fixed).
 #
-# Jira is OFF for now. To turn it on: add the JIRA_* secrets to the "em-uat" environment, then uncomment
+# Jira is OFF for now. To turn it on: add the JIRA_* secrets to the "em-test" environment (the default; "em-uat" too if runs there should comment), then uncomment
 # the 14:30 cron (every Jira issue in QA that has tests, results commented on each issue).
 #
 # Scheduled suites have their own workflows: em-sanity.yml, em-smoke.yml, em-e2e.yml, em-regression.yml.
@@ -29,10 +29,10 @@ on:
         type: boolean
         default: false
       environment:
-        description: 'Environment: em-uat (check issues) or em-test (testing)'
+        description: 'Environment: em-test (default) or em-uat'
         type: choice
-        options: [em-uat, em-test]
-        default: em-uat
+        options: [em-test, em-uat]
+        default: em-test
       browser:
         description: 'Browser'
         type: choice
@@ -55,7 +55,7 @@ jobs:
       tags: ${{ inputs.tags }}
       comment: ${{ inputs.comment == true }}
       browser: ${{ inputs.browser || 'chromium' }}
-      environment: ${{ inputs.environment || 'em-uat' }}
+      environment: ${{ inputs.environment || 'em-test' }}
       jira_qa: ${{ github.event_name == 'schedule' }}
       # Typed by hand: no matching test is an error (probably a typo). Scheduled Jira run: just skip.
       no_tests_ok: ${{ github.event_name == 'schedule' }}

@@ -4,14 +4,14 @@ import path from 'node:path';
 import { authFile } from './src/utils/Environment';
 
 // Each app loads its own env file (git-ignored, see .env.example). TARGET_ENV picks which one:
-//   (unset)          → .env       UAT, used to check Jira issues (sanity)
-//   TARGET_ENV=test  → .env.test  separate test environment (smoke, e2e, regression)
+//   (unset) or test  → .env.test  test environment: every suite runs here by default (user decision 2026-11-19)
+//   TARGET_ENV=uat   → .env       UAT, only when asked for explicitly
 // In CI the same values come from the GitHub environment's secrets as plain env vars.
-const target = process.env.TARGET_ENV;
-const envFile = path.join(__dirname, target ? `.env.${target}` : '.env');
+const target = process.env.TARGET_ENV || 'test';
+const envFile = path.join(__dirname, target === 'uat' ? '.env' : `.env.${target}`);
 if (existsSync(envFile)) process.loadEnvFile(envFile);
-else if (target && !process.env.CI) {
-  throw new Error(`TARGET_ENV=${target} but ${envFile} is missing. Copy .env.example to .env.${target} and fill it in.`);
+else if (!process.env.CI) {
+  throw new Error(`TARGET_ENV=${target} but ${envFile} is missing. Copy .env.example to ${path.basename(envFile)} and fill it in.`);
 }
 
 const adminState = authFile('admin');
@@ -29,7 +29,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  // Locally one worker, so the ▶ button in VS Code and plain `npx playwright test` work as is: the test env returns
+  // 500 / "Could not load…" under parallel load (user, 2026-11-19). Pass --workers=N to override.
+  workers: process.env.CI ? 2 : 1,
   reporter: [
     ['list'],
     // In CI, show each failing test and its error on the run's Summary page.
