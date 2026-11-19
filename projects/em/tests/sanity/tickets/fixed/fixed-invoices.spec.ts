@@ -1,4 +1,4 @@
-// Sanity · Fixed tickets · Invoices / Debit Note (Create Invoice line amounts: EM-92, EM-75, EM-76)
+// Sanity · Fixed tickets · Invoices / Debit Note (Create Invoice line amounts: EM-92, EM-75, EM-76; 100 % discount: EM-112)
 // Cases: docs/sanity-test/tickets/fixed/fixed-invoices.md. Expected results are Old EM behaviour.
 // Line figures show 3 decimals ("1,000.000 Ks"), invoice totals 2 ("1,050.00 Ks").
 // Read-only: no test here clicks Create, so no invoice is saved.
@@ -239,6 +239,37 @@ test.describe('Sanity · EM-76 Apartment Add Invoice with Inclusive Tax', () => 
         await expectAmount(form.total('Commercial Tax'), '30.00', 2, soft);
         await expectAmount(form.total('Grand Total'), '1030.00', 2, soft);
         await evidence(page, '03_NEW_incl3-1x1030');
+      });
+    });
+});
+
+test.describe('Sanity · EM-112 100% discount shows ERR_UNKNOWN (fixed build -117)', () => {
+  test('SAN-EM112-001 Discount 100% does not give the generic ERR_UNKNOWN error',
+    sanity({ id: 'SAN-EM112-001', priority: 'P2', doc }),
+    async ({ page, createInvoicePage: form }) => {
+      await form.goto();
+      await expect(form.heading).toBeVisible();
+      const line = form.line(0);
+      // The calculation error panel on the form ("Could not calculate the total · … · Reference: ERR_UNKNOWN").
+      const errUnknown = page.getByRole('main').getByText(/ERR_UNKNOWN|Could not calculate the total/);
+
+      await test.step('1. Line 1 × 1000, 5% Tax → Disc. Price 1,000.000 · Total 1,000.000', async () => {
+        await line.fill({ taxType: '5% Tax', unit: '1', grossPrice: '1000' });
+        await expectAmount(line.discPrice, '1000.000', 3);
+        await expectAmount(line.total, '1000.000', 3);
+        await evidence(page, '01_NEW_line-1x1000-5pct');
+      });
+
+      await test.step('2. Discount (%) = 100 → the field is cleared, totals as with discount 0, no error', async () => {
+        await line.discount.fill('100');
+        await line.discount.blur();
+        await expect.soft(line.discount, 'Discount field cleared').toHaveValue('');
+        await expect.soft(errUnknown, 'no generic "Could not calculate the total / ERR_UNKNOWN" error').toHaveCount(0);
+        await expectAmount(line.discPrice, '1000.000', 3);
+        await expectAmount(line.total, '1000.000', 3);
+        const message = (await line.root.getByRole('alert').allInnerTexts()).join(' | ').trim();
+        test.info().annotations.push({ type: 'observed', description: `Discount 100 %: field "${await line.discount.inputValue()}"${message ? `, message "${message}"` : ''}` });
+        await evidence(page, '02_NEW_discount-100-cleared');
       });
     });
 });

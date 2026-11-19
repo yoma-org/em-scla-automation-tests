@@ -31,7 +31,7 @@ QE record of the rebuilt **New EM** against the current **Old EM** on the UAT we
 |---|---|---|---|
 | [G1](tickets/open/g1-api-validation.md) | API validation: Cash & Bank, Cash Transfer, Cash Outflow | EM-96, 98, 97 | BUG-04, 07, 05 |
 | [G2](tickets/open/g2-cash-bank-screens.md) | Cash & Bank Account screens | EM-94 | BUG-02 |
-| [G3](tickets/open/g3-invoice-amounts.md) | Invoice line amounts and precision | EM-112, 93, 113 | BUG-01, 22, 23, 26 |
+| [G3](tickets/open/g3-invoice-amounts.md) | Invoice line amounts and precision | EM-93, 113 | BUG-01, 22, 23, 26 |
 | [G4](tickets/open/g4-payment-allocation.md) | USD and Unknown payment allocation | EM-116, 117, 114, 115, 104 | BUG-37, 38, 31, 36, 19 |
 | [G5](tickets/open/g5-receipt-display.md) | How receipts show in lists, reports and S.O.A | EM-102, 109, 101, 74 | BUG-13, 14, 12 |
 | [G6](tickets/open/g6-reports-ar.md) | Reports and AR | EM-107, 108, 99, 95, 100 | BUG-33, 09, 08, 03, 10 |
@@ -167,7 +167,7 @@ Tick **comment** to post the result on each issue named in the tags (`@EM-…`).
 
 The Jira comment lists each test of the task with ✅ / ❌ and links the run (HTML report and traces). A green result does not move the task; QA still decides. The run summary also lists the tasks in QA that **have no test yet**.
 
-Secrets in the GitHub environment `em-uat`: `BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and for Jira `JIRA_BASE_URL` (`https://zeyalabs-team-a83df6me.atlassian.net`), `JIRA_EMAIL`, `JIRA_API_TOKEN` (an API token of the account that comments, from id.atlassian.com → Security → API tokens).
+Runs go to the GitHub environment `em-test` by default (since 2026-11-19; choose `em-uat` to run on UAT). Secrets in each environment: `BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and for Jira `JIRA_BASE_URL` (`https://zeyalabs-team-a83df6me.atlassian.net`), `JIRA_EMAIL`, `JIRA_API_TOKEN` (an API token of the account that comments, from id.atlassian.com → Security → API tokens).
 
 Locally: `node scripts/jira-tests.mjs tasks --app em` lists the tasks in QA with and without tests; `node scripts/jira-tests.mjs comment --app em --tasks EM-92 --dry-run` shows the comment for the last run without posting it. Both read the `JIRA_*` variables from the environment.
 

@@ -15,9 +15,9 @@ Every bug ticket on Jira was reproduced on the UAT web: 117 tickets in the filte
 
 | Status | Tickets | Which |
 |---|---|---|
-| **Open** | 20 | 93, 94, 95, 96, 97, 99, 100, 101, 103, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117 |
+| **Open** | 19 | 93, 94, 95, 96, 97, 99, 100, 101, 103, 107, 108, 109, 110, 111, 113, 114, 115, 116, 117 |
 | **Partly open** | 8 | EM-37, 55, 74, 85, 98, 102, 104, 105 |
-| **Fixed** | 60 | Listed under [All tickets](#all-tickets) |
+| **Fixed** | 61 | Listed under [All tickets](#all-tickets) |
 | **Fixed (partly verified)** | 1 | EM-83: the file is read correctly, but no valid date is available yet to stage a row. Retry from 02/11. |
 | **Blocked** | 1 | EM-29: needs an invited user and their mailbox |
 | **Total** | **90** | |
@@ -36,7 +36,7 @@ Every bug ticket on Jira was reproduced on the UAT web: 117 tickets in the filte
 |---|---|---|---|
 | G1 | API validation: Cash & Bank, Cash Transfer, Cash Outflow | [g1-api-validation](open/g1-api-validation.md) | 96, 98, 97 |
 | G2 | Cash & Bank Account screens | [g2-cash-bank-screens](open/g2-cash-bank-screens.md) | 94 |
-| G3 | Invoice line amounts and precision | [g3-invoice-amounts](open/g3-invoice-amounts.md) | 112, 93, 113 |
+| G3 | Invoice line amounts and precision | [g3-invoice-amounts](open/g3-invoice-amounts.md) | 93, 113 |
 | G4 | USD and Unknown payment allocation | [g4-payment-allocation](open/g4-payment-allocation.md) | 116, 117, 114, 115, 104 |
 | G5 | How receipts show in lists, reports and S.O.A | [g5-receipt-display](open/g5-receipt-display.md) | 102, 109, 101, 74 |
 | G6 | Reports and AR | [g6-reports-ar](open/g6-reports-ar.md) | 107, 108, 99, 95, 100 |
@@ -80,7 +80,7 @@ Update Fix status, Owner, PR and UAT retest as fixes land. Fix status values: `T
 | G2 | [EM-94](open/g2-cash-bank-screens.md) | Open | Update Initial Balance fails with ERR_UNKNOWN; `PUT .../migrated-balance` returns 405. | To do |  |  |  |
 | G2 | [EM-72](fixed/fixed-accounts.md) | Fixed | Retest build -87 (11-09, automated) passed: CASH type settings checked first; fields match and Payment Method is now a dropdown showing the selected names. | Done |  |  | v0.4.1-87 OK (automated) |
 | G2 | [EM-73](fixed/fixed-accounts.md) | Fixed | Retest build -87 (11-09, automated) passed: BANK type settings checked first; fields match and Payment Method is now a dropdown showing the selected names. | Done |  |  | v0.4.1-87 OK (automated) |
-| G3 | [EM-112](open/g3-invoice-amounts.md) | Open | Discount 100% still gives 'Could not calculate the total / ERR_UNKNOWN'; Old EM clears the field | To do |  |  |  |
+| — | [EM-112](fixed/fixed-invoices.md) | Fixed | 100 % discount gave 'Could not calculate the total / ERR_UNKNOWN'; Old EM clears the field | Done |  |  | v0.4.1-117 OK (automated, 2026-11-19) |
 | G3 | [EM-93](open/g3-invoice-amounts.md) | Open | INV-202610-00047 stays PARTIALLY_PAID with due 0.0042 (screen shows 0.00) | To do |  |  |  |
 | G3 | [EM-113](open/g3-invoice-amounts.md) | Open | Second Approve from a stale tab shows no 'Invoice has been already approved.' | To do |  |  |  |
 | G4 | [EM-116](open/g4-payment-allocation.md) | Open | $1 for 3 invoices of 1,000 Ks allocates 0.33 × 3 = $0.99 | To do |  |  |  |
@@ -191,7 +191,7 @@ Seen during the repro. None has a Jira ticket yet.
 | [EM-109](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-109) | [Reports > Cash Received] One receipt shown as a single row without allocation details | Medium | Open | RV-00057 (3 invoices + wallet) is still 1 row with no description. | [g5-receipt-display](open/g5-receipt-display.md) |
 | [EM-110](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-110) | [UO > Meter Reset] Reset is rejected on the same day as the last reading | Medium | Open | Same-day reset is rejected with ERR_METER_RESET_DATE_NOT_AFTER_PREVIOUS | [g8-uo-em-dates](open/g8-uo-em-dates.md) |
 | [EM-111](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-111) | [EM > New] 'From' date is not auto-filled from the previous period | Medium | Open | From stays empty and unlocked; the hint gives the wrong date (01/10 instead of 01/11) | [g8-uo-em-dates](open/g8-uo-em-dates.md) |
-| [EM-112](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-112) | [Invoices / Debit Note > Add Invoice] 100% discount shows generic 'ERR_UNKNOWN' instead of the real reason | Medium | Open | Discount 100% still gives 'Could not calculate the total / ERR_UNKNOWN'; Old EM clears the field | [g3-invoice-amounts](open/g3-invoice-amounts.md) |
+| [EM-112](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-112) | [Invoices / Debit Note > Add Invoice] 100% discount shows generic 'ERR_UNKNOWN' instead of the real reason | Medium | Fixed (build -117, 11-19) | 100 % is cleared with "Discount must be from 1 to 99."; no ERR_UNKNOWN (automated) | [fixed-invoices](fixed/fixed-invoices.md) |
 | [EM-113](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-113) | [Invoices / Debit Note > Approve] No message when approving an already approved invoice | Medium | Open | Second Approve from a stale tab shows no 'Invoice has been already approved.' | [g3-invoice-amounts](open/g3-invoice-amounts.md) |
 | [EM-114](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-114) | [Cash Received > Unknown Receipt > Assign] Wrong 'short of' amount in the error message | Medium | Open | Allocating 80.01 of 1,000 still says 'short of 1000.0000' (correct: 919.99) | [g4-payment-allocation](open/g4-payment-allocation.md) |
 | [EM-115](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-115) | [Make Payment] Wallet still selectable when paying in USD | Medium | Open | Pay In USD still offers Wallet | [g4-payment-allocation](open/g4-payment-allocation.md) |

@@ -2,67 +2,18 @@
 
 [← Ticket index](../README.md) · [Sanity index](../../README.md)
 
-**Tickets:** 3 · **Open:** 3
+**Tickets:** 2 · **Open:** 2
 
-EM-92 and EM-75 passed on build -74 (2026-11-06) and moved to [fixed-invoices](../fixed/fixed-invoices.md). EM-76 (same cause, from an apartment) followed on build -74. EM-93 and EM-112 are both about money rounding.
+EM-92 and EM-75 passed on build -74 (2026-11-06) and moved to [fixed-invoices](../fixed/fixed-invoices.md). EM-76 (same cause, from an apartment) followed on build -74. EM-112 passed on build -117 (2026-11-19, automated) and moved to [fixed-invoices](../fixed/fixed-invoices.md). EM-93 is about money rounding.
 
 ## Summary
 
 | Ticket | Title | Jira priority | Status (build -37) | Result | Case |
 |---|---|---|---|---|---|
-| [EM-112](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-112) | [Invoices / Debit Note > Add Invoice] 100% discount shows generic 'ERR_UNKNOWN' instead of the real reason | Medium | Open | Discount 100% still gives 'Could not calculate the total / ERR_UNKNOWN'; Old EM clears the field | [SAN-EM112-001](#san-em112-001--discount-100-does-not-give-the-generic-err_unknown-error) |
 | [EM-93](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-93) | [Invoices / Debit Note > Add Invoice] Invoice stays Partially Paid after paying the full displayed amount (3-decimal unit price) | Medium | Open | INV-202610-00047 stays PARTIALLY_PAID with due 0.0042 (screen shows 0.00) | [SAN-EM93-001](#san-em93-001--paying-exactly-the-displayed-balance-due-makes-the-invoice-paid) |
 | [EM-113](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-113) | [Invoices / Debit Note > Approve] No message when approving an already approved invoice | Medium | Open | Second Approve from a stale tab shows no 'Invoice has been already approved.' | [SAN-EM113-001](#san-em113-001--approving-an-invoice-already-approved-in-another-tab-shows-invoice-has-been-already-approved) |
 
 ## Tickets
-
-### EM-112 · [Invoices / Debit Note > Add Invoice] 100% discount shows generic 'ERR_UNKNOWN' instead of the real reason
-
-[EM-112](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-112) · Jira priority Medium · Status **Open**
-
-**Reported:** Both systems allow at most 99% discount. Current EM clears the field; New EM keeps 100 and shows 'Could not calculate the total / ERR_UNKNOWN'.
-
-#### SAN-EM112-001 · Discount 100% does not give the generic ERR_UNKNOWN error
-
-| Priority | Suites | Automation | Status | Source |
-|---|---|---|---|---|
-| P2 | Sanity · Regression | Auto-UI | Active | EM-112 repro (TC-EM-112-01), 2026-11-01 |
-
-**Preconditions:**
-
-1. Logged in as Admin.
-2. Pages: New EM `/receivables/invoices/new`, Old EM `/invoices/add-invoice` (bundle `dd551ca9`).
-
-**Test data:**
-
-1. Line: Unit 1, Gross Price 1000, Tax 5%.
-
-**Steps:**
-
-1. Enter the line from the test data.
-2. Set Discount (%) = 100 and click outside.
-3. Set Discount (Ks) = 1,000 (equal to the price).
-
-**Expected result:**
-
-1. Disc. Price 1,000.000 · Total 1,000.000.
-2. The Discount field is **cleared**, totals are calculated as with discount 0, and there is no error.
-
-**Result (build -37, 2026-11-01):**
-
-| # | Old EM | New EM | |
-|---|---|---|---|
-| 1 | Disc. Price 1,000.000 · Total 1,000.000 | See EM-92 | — |
-| 2 | Field **cleared**, no error | Field keeps **100**; red box "Could not calculate the total · Something went wrong · Reference: **ERR_UNKNOWN**"; all totals "—" | ❌ Differs |
-| 3 | Not run | Not run | ⛔ Not run |
-
-**Conclusion:** Open. The user is not told what is wrong (the 99% limit), and the generic message suggests the system is broken.
-
-**Evidence:**
-
-- ![EM-112 new](../img/EM-112/01_NEW-uat_discount-100-err-unknown.png) — keeps 100
-- ![EM-112 old](../img/EM-112/02_OLD-uat_discount-100-cleared.png) — Old EM: typing 100 → Discount box is cleared, no generic error
----
 
 ### EM-93 · [Invoices / Debit Note > Add Invoice] Invoice stays Partially Paid after paying the full displayed amount (3-decimal unit price)
 

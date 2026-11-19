@@ -2,9 +2,9 @@
 
 [← Ticket index](../README.md) · [Sanity index](../../README.md)
 
-**Tickets:** 5 · **Fixed:** 5
+**Tickets:** 6 · **Fixed:** 6
 
-EM-49 and EM-53 are fixed on build -37; EM-92 on build -43 and EM-75 and EM-76 on build -74 (moved from [G3](../open/g3-invoice-amounts.md) on 2026-11-06). Their cases are now regression checks.
+EM-49 and EM-53 are fixed on build -37; EM-92 on build -43 and EM-75 and EM-76 on build -74 (moved from [G3](../open/g3-invoice-amounts.md) on 2026-11-06); EM-112 on build -117 (moved from G3 on 2026-11-19). Their cases are now regression checks.
 
 ## Summary
 
@@ -15,6 +15,7 @@ EM-49 and EM-53 are fixed on build -37; EM-92 on build -43 and EM-75 and EM-76 o
 | [EM-92](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-92) | [Invoices / Debit Note > Add Invoice] Create Invoice – line amounts and Payment Terms differ from old EM (Disc. Price, line Total, Payment Terms) | High | Fixed | Retest build -74 (2026-11-06, automated): all 4 cases pass — Disc. Price, line Total without tax, Payment Terms optional and preset | [SAN-EM92-001](#-san-em92-001--create-invoice-opens-with-payment-terms-optional-and-preset-to-due-on-receipt), [SAN-EM92-002](#-san-em92-002--line-1--1000-with-5-tax-and-discount-0-shows-disc-price-1000000-and-total-1000000), [SAN-EM92-003](#-san-em92-003--line-1--1000-with-5-tax-and-discount-10-shows-disc-price-900000-and-total-900000), [SAN-EM92-004](#-san-em92-004--changing-tax-type-clears-the-line-as-in-old-em) |
 | [EM-75](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-75) | [Invoices / Debit Note > Add Invoice] Inclusive Tax 5%/3% UI differs and allows discount | Highest | Fixed | Retest build -74 (2026-11-06, automated): passed — Discount locked, line and footer match Old EM for Incl. 5% and 3% | [SAN-EM75-001](#-san-em75-001--inclusive-tax-5-and-3-matches-the-old-em-form-and-does-not-allow-discount) |
 | [EM-76](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-76) | [Apartments > Add Invoice] Inclusive Tax 5%/3% UI differs and allows discount | Highest | Fixed | Retest build -74 (2026-11-06, automated): passed — from an apartment, Discount locked, line and footer match Old EM for Incl. 5% and 3% | [SAN-EM76-001](#-san-em76-001--inclusive-tax-from-an-apartment-add-invoice-matches-old-em-and-blocks-discount) |
+| [EM-112](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-112) | [Invoices / Debit Note > Add Invoice] 100% discount shows generic 'ERR_UNKNOWN' instead of the real reason | Medium | Fixed | Retest build -117 (2026-11-19, automated): passed — 100 % is cleared with "Discount must be from 1 to 99.", no ERR_UNKNOWN | [SAN-EM112-001](#san-em112-001--discount-100-does-not-give-the-generic-err_unknown-error) |
 
 ## Tickets
 
@@ -459,4 +460,69 @@ The line Disc. Price / Total part is fixed together with EM-92 and EM-75. Jira c
 
 - ![EM-76 new](../img/EM-76/01_NEW-uat_apartment-add-invoice-incl3.png) — FIXED: Discount locked
 - ![EM-76 old](../img/EM-76/02_OLD-uat_incl5-expected.png) — Pre-tax price 1,000 (locked) + tax-inclusive input 1,050.00
+---
+
+### EM-112 · [Invoices / Debit Note > Add Invoice] 100% discount shows generic 'ERR_UNKNOWN' instead of the real reason
+
+[EM-112](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-112) · Jira priority Medium · Status **Fixed** (build -117, 2026-11-19)
+
+**Reported:** Both systems allow at most 99% discount. Current EM clears the field; New EM keeps 100 and shows 'Could not calculate the total / ERR_UNKNOWN'.
+
+#### SAN-EM112-001 · Discount 100% does not give the generic ERR_UNKNOWN error
+
+| Priority | Suites | Automation | Status | Source |
+|---|---|---|---|---|
+| P2 | Sanity · Regression | Auto-UI | Active | EM-112 repro (TC-EM-112-01), 2026-11-01 |
+
+**Preconditions:**
+
+1. Logged in as Admin.
+2. Pages: New EM `/receivables/invoices/new`, Old EM `/invoices/add-invoice` (bundle `dd551ca9`).
+
+**Test data:**
+
+1. Line: Unit 1, Gross Price 1000, Tax 5%.
+
+**Steps:**
+
+1. Enter the line from the test data.
+2. Set Discount (%) = 100 and click outside.
+3. Set Discount (Ks) = 1,000 (equal to the price).
+
+**Expected result:**
+
+1. Disc. Price 1,000.000 · Total 1,000.000.
+2. The Discount field is **cleared**, totals are calculated as with discount 0, and there is no error.
+
+**Automated test:** [`SAN-EM112-001` in fixed-invoices.spec.ts](../../../../tests/sanity/tickets/fixed/fixed-invoices.spec.ts) · tag `@sanity` `@EM-112` · run `APP=em npx playwright test --grep SAN-EM112-001` · read-only (no Create). Step 3 (Ks = 1,000) has no expected result and is not automated.
+
+**Result (build -37, 2026-11-01):**
+
+| # | Old EM | New EM | |
+|---|---|---|---|
+| 1 | Disc. Price 1,000.000 · Total 1,000.000 | See EM-92 | — |
+| 2 | Field **cleared**, no error | Field keeps **100**; red box "Could not calculate the total · Something went wrong · Reference: **ERR_UNKNOWN**"; all totals "—" | ❌ Differs |
+| 3 | Not run | Not run | ⛔ Not run |
+
+**Conclusion:** Open. The user is not told what is wrong (the 99% limit), and the generic message suggests the system is broken.
+
+**Retest (build `v0.4.1-117-g61c40893`, 2026-11-19, automated): passed** · also passed on the test env (`.env.test`, build `v0.4.1-148-g1a6a8d7b`, 2026-11-19, automated, `TARGET_ENV=test`)
+
+| # | Check | Old EM | New EM | |
+|---|---|---|---|---|
+| 1 | Line 1 × 1000, 5% Tax | Disc. Price 1,000.000 · Total 1,000.000 | Disc. Price 1,000.000 · Tax 50.000 · Total 1,000.000 | ✅ |
+| 2 | Discount (%) = 100, click outside | Field cleared, no error | Field **cleared**, message "Discount must be from 1 to 99.", totals as with discount 0 (Grand Total 1,050.00), no ERR_UNKNOWN | ✅ |
+| 3 | Discount (Ks) = 1,000 | Not run | Not run | ⛔ Not run |
+
+Also noted: Settings › General › "Old CoRef No." is enabled on UAT, so the form shows a required "Old CoRef No." field.
+
+Jira comment posted 2026-11-19: `VERIFIED_PASSED_v0.4.1-117` with both screenshots.
+
+**Evidence:**
+
+- ![EM-112 retest](../img/EM-112/03_NEW-uat_retest-2026-11-19_line-1x1000-5pct.png) — line 1 × 1000, 5% Tax
+- ![EM-112 retest](../img/EM-112/04_NEW-uat_retest-2026-11-19_discount-100-cleared.png) — FIXED: 100 % cleared, "Discount must be from 1 to 99."
+
+- ![EM-112 new](../img/EM-112/01_NEW-uat_discount-100-err-unknown.png) — keeps 100
+- ![EM-112 old](../img/EM-112/02_OLD-uat_discount-100-cleared.png) — Old EM: typing 100 → Discount box is cleared, no generic error
 ---
