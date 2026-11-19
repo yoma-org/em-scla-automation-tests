@@ -85,7 +85,7 @@ User needs to login the system first.
 
 **Expected result:**
 
-1. "Invoice is successfully issued" message will be shown
+1. "Invoice has been successfully created" message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -97,6 +97,12 @@ User needs to login the system first.
 4. Apartment - summary amount , Invoices list, SOA report
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
+
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-18 | v0.4.1-148 (test) | FAILED | 6. Create → Expected 1: no success message (only "Creating this draft…", then the detail opens). Expected 2–3 and all check areas pass. | [EM-153](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-153) | EM-154 |
 
 ---
 
@@ -133,6 +139,12 @@ User needs to login the system first.
 **Expected result:**
 
 The system does not allow creating invoices with future dates, so dates are bound and users can't select the future days  
+
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-18 | v0.4.1-148 (test) | PASSED | — (calendar: future days disabled; typed future dates revert to today; nothing created) | — | EM-154 |
 
 ---
 
@@ -183,6 +195,12 @@ User needs to login the system first.
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
 
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (dated 01/10/2026 instead of 1.6.2025, see [source-issues](../source-issues.md#wrong-or-contradictory-expected-results-fix-in-source); approved INV-202610-00006 due 08/10/2026, overdue 2,781 in "31 Days to 60 Days", all check areas as expected) | — | EM-154 |
+
 ---
 
 ### Invoice validation
@@ -232,6 +250,12 @@ User needs to login the system first.
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
 
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (99 % kept: Disc. Price 15.00, Grand Total 30.90; 100 % / 120 % cleared with "Discount must be from 1 to 99."; nothing created) | — | EM-154 |
+
 ---
 
 #### INV-005 · Invoice percentage discount rejects decimal value
@@ -278,6 +302,12 @@ User needs to login the system first.
 4. Apartment - summary amount , Invoices list, SOA report
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
+
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (typed 15.55: "." never accepted, field cleared at the 3rd digit "155"; pasted 15.55: cleared; nothing created) | — | EM-154 |
 
 ---
 
@@ -326,6 +356,12 @@ User needs to login the system first.
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
 
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (1,500 / 1,600 Ks typed and pasted: cleared with "Discount must be less than Gross Price."; nothing created) | — | EM-154 |
+
 ---
 
 #### INV-007 · Invoice discount field disabled for inclusive tax type
@@ -371,6 +407,12 @@ The system will disable the discount field, and they will not be able to enter a
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
 
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (Incl. 5% Tax: Discount disabled in % and Ks, no input typed or pasted; Grand Total 3,000.00; nothing created) | — | EM-154 |
+
 ---
 
 ### Create invoice
@@ -415,7 +457,7 @@ User needs to login the system first.
 
 **Expected result:**
 
-1. "Invoice is successfully issued" message will be shown
+1. "Invoice has been successfully created" message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -427,6 +469,12 @@ User needs to login the system first.
 4. Apartment - summary amount , Invoices list, SOA report
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
+
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-19 | v0.4.1-148 (test) | FAILED | 8. Create → Expected 1: no success message (only "Creating this draft…", then the detail opens). Two lines and totals correct (Grand Total 18,450.00); draft #107 saved; counter +1; other check areas unchanged. | [EM-153](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-153) | EM-154 |
 
 ---
 
@@ -467,11 +515,17 @@ User needs to login the system first.
 
 **Data variants (3 incl. base) — run as one data-driven test:**
 
-| # | Variant | Source | Note |
-|---|---|---|---|
-| 1 | (base) Error message for not filling apartment fields in invoices. | Invoice-Debit Note r13 (TC_Inv_009) | |
-| 2 | Missing field=Item description | Invoice-Debit Note r14 (TC_Inv_010) |  |
-| 3 | Missing field=Income category | Invoice-Debit Note r15 (TC_Inv_011) |  |
+| # | Variant | Source | Expected result | Note |
+|---|---|---|---|---|
+| 1 | (base) Error message for not filling apartment fields in invoices. | Invoice-Debit Note r13 (TC_Inv_009) | "Apartment is required" error message under the Apartment box. | |
+| 2 | Missing field=Item description | Invoice-Debit Note r14 (TC_Inv_010) | "Item description is required" error message under the Item Description box. | |
+| 3 | Missing field=Income category | Invoice-Debit Note r15 (TC_Inv_011) | "Category is required" error message under the Income Categories box. | |
+
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-19 | v0.4.1-148 (test) | FAILED | 6. [base] "Select 'Apartment'" instead of "Apartment is required"; Variant 2: "Enter 'Item Description'" instead of "Item description is required". Variant 3 passes; no invoice created in any variant. | [EM-155](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-155) | EM-154 |
 
 ---
 
@@ -507,14 +561,20 @@ User needs to login the system first.
 
 **Expected result:**
 
-"The selected Unit is invalid." error message alert will be shown.  
+"The selected Unit is invalid." error message will be shown under the Unit field.  
 
 **Data variants (2 incl. base) — run as one data-driven test:**
 
-| # | Variant | Source | Note |
-|---|---|---|---|
-| 1 | (base) Error message for filling 0 unit in invoices | Invoice-Debit Note r16 (TC_Inv_012) | |
-| 2 | Field=Gross price (0) | Invoice-Debit Note r18 (TC_Inv_014) |  |
+| # | Variant | Source | Expected result | Note |
+|---|---|---|---|---|
+| 1 | (base) Error message for filling 0 unit in invoices | Invoice-Debit Note r16 (TC_Inv_012) | "The selected Unit is invalid." error message under the Unit field. | |
+| 2 | Field=Gross price (0) | Invoice-Debit Note r18 (TC_Inv_014) | "The selected Gross Price is invalid." error message under the Gross Price field. | |
+
+**Run results:**
+
+| Date | Build (env) | Result | Failed step | Bug | Xray |
+|---|---|---|---|---|---|
+| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (Unit 0 and Gross price 0: exact messages under the field, no invoice, no pop-up; same as Old EM. Noted: with Gross 0 New EM keeps Discount 10 Ks and adds "Discount must be less than Gross Price.", Old EM clears it) | — | EM-154 |
 
 ---
 
@@ -554,10 +614,10 @@ The system does not allow minus,so it does not appear in the feild
 
 **Data variants (2 incl. base) — run as one data-driven test:**
 
-| # | Variant | Source | Note |
-|---|---|---|---|
-| 1 | (base) User can't create with minus sign(-) unit in invoice | Invoice-Debit Note r17 (TC_Inv_013) | |
-| 2 | Field=Gross price (-1000) | Invoice-Debit Note r19 (TC_Inv_015) |  |
+| # | Variant | Source | Expected result | Note |
+|---|---|---|---|---|
+| 1 | (base) User can't create with minus sign(-) unit in invoice | Invoice-Debit Note r17 (TC_Inv_013) | The minus sign is not accepted, so it does not appear in the Unit field. | |
+| 2 | Field=Gross price (-1000) | Invoice-Debit Note r19 (TC_Inv_015) | The minus sign is not accepted, so it does not appear in the Gross Price field. | |
 
 ---
 
@@ -593,7 +653,7 @@ The system does not allow minus,so it does not appear in the feild
 
 **Expected result:**
 
-1. "Invoice is successfully issued" message will be shown
+1. "Invoice has been successfully created" message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -641,7 +701,7 @@ The system does not allow minus,so it does not appear in the feild
 **Expected result:**
 
 1. The system does not allow to create with value 99999999999999.00 .
-2. "Amount exceeded maximum limit." error message will be shown.
+2. "Amount exceeded maximum limit." error message will be shown under the Gross Price field.
 
 ---
 
@@ -713,7 +773,7 @@ The system does not allow minus,so it does not appear in the feild
 
 **Expected result:**
 
-1. "Invoice is successfully created" message will be shown
+1. "Invoice has been successfully created" message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -734,7 +794,7 @@ The system does not allow minus,so it does not appear in the feild
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
-| P2 | Regression | Auto-UI | Active — Source expected calls success msg an "error message" | Invoice-Debit Note r24 (TC_Inv_020) |
+| P2 | Regression | Auto-UI | Active | Invoice-Debit Note r24 (TC_Inv_020) |
 
 **Preconditions:**
 
@@ -751,8 +811,7 @@ have the permission.
 
 **Expected result:**
 
-1. "Invoice is deleted successfully"
-   error message will be shown
+1. "Invoice data has been deleted successfully" message will be shown
 
 ---
 
@@ -895,7 +954,7 @@ User needs to login the system first.
 
 **Expected result:**
 
-1. "debit note has been create successfully" message will be shown
+1. "Debit Note has been successfully created" message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -979,11 +1038,11 @@ User needs to login the system first.
 
 **Data variants (3 incl. base) — run as one data-driven test:**
 
-| # | Variant | Source | Note |
-|---|---|---|---|
-| 1 | (base) Error message for not filling apartment fields in debit notes. | Invoice-Debit Note r31 (TC_Inv_026) | |
-| 2 | Missing field=Item description | Invoice-Debit Note r32 (TC_Inv_027) |  |
-| 3 | Missing field=Income category | Invoice-Debit Note r33 (TC_Inv_028) | Source data lists Category but omits Apartment |
+| # | Variant | Source | Expected result | Note |
+|---|---|---|---|---|
+| 1 | (base) Error message for not filling apartment fields in debit notes. | Invoice-Debit Note r31 (TC_Inv_026) | "Apartment is required" error message under the Apartment box. | |
+| 2 | Missing field=Item description | Invoice-Debit Note r32 (TC_Inv_027) | "Item Description is required" error message under the Item Description box. | |
+| 3 | Missing field=Income category | Invoice-Debit Note r33 (TC_Inv_028) | "Category is required" error message under the Income Categories box. | Source data lists Category but omits Apartment. |
 
 ---
 
@@ -991,7 +1050,7 @@ User needs to login the system first.
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
-| P3 | Regression | Auto-UI | Active — Msg "Unit is required" differs from invoice "Unit is invalid" | Invoice-Debit Note r34 (TC_Inv_029) |
+| P3 | Regression | Auto-UI | Active — Msg "Unit is required" differs from invoice "The selected Unit is invalid." (same in Old EM) | Invoice-Debit Note r34 (TC_Inv_029) |
 
 **Preconditions:**
 
@@ -1017,14 +1076,14 @@ User needs to login the system first.
 
 **Expected result:**
 
-"Unit is required." error message alert will be shown.  
+"Unit is required" error message will be shown under the Unit field.  
 
 **Data variants (2 incl. base) — run as one data-driven test:**
 
-| # | Variant | Source | Note |
-|---|---|---|---|
-| 1 | (base) Error message for filling 0 unit in debit notes | Invoice-Debit Note r34 (TC_Inv_029) | |
-| 2 | Field=Gross price (0) | Invoice-Debit Note r36 (TC_Inv_031) |  |
+| # | Variant | Source | Expected result | Note |
+|---|---|---|---|---|
+| 1 | (base) Error message for filling 0 unit in debit notes | Invoice-Debit Note r34 (TC_Inv_029) | "Unit is required" error message under the Unit field. | |
+| 2 | Field=Gross price (0) | Invoice-Debit Note r36 (TC_Inv_031) | "The selected Gross Price is invalid." error message under the Gross Price field. | |
 
 ---
 
@@ -1062,10 +1121,10 @@ The system does not allow minus,so it does not appear in the feild
 
 **Data variants (2 incl. base) — run as one data-driven test:**
 
-| # | Variant | Source | Note |
-|---|---|---|---|
-| 1 | (base) User can't create with minus sign(-) unit in debit notes | Invoice-Debit Note r35 (TC_Inv_030) | |
-| 2 | Field=Gross price (-1000) | Invoice-Debit Note r37 (TC_Inv_032) |  |
+| # | Variant | Source | Expected result | Note |
+|---|---|---|---|---|
+| 1 | (base) User can't create with minus sign(-) unit in debit notes | Invoice-Debit Note r35 (TC_Inv_030) | The minus sign is not accepted, so it does not appear in the Unit field. | |
+| 2 | Field=Gross price (-1000) | Invoice-Debit Note r37 (TC_Inv_032) | The minus sign is not accepted, so it does not appear in the Gross Price field. | |
 
 ---
 
@@ -1099,7 +1158,7 @@ The system does not allow minus,so it does not appear in the feild
 
 **Expected result:**
 
-1. "Debit notes is successfully issued" message will be shown
+1. "Debit Note has been successfully created" message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -1145,7 +1204,7 @@ The system does not allow minus,so it does not appear in the feild
 **Expected result:**
 
 1. The system does not allow to create with value 99999999999999.00 .
-2. "Amount exceeded maximum limit" error message will be shown.
+2. "Amount exceeded maximum limit." error message will be shown under the Gross Price field.
 
 ---
 
@@ -1214,7 +1273,7 @@ The system does not allow minus,so it does not appear in the feild
 
 **Expected result:**
 
-1. "Debit notes is successfully issued" message will be shown
+1. "Debit Note has been successfully created" message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -1282,7 +1341,7 @@ User needs to login the system first.
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
-| P2 | Regression | Auto-UI | Active — Source expected calls success msg an "error message" | Invoice-Debit Note r43 (TC_Inv_038) |
+| P2 | Regression | Auto-UI | Active | Invoice-Debit Note r43 (TC_Inv_038) |
 
 **Preconditions:**
 
@@ -1299,8 +1358,7 @@ have the permission.
 
 **Expected result:**
 
-1. "Debit notes is deleted successfully"
-   error message will be shown
+1. "Debit Note data has been deleted successfully" message will be shown
 
 ---
 

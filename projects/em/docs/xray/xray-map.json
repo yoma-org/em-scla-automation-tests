@@ -1,0 +1,224 @@
+{
+  "tests": {
+    "INV-001": {
+      "issueId": "11241",
+      "key": "EM-139"
+    },
+    "INV-009": {
+      "issueId": "11242",
+      "key": "EM-140"
+    },
+    "INV-019": {
+      "issueId": "11243",
+      "key": "EM-141"
+    },
+    "INV-002": {
+      "issueId": "11255",
+      "key": "EM-144",
+      "type": "Automated"
+    },
+    "INV-003": {
+      "issueId": "11256",
+      "key": "EM-145",
+      "type": "Automated"
+    },
+    "INV-004": {
+      "issueId": "11258",
+      "key": "EM-146",
+      "type": "Automated"
+    },
+    "INV-005": {
+      "issueId": "11259",
+      "key": "EM-147",
+      "type": "Automated"
+    },
+    "INV-006": {
+      "issueId": "11260",
+      "key": "EM-148",
+      "type": "Automated"
+    },
+    "INV-007": {
+      "issueId": "11261",
+      "key": "EM-149",
+      "type": "Automated"
+    },
+    "INV-008": {
+      "issueId": "11262",
+      "key": "EM-150"
+    },
+    "INV-010": {
+      "issueId": "11263",
+      "key": "EM-151",
+      "type": "Automated"
+    },
+    "INV-011": {
+      "issueId": "11304",
+      "key": "EM-157"
+    },
+    "INV-012": {
+      "issueId": "11305",
+      "key": "EM-158"
+    },
+    "INV-013": {
+      "issueId": "11306",
+      "key": "EM-159"
+    },
+    "INV-014": {
+      "issueId": "11307",
+      "key": "EM-160"
+    },
+    "INV-015": {
+      "issueId": "11308",
+      "key": "EM-161"
+    },
+    "INV-016": {
+      "issueId": "11309",
+      "key": "EM-162"
+    },
+    "INV-017": {
+      "issueId": "11310",
+      "key": "EM-163"
+    },
+    "INV-018": {
+      "issueId": "11311",
+      "key": "EM-164"
+    },
+    "INV-020": {
+      "issueId": "11312",
+      "key": "EM-165"
+    },
+    "INV-021": {
+      "issueId": "11313",
+      "key": "EM-166"
+    },
+    "INV-022": {
+      "issueId": "11314",
+      "key": "EM-167"
+    },
+    "INV-023": {
+      "issueId": "11315",
+      "key": "EM-168"
+    },
+    "INV-024": {
+      "issueId": "11316",
+      "key": "EM-169"
+    },
+    "INV-025": {
+      "issueId": "11317",
+      "key": "EM-170"
+    },
+    "INV-026": {
+      "issueId": "11318",
+      "key": "EM-171"
+    },
+    "INV-027": {
+      "issueId": "11319",
+      "key": "EM-172"
+    },
+    "INV-028": {
+      "issueId": "11320",
+      "key": "EM-173"
+    },
+    "INV-029": {
+      "issueId": "11321",
+      "key": "EM-174"
+    },
+    "INV-030": {
+      "issueId": "11322",
+      "key": "EM-175"
+    },
+    "INV-031": {
+      "issueId": "11323",
+      "key": "EM-176"
+    },
+    "INV-032": {
+      "issueId": "11324",
+      "key": "EM-177"
+    },
+    "INV-033": {
+      "issueId": "11325",
+      "key": "EM-178"
+    },
+    "INV-034": {
+      "issueId": "11326",
+      "key": "EM-179"
+    },
+    "INV-035": {
+      "issueId": "11327",
+      "key": "EM-180"
+    },
+    "INV-036": {
+      "issueId": "11328",
+      "key": "EM-181"
+    },
+    "INV-037": {
+      "issueId": "11329",
+      "key": "EM-182"
+    }
+  },
+  "sets": {
+    "Invoice & Debit Note": {
+      "issueId": "11244",
+      "key": "EM-142"
+    }
+  },
+  "plans": {
+    "EM Regression – Nov 2026": {
+      "issueId": "11245",
+      "key": "EM-143"
+    }
+  },
+  "executions": [
+    {
+      "issueId": "11286",
+      "key": "EM-154",
+      "feature": "Invoice & Debit Note",
+      "summary": "Invoice & Debit Note · Round 1",
+      "round": 1,
+      "cases": [
+        "INV-001",
+        "INV-002",
+        "INV-003",
+        "INV-004",
+        "INV-005",
+        "INV-006",
+        "INV-007",
+        "INV-008",
+        "INV-009",
+        "INV-010",
+        "INV-011",
+        "INV-012",
+        "INV-013",
+        "INV-014",
+        "INV-015",
+        "INV-016",
+        "INV-017",
+        "INV-018",
+        "INV-019",
+        "INV-020",
+        "INV-021",
+        "INV-022",
+        "INV-023",
+        "INV-024",
+        "INV-025",
+        "INV-026",
+        "INV-027",
+        "INV-028",
+        "INV-029",
+        "INV-030",
+        "INV-031",
+        "INV-032",
+        "INV-033",
+        "INV-034",
+        "INV-035",
+        "INV-036",
+        "INV-037"
+      ],
+      "firstBuild": "v0.4.1-148"
+    }
+  ],
+  "currentPlan": "EM Regression – Nov 2026",
+  "rounds": {
+    "Invoice & Debit Note": "EM-154"
+  }
+}

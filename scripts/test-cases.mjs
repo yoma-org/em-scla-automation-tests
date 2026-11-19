@@ -133,10 +133,14 @@ function parseFeature(file) {
       continue;
     }
     if (c && /^\*\*Data variants/.test(line)) {
-      // | # | Variant | Source | Note |, then rows until a blank line; row 1 is the base case itself
+      // | # | Variant | Source | [Expected result |] Note |, then rows until a blank line; row 1 is the base case itself.
+      // Columns are found by header name, so the optional "Expected result" column can sit anywhere.
+      const head = splitRow(lines[i + 2] ?? '').map(h => h.toLowerCase());
+      const col = (name, dflt) => (head.indexOf(name) >= 0 ? head.indexOf(name) : dflt);
       let j = i + 3;
       for (; j < lines.length && lines[j].startsWith('|'); j++) {
-        const [n, label, source, note = ''] = splitRow(lines[j]);
+        const r = splitRow(lines[j]);
+        const [n, label, source, note = ''] = [r[0], r[col('variant', 1)], r[col('source', 2)], r[col('note', 3)]];
         if (n === '1' || /^:?-+:?$/.test(n)) continue;
         const [, st = 'Active', rest = ''] = note.match(/^(Review|Obsolete)(?:; (.*))?$/s) ?? [null, 'Active', note];
         c.variants.push({ label, source, status: st, statusNote: rest, line: where(j) });

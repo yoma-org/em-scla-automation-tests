@@ -30,6 +30,7 @@ Found while consolidating the manual workbook. Each item needs an owner (QA lead
 
 ## Wrong or contradictory expected results (fix in source)
 
+- Out-of-date test data: [INV-003](features/04-invoice-debit-note.md#-inv-003--invoice-due-date--issue-date--payment-term-ar-overdue-based-on-due-date) uses Date "1.6.2025" (due 8.6.2025), but Old and New EM only allow an invoice date from the 1st of last month to today. Run with the 1st of last month (+7 days) instead (user decision 2026-11-19); fix the source to a relative date.
 - Copy-paste errors:
   - Deposit-overflow assignment expects a *wallet* update ([PAY-010](features/10-make-payment.md#-pay-010--assign-unknown-received-rv-to-apartment-overflow-added-to-deposit)).
   - A cheque payment expects a WP code ([PAY-014](features/10-make-payment.md#-pay-014--make-payment-for-apartment-invoice-with-cheque-method)).
