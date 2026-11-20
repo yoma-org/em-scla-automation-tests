@@ -74,7 +74,7 @@ export class CreateInvoicePage {
   readonly discountInKs: Locator;
   readonly category: Locator;
   readonly currency: Locator;
-  /** "Date *", DD-MM-YYYY; defaults to today. */
+  /** "Date *" on screen; accessible name "Date" since build v0.4.1-158 (the "*" is aria-hidden). DD-MM-YYYY; defaults to today. */
   readonly date: Locator;
   /** "Choose date" button next to Date; opens a dialog with a month grid ("November 2026"). */
   readonly chooseDate: Locator;
@@ -89,7 +89,7 @@ export class CreateInvoicePage {
   constructor(private readonly page: Page) {
     this.category = page.getByRole('combobox', { name: 'Income Categories' });
     this.currency = page.getByRole('combobox', { name: 'Currency' });
-    this.date = page.getByRole('textbox', { name: 'Date *' });
+    this.date = page.getByRole('textbox', { name: /^Date( \*)?$/ });
     this.chooseDate = page.getByRole('button', { name: 'Choose date' });
     this.calendar = page.getByRole('dialog').filter({ has: page.getByRole('grid') });
     this.nextMonth = this.calendar.getByRole('button', { name: 'Go to the Next Month' });

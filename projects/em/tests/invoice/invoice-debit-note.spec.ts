@@ -600,14 +600,14 @@ test.describe('Invoices · Invoice validation', () => {
   // message shows under it, with the exact text of the case doc (user, 2026-11-19). Dated today; Discount 10 Ks.
   // Behaviour compared with Old EM (projects/old-em probe inv009-required-fields): the line is calculated before
   // Create (Disc. Price 1,490 · Tax 89.40 · Total 2,980 · Grand 3,069.40), no invoice is created, the message sits
-  // under the field. Old EM words: "Apartment is required", "Item description is requried", "Category is required".
+  // under the field. Expected words (user, 2026-11-20, from build v0.4.1-158): "Apartment is required.", "Item description is required.", "Category is required."
   // Check areas (as INV-004…007): the Inv/DN Draft list (our apartment) and the pending counter must not change.
   // One test per catalog variant ([base] = missing apartment), each on its own new apartment.
   const INV_009 = [
-    // Expected texts exactly as in the case doc (updated by the user 2026-11-19); pass / fail on the exact text.
-    { label: 'base', source: 'TC_Inv_009', missing: 'apartment', field: 'Apartment', expected: 'Apartment is required' },
-    { label: 'Missing field=Item description', source: 'TC_Inv_010', missing: 'item description', field: 'Item Description', expected: 'Item description is required' },
-    { label: 'Missing field=Income category', source: 'TC_Inv_011', missing: 'income category', field: 'Income Categories', expected: 'Category is required' }
+    // Expected texts exactly as in the case doc (updated by the user 2026-11-20); pass / fail on the exact text.
+    { label: 'base', source: 'TC_Inv_009', missing: 'apartment', field: 'Apartment', expected: 'Apartment is required.' },
+    { label: 'Missing field=Item description', source: 'TC_Inv_010', missing: 'item description', field: 'Item Description', expected: 'Item description is required.' },
+    { label: 'Missing field=Income category', source: 'TC_Inv_011', missing: 'income category', field: 'Income Categories', expected: 'Category is required.' }
   ] as const;
   for (const v of INV_009) {
     test(`INV-009 [${v.label}] Invoice create - required field validation (apartment / item description / category)`,
@@ -675,8 +675,8 @@ test.describe('Invoices · Invoice validation', () => {
   // As INV-009: dated today, Discount 10 Ks, one test per catalog variant, Inv/DN Draft list and counter unchanged.
   // A pop-up alert besides the field message is recorded, not judged (the case does not mention it; see EM-156 #1).
   const INV_010 = [
-    { label: 'base', source: 'TC_Inv_012', field: 'Unit', unit: '0', grossPrice: '1500', expected: 'The selected Unit is invalid.' },
-    { label: 'Field=Gross price (0)', source: 'TC_Inv_014', field: 'Gross Price', unit: '2', grossPrice: '0', expected: 'The selected Gross Price is invalid.' }
+    { label: 'base', source: 'TC_Inv_012', field: 'Unit', unit: '0', grossPrice: '1500', expected: 'Unit must be greater than 0.' },
+    { label: 'Field=Gross price (0)', source: 'TC_Inv_014', field: 'Gross Price', unit: '2', grossPrice: '0', expected: 'Gross Price must be greater than 0.' }
   ] as const;
   for (const v of INV_010) {
     test(`INV-010 [${v.label}] Invoice create - zero Unit / Gross price rejected`,

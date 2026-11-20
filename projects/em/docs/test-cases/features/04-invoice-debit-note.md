@@ -511,15 +511,15 @@ User needs to login the system first.
 
 **Expected result:**
 
-"Apartment is required" error message will be shown under the apartment box.  
+"Apartment is required." error message will be shown under the apartment box.  
 
 **Data variants (3 incl. base) — run as one data-driven test:**
 
 | # | Variant | Source | Expected result | Note |
 |---|---|---|---|---|
-| 1 | (base) Error message for not filling apartment fields in invoices. | Invoice-Debit Note r13 (TC_Inv_009) | "Apartment is required" error message under the Apartment box. | |
-| 2 | Missing field=Item description | Invoice-Debit Note r14 (TC_Inv_010) | "Item description is required" error message under the Item Description box. | |
-| 3 | Missing field=Income category | Invoice-Debit Note r15 (TC_Inv_011) | "Category is required" error message under the Income Categories box. | |
+| 1 | (base) Error message for not filling apartment fields in invoices. | Invoice-Debit Note r13 (TC_Inv_009) | "Apartment is required." error message under the Apartment box. | |
+| 2 | Missing field=Item description | Invoice-Debit Note r14 (TC_Inv_010) | "Item description is required." error message under the Item Description box. | |
+| 3 | Missing field=Income category | Invoice-Debit Note r15 (TC_Inv_011) | "Category is required." error message under the Income Categories box. | |
 
 **Run results:**
 
@@ -561,14 +561,14 @@ User needs to login the system first.
 
 **Expected result:**
 
-"The selected Unit is invalid." error message will be shown under the Unit field.  
+"Unit must be greater than 0." error message will be shown under the Unit field.  
 
 **Data variants (2 incl. base) — run as one data-driven test:**
 
 | # | Variant | Source | Expected result | Note |
 |---|---|---|---|---|
-| 1 | (base) Error message for filling 0 unit in invoices | Invoice-Debit Note r16 (TC_Inv_012) | "The selected Unit is invalid." error message under the Unit field. | |
-| 2 | Field=Gross price (0) | Invoice-Debit Note r18 (TC_Inv_014) | "The selected Gross Price is invalid." error message under the Gross Price field. | |
+| 1 | (base) Error message for filling 0 unit in invoices | Invoice-Debit Note r16 (TC_Inv_012) | "Unit must be greater than 0." error message under the Unit field. | |
+| 2 | Field=Gross price (0) | Invoice-Debit Note r18 (TC_Inv_014) | "Gross Price must be greater than 0." error message under the Gross Price field. | "Discount must be less than Gross Price." also shows (Discount 10 Ks with Gross Price 0). |
 
 **Run results:**
 
