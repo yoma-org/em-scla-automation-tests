@@ -98,12 +98,6 @@ User needs to login the system first.
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
 
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-18 | v0.4.1-148 (test) | FAILED | 6. Create → Expected 1: no success message (only "Creating this draft…", then the detail opens). Expected 2–3 and all check areas pass. | [EM-153](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-153) | EM-154 |
-
 ---
 
 ### Invoice validation
@@ -139,12 +133,6 @@ User needs to login the system first.
 **Expected result:**
 
 The system does not allow creating invoices with future dates, so dates are bound and users can't select the future days  
-
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-18 | v0.4.1-148 (test) | PASSED | — (calendar: future days disabled; typed future dates revert to today; nothing created) | — | EM-154 |
 
 ---
 
@@ -195,12 +183,6 @@ User needs to login the system first.
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
 
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (dated 01/10/2026 instead of 1.6.2025, see [source-issues](../source-issues.md#wrong-or-contradictory-expected-results-fix-in-source); approved INV-202610-00006 due 08/10/2026, overdue 2,781 in "31 Days to 60 Days", all check areas as expected) | — | EM-154 |
-
 ---
 
 ### Invoice validation
@@ -250,12 +232,6 @@ User needs to login the system first.
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
 
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (99 % kept: Disc. Price 15.00, Grand Total 30.90; 100 % / 120 % cleared with "Discount must be from 1 to 99."; nothing created) | — | EM-154 |
-
 ---
 
 #### INV-005 · Invoice percentage discount rejects decimal value
@@ -302,12 +278,6 @@ User needs to login the system first.
 4. Apartment - summary amount , Invoices list, SOA report
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
-
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (typed 15.55: "." never accepted, field cleared at the 3rd digit "155"; pasted 15.55: cleared; nothing created) | — | EM-154 |
 
 ---
 
@@ -356,12 +326,6 @@ User needs to login the system first.
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
 
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (1,500 / 1,600 Ks typed and pasted: cleared with "Discount must be less than Gross Price."; nothing created) | — | EM-154 |
-
 ---
 
 #### INV-007 · Invoice discount field disabled for inclusive tax type
@@ -406,12 +370,6 @@ The system will disable the discount field, and they will not be able to enter a
 4. Apartment - summary amount , Invoices list, SOA report
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
-
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (Incl. 5% Tax: Discount disabled in % and Ks, no input typed or pasted; Grand Total 3,000.00; nothing created) | — | EM-154 |
 
 ---
 
@@ -470,12 +428,6 @@ User needs to login the system first.
 5. Contact - summary amount, Unpaid Invoices list
 6. Report - Invoices list
 
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-19 | v0.4.1-148 (test) | FAILED | 8. Create → Expected 1: no success message (only "Creating this draft…", then the detail opens). Two lines and totals correct (Grand Total 18,450.00); draft #107 saved; counter +1; other check areas unchanged. | [EM-153](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-153) | EM-154 |
-
 ---
 
 ### Invoice validation
@@ -521,12 +473,6 @@ User needs to login the system first.
 | 2 | Missing field=Item description | Invoice-Debit Note r14 (TC_Inv_010) | "Item description is required." error message under the Item Description box. | |
 | 3 | Missing field=Income category | Invoice-Debit Note r15 (TC_Inv_011) | "Category is required." error message under the Income Categories box. | |
 
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-19 | v0.4.1-148 (test) | FAILED | 6. [base] "Select 'Apartment'" instead of "Apartment is required"; Variant 2: "Enter 'Item Description'" instead of "Item description is required". Variant 3 passes; no invoice created in any variant. | [EM-155](https://zeyalabs-team-a83df6me.atlassian.net/browse/EM-155) | EM-154 |
-
 ---
 
 #### INV-010 · Invoice create - zero Unit / Gross price rejected
@@ -569,12 +515,6 @@ User needs to login the system first.
 |---|---|---|---|---|
 | 1 | (base) Error message for filling 0 unit in invoices | Invoice-Debit Note r16 (TC_Inv_012) | "Unit must be greater than 0." error message under the Unit field. | |
 | 2 | Field=Gross price (0) | Invoice-Debit Note r18 (TC_Inv_014) | "Gross Price must be greater than 0." error message under the Gross Price field. | "Discount must be less than Gross Price." also shows (Discount 10 Ks with Gross Price 0). |
-
-**Run results:**
-
-| Date | Build (env) | Result | Failed step | Bug | Xray |
-|---|---|---|---|---|---|
-| 2026-11-19 | v0.4.1-148 (test) | PASSED | — (Unit 0 and Gross price 0: exact messages under the field, no invoice, no pop-up; same as Old EM. Noted: with Gross 0 New EM keeps Discount 10 Ks and adds "Discount must be less than Gross Price.", Old EM clears it) | — | EM-154 |
 
 ---
 
