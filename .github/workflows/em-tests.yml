@@ -7,6 +7,9 @@
 #   @sanity+@P1             sanity tests that are also P1 (+ = AND)
 #   @smoke+!@review         smoke without review cases (! = NOT)
 #
+# Run one module: pick "module" (a folder in projects/em/tests/) and leave tags empty = every test of
+# that module; with tags too = only the tests of that module that match the tags.
+#
 # Automatic runs:
 #   - Jira issue moved to QA → Jira Automation calls this workflow with tags=@<key>, comment=true
 #     (setup: projects/em/docs/sanity-test/README.md#run-tests-when-a-ticket-is-fixed).
@@ -21,9 +24,14 @@ on:
   workflow_dispatch:
     inputs:
       tags:
-        description: 'Tags: @sanity, @smoke, @e2e, @EM-92 @EM-93 (space = OR), @sanity+@P1 (+ = AND), !@review (NOT)'
-        required: true
-        default: '@sanity'
+        description: 'Tags: @sanity, @smoke, @e2e, @EM-92 @EM-93 (space = OR), @sanity+@P1 (+ = AND), !@review (NOT). Empty = every test of the module.'
+        required: false
+        default: ''
+      module:
+        description: 'Module (folder in projects/em/tests/): all, or one module only'
+        type: choice
+        options: [all, invoice, settings, sanity]
+        default: all
       comment:
         description: 'Comment the result on the Jira issues in the tags (@EM-…)'
         type: boolean
@@ -43,7 +51,7 @@ on:
   #   - cron: '30 7 * * 1-5'
 
 concurrency:
-  group: em-tests-${{ inputs.tags || github.event.schedule }}
+  group: em-tests-${{ inputs.module || 'all' }}-${{ inputs.tags || github.event.schedule }}
   cancel-in-progress: false
 
 jobs:
@@ -53,6 +61,7 @@ jobs:
     with:
       suite: ${{ github.event_name == 'schedule' && 'jira-qa' || 'manual' }}
       tags: ${{ inputs.tags }}
+      module: ${{ inputs.module || 'all' }}
       comment: ${{ inputs.comment == true }}
       browser: ${{ inputs.browser || 'chromium' }}
       environment: ${{ inputs.environment || 'em-test' }}

@@ -22,6 +22,10 @@ on:
         description: 'Tag expression to run. Ignored when jira_qa is true.'
         type: string
         default: ''
+      module:
+        description: 'Module = folder in projects/em/tests/ (invoice, settings, sanity…); all = every folder'
+        type: string
+        default: all
       environment:
         description: 'GitHub environment to run against: em-test (default) or em-uat'
         type: string
@@ -65,6 +69,7 @@ jobs:
       QA_MODE: ${{ inputs.jira_qa }}
       COMMENT: ${{ inputs.comment || inputs.jira_qa }}
       NO_TESTS_OK: ${{ inputs.no_tests_ok }}
+      MODULE: ${{ inputs.module }}
     steps:
       - uses: actions/checkout@v4
 
@@ -93,17 +98,30 @@ jobs:
           else
             tags="$TAGS_INPUT"
           fi
+          if [ -z "$tags" ] && [ "$QA_MODE" != "true" ] && { [ -z "$MODULE" ] || [ "$MODULE" = "all" ]; }; then
+            echo "::error::Pick a module or type tags (e.g. @sanity)"; exit 1
+          fi
           echo "tags=$tags" >> "$GITHUB_OUTPUT"
 
       - name: Run tests
         id: run
-        if: steps.pick.outputs.tags != ''
+        if: steps.pick.outputs.tags != '' || (env.MODULE != '' && env.MODULE != 'all')
         env:
           TAGS: ${{ steps.pick.outputs.tags }}
         run: |
           extra="--project=$BROWSER"
           if [ "$NO_TESTS_OK" = "true" ]; then extra="$extra --pass-with-no-tests"; fi
-          node scripts/run-tags.mjs "$TAGS" --app em -- $extra
+          # One module: only the spec files in projects/em/tests/<module>/ (a Playwright file filter).
+          if [ -n "$MODULE" ] && [ "$MODULE" != "all" ]; then
+            if [ ! -d "projects/em/tests/$MODULE" ]; then echo "::error::No module folder projects/em/tests/$MODULE"; exit 1; fi
+            extra="tests/$MODULE/ $extra"
+          fi
+          if [ -n "$TAGS" ]; then
+            node scripts/run-tags.mjs "$TAGS" --app em -- $extra
+          else
+            # Module without tags: every test of the module.
+            npx playwright test -c projects/em $extra
+          fi
 
       - name: Comment results on Jira
         # Only when Jira is set up, comments are on, the tags name Jira issues, and the tests ran (pass or fail).
@@ -118,7 +136,8 @@ jobs:
         run: |
           {
             echo "### EM ${{ inputs.suite }} tests"
-            echo "- Tags: ${TAGS:-none}"
+            echo "- Module: ${MODULE:-all}"
+            echo "- Tags: ${TAGS:-none (every test of the module)}"
             echo "- Environment: ${{ inputs.environment }}"
             echo "- Browser: $BROWSER"
             if [ -n "$UNTESTED" ]; then echo "- In QA on Jira but **no test yet**: $UNTESTED"; fi
