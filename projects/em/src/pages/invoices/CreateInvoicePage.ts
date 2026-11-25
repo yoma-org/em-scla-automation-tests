@@ -80,7 +80,7 @@ export class CreateInvoicePage {
   readonly discountInKs: Locator;
   readonly category: Locator;
   readonly currency: Locator;
-  /** "Date *" on screen; accessible name "Date" since build v0.4.1-158 (the "*" is aria-hidden). DD-MM-YYYY; defaults to today. */
+  /** "Date *" on screen; accessible name "Date" (the "*" is aria-hidden). DD-MM-YYYY; defaults to today. */
   readonly date: Locator;
   /** "Choose date" button next to Date; opens a dialog with a month grid ("November 2026"). */
   readonly chooseDate: Locator;

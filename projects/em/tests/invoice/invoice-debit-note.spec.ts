@@ -2,11 +2,10 @@
 // (TARGET_ENV=test). Each test bills its own new apartment with a new owner (created through the API), so the
 // apartment / contact check areas start from zero. Drafts stay on the environment (nothing is deleted).
 //
-// Expected results the case does not state were confirmed by the user on 2026-11-18 from the Old EM run
+// Expected results the case does not state come from the Old EM run
 // (projects/old-em, probe check-areas-draft-invoice): a DRAFT changes only the Inv/DN draft list and the
-// Inv/DN pending counter; every other check area stays the same. Messages must match the case doc's text exactly
-// (user, 2026-11-19; the case doc's expected results were updated that day).
-// Test data: category "Maintenance Service" (the test env has no "Maintenance Services"; user decision).
+// Inv/DN pending counter; every other check area stays the same. Messages must match the case doc's text exactly.
+// Test data: category "Maintenance Service" (the test env has no "Maintenance Services").
 import { test, expect } from '@fixtures';
 import { testCase } from '@helpers/testCase';
 import { evidence } from '@helpers/evidence';
@@ -101,7 +100,7 @@ async function createInvoiceSteps(page: import('@playwright/test').Page, form: C
   await test.step(`6. Click "Create" button${opts.successMessage ? ' → Expected 1: success message' : ''}`, async () => {
     await form.createButton.click();
     if (opts.successMessage) {
-      // Exact text of the case doc's Expected 1 (updated by the user 2026-11-19).
+      // Exact text of the case doc's Expected 1.
       const message = page.getByText('Invoice has been successfully created.', { exact: true }).first();
       await expect.soft(message, '"Invoice has been successfully created." message (exact text from the case)').toBeVisible({ timeout: 10_000 });
       test.info().annotations.push({ type: 'observed', description: (await message.isVisible())
@@ -116,7 +115,7 @@ async function createInvoiceSteps(page: import('@playwright/test').Page, form: C
 /**
  * Enters `value` in a line's Discount field, typed key by key or pasted, and leaves the field.
  * Typing stops as soon as the field is cleared: that is the auto-clear; keys typed after it are the user's own new
- * input (user decision 2026-11-19, INV-005). Returns what the field shows afterwards.
+ * input. Returns what the field shows afterwards.
  */
 async function enterDiscount(page: import('@playwright/test').Page, line: ReturnType<CreateInvoicePage['line']>, value: string,
   input: 'typed' | 'pasted'): Promise<string> {
@@ -190,7 +189,7 @@ async function watchMessages(page: import('@playwright/test').Page): Promise<() 
   return () => page.evaluate(() => (window as unknown as { __qeMessages?: string[] }).__qeMessages ?? []).catch(() => []);
 }
 
-/** INV-020 test data (case), category "Internet" added on the test env for it (user decision 2026-11-25). */
+/** INV-020 test data (case), category "Internet" added on the test env for it. */
 const INV_020 = {
   category: 'Internet',
   paymentTerms: /^\+?15 ?days$/i,
@@ -297,7 +296,7 @@ async function approveFromDraftsSteps(page: import('@playwright/test').Page, apa
     const message = page.getByText(k.approved, { exact: true }).first();
     const shown = message.waitFor({ timeout: 30_000 }).then(() => true, () => false);
     await detail.approve();
-    expect.soft(await shown, `"${k.approved}" message (Old EM wording + full stop; known bug EM-198)`).toBe(true);
+    expect.soft(await shown, `"${k.approved}" message (Old EM wording + full stop)`).toBe(true);
     const seen = await messages();
     test.info().annotations.push({ type: 'observed', description: `after Approve: ${seen.length ? seen.map(t => `"${t}"`).join(' | ') : 'no message'}` });
     code = (await detail.code.innerText()).replace(/^#/, '').trim();
@@ -344,7 +343,7 @@ test.describe('Invoices · Invoice', () => {
   test.describe.configure({ timeout: 480_000 });
 
   // The title's "dated last month to today": the case runs twice in one test, dated today and dated last month,
-  // each on its own new apartment (user decision 2026-11-18). A failure names its run in the step title.
+  // each on its own new apartment. A failure names its run in the step title.
   test('INV-001 Create generic invoice (MMK, dated last month to today) as draft',
     testCase({ id: 'INV-001', source: 'TC_Inv_001', priority: 'P1', smoke: true, critical: true }),
     async ({ page, createInvoicePage: form }) => {
@@ -389,7 +388,7 @@ test.describe('Invoices · Invoice', () => {
       });
     });
 
-  // INV-003 (user decisions 2026-11-19): the case's date 1.6.2025 cannot be chosen (both EMs allow last month to
+  // INV-003: the case's date 1.6.2025 cannot be chosen (both EMs allow last month to
   // today), so the invoice is dated the 1st of last month; +7 days. Admin approves its own draft. Expected check
   // areas after approval come from the Old EM run (projects/old-em probe check-areas-approved-invoice): the invoice
   // is unpaid and overdue in AR, Invoice/DN list, apartment (summary, Invoices, SOA), contact (summary, Unpaid) and
@@ -461,10 +460,9 @@ test.describe('Invoices · Invoice', () => {
       });
     });
 
-  // INV-008 decisions (user, 2026-11-19): dated today (the case's 1.6.2025 is outside the allowed range); figures are
+  // INV-008: dated today (the case's 1.6.2025 is outside the allowed range); figures are
   // checked: line 1 Incl. 5% (2 × 1,500, as seen in INV-007), line 2 3% Tax (1 × 15,000), totals and the saved draft;
-  // check areas as INV-001 (a draft changes only the Inv/DN Draft list and the pending counter). A missing success
-  // message is the known bug EM-153.
+  // check areas as INV-001 (a draft changes only the Inv/DN Draft list and the pending counter).
   test('INV-008 Create invoice with multiple line items',
     testCase({ id: 'INV-008', source: 'TC_Inv_008', priority: 'P1', critical: true }),
     async ({ page, createInvoicePage: form }) => {
@@ -525,10 +523,10 @@ test.describe('Invoices · Invoice', () => {
       await test.step('8. Click "Create" button → Expected 1: success message', async () => {
         await form.createButton.click();
         const message = page.getByText('Invoice has been successfully created.', { exact: true }).first();
-        await expect.soft(message, '"Invoice has been successfully created." message (exact text from the case; known bug EM-153)').toBeVisible({ timeout: 10_000 });
+        await expect.soft(message, '"Invoice has been successfully created." message (exact text from the case)').toBeVisible({ timeout: 10_000 });
         test.info().annotations.push({ type: 'observed', description: (await message.isVisible())
           ? `message "${(await message.innerText()).trim()}"`
-          : 'no success message; New EM shows only "Creating this draft…" and then opens the invoice detail (EM-153)' });
+          : 'no success message; New EM shows only "Creating this draft…" and then opens the invoice detail' });
         await expect(page).toHaveURL(/\/receivables\/invoices\/\d+$/, { timeout: 30_000 });
       });
       await test.step('Expected 2: invoice is saved as draft in Inv/DN, with both lines', async () => {
@@ -556,7 +554,7 @@ test.describe('Invoices · Invoice', () => {
       });
     });
 
-  // INV-017 (2026-11-25): the draft to approve is our own, made with the INV-001 data (2,781.00 Ks incl. 81.00 Ks
+  // INV-017: the draft to approve is our own, made with the INV-001 data (2,781.00 Ks incl. 81.00 Ks
   // Commercial Tax), dated today, +7 days. Admin approves its own draft (as INV-003). The case's "approved successfully
   // with ref number" uses Old EM's message "Invoice has been approved successfully". Check areas after approval:
   // as INV-003, but not overdue (due in 7 days → "Current").
@@ -593,8 +591,8 @@ test.describe('Invoices · Invoice', () => {
 test.describe('Invoices · Debit note', () => {
   test.describe.configure({ timeout: 480_000 });
 
-  // INV-020 (2026-11-25): as INV-001, the case runs twice ("dated last month to today"), each on its own new
-  // apartment. Category "Internet" was added to the test env for it (user decision 2026-11-25). Message wording is
+  // INV-020: as INV-001, the case runs twice ("dated last month to today"), each on its own new
+  // apartment. Category "Internet" was added to the test env for it. Message wording is
   // the case's (= Old EM's toast). A draft changes only the Inv/DN Draft list and the pending counter (as INV-001).
   test('INV-020 Create debit note (MMK, dated last month to today) as draft',
     testCase({ id: 'INV-020', source: 'TC_Inv_024', priority: 'P1', smoke: true, critical: true }),
@@ -638,7 +636,7 @@ test.describe('Invoices · Debit note', () => {
       });
     });
 
-  // INV-031 (2026-11-25): the draft to approve is our own, made with the INV-020 data (225,000.00 Ks, Internet,
+  // INV-031: the draft to approve is our own, made with the INV-020 data (225,000.00 Ks, Internet,
   // +15 days), dated today. Admin approves its own draft. Message: Old EM's "Debit Note has been approved
   // successfully". Check areas after approval as INV-017 (unpaid, "Current").
   test('INV-031 Approve debit note - ref number, unpaid in apartment',
@@ -666,10 +664,10 @@ test.describe('Invoices · Debit note', () => {
 test.describe('Invoices · Invoice validation', () => {
   test.describe.configure({ timeout: 240_000 });
 
-  // INV-004 decisions (user, 2026-11-19): dated today (the case's 1.6.2025 is outside the allowed range; the date
+  // INV-004: dated today (the case's 1.6.2025 is outside the allowed range; the date
   // is not what this case checks). 99 % is checked on the form only (no Create). 100 % / 120 % must be cleared
   // automatically (Expected 2; a message without clearing is still a FAIL); when the value is not cleared, Create is
-  // clicked to check Expected 1 (no invoice). Known related bug: EM-112 (100 % → "ERR_UNKNOWN" instead of clearing).
+  // clicked to check Expected 1 (no invoice).
   // Check areas: the Inv/DN Draft list (our apartment) and the pending counter must not change.
   test('INV-004 Invoice percentage discount max 99% (100%/120% rejected)',
     testCase({ id: 'INV-004', source: 'TC_Inv_004', priority: 'P2' }),
@@ -724,11 +722,11 @@ test.describe('Invoices · Invoice validation', () => {
       });
     });
 
-  // INV-005 decisions: as INV-004 (user, 2026-11-19): dated today; 15.55 % must be cleared automatically (Expected 2),
+  // INV-005 (as INV-004): dated today; 15.55 % must be cleared automatically (Expected 2),
   // a value left in the field is a FAIL; when a value is left, Create is clicked to check Expected 1. Two ways in:
   // typed key by key (what a user does) and pasted. Typing stops as soon as the field is cleared: New EM ignores "."
-  // and clears "155" at the 3rd digit; keys typed after that are the user's own input, not a defect (user decision).
-  // Old EM (probe 2026-11-19): typing ignores "." → 1,555 → cleared on leaving the field.
+  // and clears "155" at the 3rd digit; keys typed after that are the user's own input, not a defect.
+  // Old EM: typing ignores "." → 1,555 → cleared on leaving the field.
   // Check areas: the Inv/DN Draft list (our apartment) and the pending counter must not change.
   test('INV-005 Invoice percentage discount rejects decimal value',
     testCase({ id: 'INV-005', source: 'TC_Inv_005', priority: 'P2' }),
@@ -769,7 +767,7 @@ test.describe('Invoices · Invoice validation', () => {
       });
     });
 
-  // INV-006 decisions: as INV-004 / INV-005 (user, 2026-11-19): dated today; the Discount switch set to Ks; 1,500
+  // INV-006 (as INV-004 / INV-005): dated today; the Discount switch set to Ks; 1,500
   // (= gross price) and 1,600 (> gross price) must be cleared automatically (Expected 2); typed key by key (stops at
   // the clear) and pasted; when a value is left, Create is clicked to check Expected 1. Check areas: the Inv/DN Draft
   // list (our apartment) and the pending counter must not change.
@@ -815,8 +813,8 @@ test.describe('Invoices · Invoice validation', () => {
       });
     });
 
-  // INV-007 decisions (user, 2026-11-19): dated today; form only (no Create); the figures for Incl. 5 % are recorded,
-  // not checked (the case gives none; the Incl. tax calculation is covered by the EM-75 sanity case). The Discount
+  // INV-007: dated today; form only (no Create); the figures for Incl. 5 % are recorded,
+  // not checked (the case gives none). The Discount
   // field must be disabled and take no input, typed or pasted, in % and in Ks. Check areas: the Inv/DN Draft list
   // (our apartment) and the pending counter must not change.
   test('INV-007 Invoice discount field disabled for inclusive tax type',
@@ -848,7 +846,7 @@ test.describe('Invoices · Invoice validation', () => {
       const line = form.line(0);
       await test.step('5. Item with Tax type "Incl. 5% Tax", Unit 2, Gross price 1500 → the Discount field is disabled and takes no amount', async () => {
         await line.fill({ description: INV_001.line.description, taxType: 'Incl. 5% Tax', unit: '2', grossPrice: '1500' });
-        // Figures are recorded, not checked (user decision): wait for the calculation, then note them.
+        // Figures are recorded, not checked: wait for the calculation, then note them.
         await expect.poll(async () => (await line.total.innerText()).trim(), { message: 'line calculated', timeout: 20_000 })
           .not.toMatch(/Not calculated|^—$/).catch(() => {});
         const figure = async (l: import('@playwright/test').Locator) => (await l.innerText()).replace(/\s+/g, ' ').trim();
@@ -873,15 +871,15 @@ test.describe('Invoices · Invoice validation', () => {
       });
     });
 
-  // INV-009 (variants from the case doc, 2026-11-19): leave one required field empty, click Create, the field's
-  // message shows under it, with the exact text of the case doc (user, 2026-11-19). Dated today; Discount 10 Ks.
+  // INV-009 (variants from the case doc): leave one required field empty, click Create, the field's
+  // message shows under it, with the exact text of the case doc. Dated today; Discount 10 Ks.
   // Behaviour compared with Old EM (projects/old-em probe inv009-required-fields): the line is calculated before
   // Create (Disc. Price 1,490 · Tax 89.40 · Total 2,980 · Grand 3,069.40), no invoice is created, the message sits
-  // under the field. Expected words (user, 2026-11-20, from build v0.4.1-158): "Apartment is required.", "Item description is required.", "Category is required."
+  // under the field. Expected words: "Apartment is required.", "Item description is required.", "Category is required."
   // Check areas (as INV-004…007): the Inv/DN Draft list (our apartment) and the pending counter must not change.
   // One test per catalog variant ([base] = missing apartment), each on its own new apartment.
   const INV_009 = [
-    // Expected texts exactly as in the case doc (updated by the user 2026-11-20); pass / fail on the exact text.
+    // Expected texts exactly as in the case doc; pass / fail on the exact text.
     { label: 'base', source: 'TC_Inv_009', missing: 'apartment', field: 'Apartment', expected: 'Apartment is required.' },
     { label: 'Missing field=Item description', source: 'TC_Inv_010', missing: 'item description', field: 'Item Description', expected: 'Item description is required.' },
     { label: 'Missing field=Income category', source: 'TC_Inv_011', missing: 'income category', field: 'Income Categories', expected: 'Category is required.' }
@@ -917,7 +915,7 @@ test.describe('Invoices · Invoice validation', () => {
           await form.discountInKs.check();
           await line.discount.fill('10');
           await line.discount.blur();
-          // As Old EM (probe inv009-required-fields, 2026-11-19): the line is calculated before Create.
+          // As Old EM (probe inv009-required-fields): the line is calculated before Create.
           const fig = async (l: import('@playwright/test').Locator) => { const t = (await l.innerText()).trim(); try { return parseAmount(t, 3); } catch { return t; } };
           await expect.poll(() => fig(line.total), 'line Total (2 × 1,490)').toBe('2980.000');
           expect.soft(await fig(line.discPrice), 'Disc. Price (1,500 − 10 Ks)').toBe('1490.000');
@@ -948,9 +946,9 @@ test.describe('Invoices · Invoice validation', () => {
       });
   }
 
-  // INV-010 (case doc 2026-11-19): Unit 0 / Gross price 0, click Create → the case's exact message under the field.
+  // INV-010: Unit 0 / Gross price 0, click Create → the case's exact message under the field.
   // As INV-009: dated today, Discount 10 Ks, one test per catalog variant, Inv/DN Draft list and counter unchanged.
-  // A pop-up alert besides the field message is recorded, not judged (the case does not mention it; see EM-156 #1).
+  // A pop-up alert besides the field message is recorded, not judged (the case does not mention it).
   const INV_010 = [
     { label: 'base', source: 'TC_Inv_012', field: 'Unit', unit: '0', grossPrice: '1500', expected: 'Unit must be greater than 0.' },
     { label: 'Field=Gross price (0)', source: 'TC_Inv_014', field: 'Gross Price', unit: '2', grossPrice: '0', expected: 'Gross Price must be greater than 0.' }
@@ -1014,7 +1012,7 @@ test.describe('Invoices · Invoice validation', () => {
       });
   }
 
-  // Decisions (user, 2026-11-18): the date must be blocked both on the calendar (future days disabled) and when
+  // The date must be blocked both on the calendar (future days disabled) and when
   // typed (the field must not keep a future date). Only the result counts, not how it is blocked. No check areas
   // in the case: read the Inv/DN Draft list (our apartment) and the pending counter to show nothing was created.
   test('INV-002 Invoice date cannot be a future date',
