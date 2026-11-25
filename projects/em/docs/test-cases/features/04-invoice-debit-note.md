@@ -811,7 +811,7 @@ have the permission.
 
 **Expected result:**
 
-1. "Invoice data has been deleted successfully" message will be shown
+1. "Invoice data has been deleted successfully." message will be shown
 
 ---
 
@@ -1034,15 +1034,15 @@ User needs to login the system first.
 
 **Expected result:**
 
-"Apartment is required" error message will be shown under the apartment box.  
+"Apartment is required." error message will be shown under the apartment box.  
 
 **Data variants (3 incl. base) — run as one data-driven test:**
 
 | # | Variant | Source | Expected result | Note |
 |---|---|---|---|---|
-| 1 | (base) Error message for not filling apartment fields in debit notes. | Invoice-Debit Note r31 (TC_Inv_026) | "Apartment is required" error message under the Apartment box. | |
-| 2 | Missing field=Item description | Invoice-Debit Note r32 (TC_Inv_027) | "Item Description is required" error message under the Item Description box. | |
-| 3 | Missing field=Income category | Invoice-Debit Note r33 (TC_Inv_028) | "Category is required" error message under the Income Categories box. | Source data lists Category but omits Apartment. |
+| 1 | (base) Error message for not filling apartment fields in debit notes. | Invoice-Debit Note r31 (TC_Inv_026) | "Apartment is required." error message under the Apartment box. | |
+| 2 | Missing field=Item description | Invoice-Debit Note r32 (TC_Inv_027) | "Item Description is required." error message under the Item Description box. | |
+| 3 | Missing field=Income category | Invoice-Debit Note r33 (TC_Inv_028) | "Category is required." error message under the Income Categories box. | Source data lists Category but omits Apartment. |
 
 ---
 
@@ -1050,7 +1050,7 @@ User needs to login the system first.
 
 | Priority | Suites | Automation | Status | Source |
 |---|---|---|---|---|
-| P3 | Regression | Auto-UI | Active — Msg "Unit is required" differs from invoice "The selected Unit is invalid." (same in Old EM) | Invoice-Debit Note r34 (TC_Inv_029) |
+| P3 | Regression | Auto-UI | Active — Msg "Unit is required." differs from invoice "The selected Unit is invalid." (same in Old EM) | Invoice-Debit Note r34 (TC_Inv_029) |
 
 **Preconditions:**
 
@@ -1076,13 +1076,13 @@ User needs to login the system first.
 
 **Expected result:**
 
-"Unit is required" error message will be shown under the Unit field.  
+"Unit is required." error message will be shown under the Unit field.  
 
 **Data variants (2 incl. base) — run as one data-driven test:**
 
 | # | Variant | Source | Expected result | Note |
 |---|---|---|---|---|
-| 1 | (base) Error message for filling 0 unit in debit notes | Invoice-Debit Note r34 (TC_Inv_029) | "Unit is required" error message under the Unit field. | |
+| 1 | (base) Error message for filling 0 unit in debit notes | Invoice-Debit Note r34 (TC_Inv_029) | "Unit is required." error message under the Unit field. | |
 | 2 | Field=Gross price (0) | Invoice-Debit Note r36 (TC_Inv_031) | "The selected Gross Price is invalid." error message under the Gross Price field. | |
 
 ---
@@ -1358,7 +1358,7 @@ have the permission.
 
 **Expected result:**
 
-1. "Debit Note data has been deleted successfully" message will be shown
+1. "Debit Note data has been deleted successfully." message will be shown
 
 ---
 
