@@ -88,6 +88,11 @@ export class InvoiceDraftsPage extends InvoiceList {
     await this.choose(this.page.getByRole('combobox', { name: 'Apartment', exact: true }), apartment);
     await this.settled();
   }
+
+  /** "Manage" cell link of a draft row: "Open draft Invoice #145" / "Open draft Debit note #138". */
+  manageLink(row: Locator): Locator {
+    return row.getByRole('link', { name: /^Open draft / });
+  }
 }
 
 export class InvoiceReportPage extends InvoiceList {

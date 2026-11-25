@@ -1,4 +1,7 @@
-// src/pages/invoices/CreateInvoicePage.ts — Receivables › Invoices - Debit Note › Create Invoice
+// src/pages/invoices/CreateInvoicePage.ts — Receivables › Invoices - Debit Note › Create Invoice / Create Debit Note.
+// Create Debit Note (/receivables/debit-notes/new) has the same header fields and "Line <n>" groups, but a line
+// has only Item Description · Unit · Gross Price · Total (no Tax Type, no Discount) and the totals box has no
+// Discount row. Use `new CreateInvoicePage(page, 'debit-note')` (fixture `createDebitNotePage`).
 import { type Locator, type Page } from '@playwright/test';
 import { Routes } from '@constants/Routes';
 
@@ -6,7 +9,8 @@ export type TaxType = '5% Tax' | '3% Tax' | 'No Tax' | 'Incl. 5% Tax' | 'Incl. 3
 
 export interface InvoiceLineInput {
   description?: string;
-  taxType: TaxType;
+  /** Leave out for debit notes: their lines have no Tax Type. */
+  taxType?: TaxType;
   unit: string;
   grossPrice: string;
   /** Leave out for Incl. tax lines: Discount is locked there. */
@@ -48,7 +52,7 @@ export class InvoiceLine {
 
   /** Fills the line and leaves the last field: the figures are calculated on blur. */
   async fill(line: InvoiceLineInput): Promise<void> {
-    await this.selectTaxType(line.taxType);
+    if (line.taxType !== undefined) await this.selectTaxType(line.taxType);
     if (line.description !== undefined) await this.description.fill(line.description);
     await this.unit.fill(line.unit);
     await this.grossPrice.fill(line.grossPrice);
@@ -60,6 +64,8 @@ export class InvoiceLine {
     await this.discount.blur();
   }
 }
+
+export type DocumentKind = 'invoice' | 'debit-note';
 
 export class CreateInvoicePage {
   readonly heading: Locator;
@@ -86,7 +92,7 @@ export class CreateInvoicePage {
   /** "Old CoRef No. *": only shown (and required) while Settings › General › "Old CoRef No." is enabled. */
   readonly oldCoRef: Locator;
 
-  constructor(private readonly page: Page) {
+  constructor(private readonly page: Page, readonly kind: DocumentKind = 'invoice') {
     this.category = page.getByRole('combobox', { name: 'Income Categories' });
     this.currency = page.getByRole('combobox', { name: 'Currency' });
     this.date = page.getByRole('textbox', { name: /^Date( \*)?$/ });
@@ -96,7 +102,7 @@ export class CreateInvoicePage {
     this.createButton = page.getByRole('button', { name: 'Create', exact: true });
     this.oldCoRef = page.getByRole('textbox', { name: /^Old CoRef No/ });
     this.addLineButton = page.getByRole('button', { name: 'Add blank line' });
-    this.heading = page.getByRole('heading', { name: 'Create Invoice', level: 1 });
+    this.heading = page.getByRole('heading', { name: kind === 'invoice' ? 'Create Invoice' : 'Create Debit Note', level: 1 });
     this.paymentTermsLabel = page.locator('label[for="invoice-payment-term"]');
     this.paymentTerms = page.getByRole('combobox', { name: 'Payment Terms' });
     this.totals = page.getByTestId('paper-totals');
@@ -108,7 +114,7 @@ export class CreateInvoicePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(Routes.createInvoice);
+    await this.page.goto(this.kind === 'invoice' ? Routes.createInvoice : Routes.createDebitNote);
   }
 
   async chooseApartment(name: string): Promise<void> {

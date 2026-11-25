@@ -7,6 +7,8 @@ import { type Locator, type Page } from '@playwright/test';
 
 export class InvoiceDetailPage {
   readonly heading: Locator;
+  /** Document type above the buttons: "INVOICE" / "DEBIT NOTE". */
+  readonly type: Locator;
   readonly status: Locator;
   readonly issuedTo: Locator;
   readonly lines: Locator;
@@ -16,6 +18,7 @@ export class InvoiceDetailPage {
 
   constructor(private readonly page: Page) {
     this.heading = page.getByRole('heading', { name: 'Detail', level: 1 });
+    this.type = page.getByRole('main').getByRole('paragraph').filter({ hasText: /^(INVOICE|DEBIT NOTE)$/ });
     this.status = page.getByRole('main').getByRole('paragraph').filter({ hasText: /^(Draft|Approved|Unpaid|Paid|Partially paid|Pending)$/i });
     this.issuedTo = page.getByRole('main').getByRole('link', { name: /^Apartment / });
     this.lines = page.getByRole('table', { name: 'Invoice lines' }).getByRole('rowgroup').nth(1).getByRole('row');
@@ -27,6 +30,12 @@ export class InvoiceDetailPage {
   field(term: 'Created By' | 'Approved By' | 'Issue Date' | 'Due Date' | 'Total'): Locator {
     return this.page.getByTestId('paper-meta').locator('div').filter({ has: this.page.getByRole('term').filter({ hasText: new RegExp(`^${term}:?$`) }) })
       .getByRole('definition');
+  }
+
+  /** Value under the "Invoice lines" table, e.g. 'Grand Total' or 'Commercial Tax' (a term followed by its definition). */
+  summary(term: string): Locator {
+    return this.page.getByRole('main').locator('dt').filter({ hasText: new RegExp(`^${term}\\s*:?$`) })
+      .locator('xpath=following-sibling::dd[1]');
   }
 
   /** Approve › Confirm approve (below the dual-approval threshold the document posts at once). */

@@ -13,7 +13,7 @@ import { evidence } from '@helpers/evidence';
 import { parseAmount } from '@helpers/money';
 import { createApartmentWithOwner } from '@api/estates';
 import { AREAS, agingAmount, compareCheckAreas, readCheckAreas, type AreaKey } from '@helpers/checkAreas';
-import { filterTypeFor } from '@pages/invoices/InvoiceListPages';
+import { filterTypeFor, InvoiceDraftsPage } from '@pages/invoices/InvoiceListPages';
 import { InvoiceDetailPage } from '@pages/invoices/InvoiceDetailPage';
 import { PendingApprovals } from '@components/PendingApprovals';
 
@@ -102,8 +102,8 @@ async function createInvoiceSteps(page: import('@playwright/test').Page, form: C
     await form.createButton.click();
     if (opts.successMessage) {
       // Exact text of the case doc's Expected 1 (updated by the user 2026-11-19).
-      const message = page.getByText('Invoice has been successfully created', { exact: true }).first();
-      await expect.soft(message, '"Invoice has been successfully created" message (exact text from the case)').toBeVisible({ timeout: 10_000 });
+      const message = page.getByText('Invoice has been successfully created.', { exact: true }).first();
+      await expect.soft(message, '"Invoice has been successfully created." message (exact text from the case)').toBeVisible({ timeout: 10_000 });
       test.info().annotations.push({ type: 'observed', description: (await message.isVisible())
         ? `message "${(await message.innerText()).trim()}"`
         : 'no success message; New EM shows only "Creating this draft…" and then opens the invoice detail' });
@@ -167,6 +167,177 @@ async function rejectedDiscountCreateSteps(page: import('@playwright/test').Page
     test.info().annotations.push({ type: 'observed', description: `${opts.label}: Discount "${left}", after Create the page is ${new URL(page.url()).pathname}${messages.length ? `; message: ${messages.join(' | ')}` : ''}` });
     await evidence(page, `${opts.tag}_step6-create`);
   });
+}
+
+/**
+ * Records short texts that appear on the page from now on (toasts, alerts, status lines), so a message that
+ * disappears quickly, or uses other words than the case, is still reported. Returns a reader.
+ */
+async function watchMessages(page: import('@playwright/test').Page): Promise<() => Promise<string[]>> {
+  await page.evaluate(() => {
+    const w = window as unknown as { __qeMessages: string[]; __qeObserver?: MutationObserver };
+    w.__qeObserver?.disconnect();
+    w.__qeMessages = [];
+    w.__qeObserver = new MutationObserver(records => {
+      for (const r of records) for (const n of Array.from(r.addedNodes)) {
+        const el = n instanceof Element ? n : n.parentElement;
+        const text = el?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+        if (text && text.length <= 150 && /success|approv|creat|saved|error|fail/i.test(text) && !w.__qeMessages.includes(text)) w.__qeMessages.push(text);
+      }
+    });
+    w.__qeObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+  });
+  return () => page.evaluate(() => (window as unknown as { __qeMessages?: string[] }).__qeMessages ?? []).catch(() => []);
+}
+
+/** INV-020 test data (case), category "Internet" added on the test env for it (user decision 2026-11-25). */
+const INV_020 = {
+  category: 'Internet',
+  paymentTerms: /^\+?15 ?days$/i,
+  line: { description: 'To pay bill', unit: '150', grossPrice: '1500' },
+  expected: { lineTotal: '225000.00', grand: '225000.00', total: '225,000.00 Ks' }
+};
+
+const KIND = {
+  invoice: { label: 'Invoice', type: 'INVOICE', code: /^#?INV-\d{6}-\d+$/, approved: 'Invoice has been approved successfully.' },
+  'debit-note': { label: 'Debit Note', type: 'DEBIT NOTE', code: /^#?DN-\d{6}-\d+$/, approved: 'Debit Note has been approved successfully.' }
+} as const;
+
+/**
+ * Steps 1-6 of INV-020 (create debit note): menu › Add Debit Note › required fields (apartment, Internet, +15 days,
+ * `date`) › defaults › the line 150 × 1,500 and its Total › Create. Ends on the new draft's detail page.
+ */
+async function createDebitNoteSteps(page: import('@playwright/test').Page, form: CreateInvoicePage, apartment: string, date: Date,
+  opts: { tag: string; successMessage?: boolean }): Promise<void> {
+  const e = INV_020.expected;
+  await test.step('1. Click "Invoices / Debit Note" from left menu', async () => {
+    await page.goto('/dashboard');
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Invoices / Debit Note' }).click();
+    await expect(page).toHaveURL(/\/receivables\/invoices$/);
+  });
+  await test.step('2. Click "Add Debit Note" button', async () => {
+    await page.getByRole('link', { name: 'Add Debit Note' }).click();
+    await expect(page).toHaveURL(/\/receivables\/debit-notes\/new$/);
+    await expect(form.heading).toBeVisible();
+  });
+  await test.step(`3. Fill the required fields (apartment, Internet, payment terms +15 days, date ${dmy(date, '/')})`, async () => {
+    await form.chooseApartment(apartment);
+    await form.chooseCategory(INV_020.category);
+    await form.choosePaymentTerms(INV_020.paymentTerms);
+    const oldCoRef = await form.fillOldCoRefIfShown();
+    if (oldCoRef) test.info().annotations.push({ type: 'environment', description: `Settings › General › "Old CoRef No." is enabled on the environment (not by this test); the form required it, filled "${oldCoRef}"` });
+  });
+  await test.step('4. Currency will be MMK and Date will be today (default)', async () => {
+    await expect.soft(form.currency, 'default currency').toHaveText('MMK');
+    await expect.soft(form.date, 'default date').toHaveValue(dmy(today()));
+    if (dmy(date) !== dmy(today())) {
+      await form.date.fill(dmy(date));
+      await form.date.blur();
+      await expect(form.date).toHaveValue(dmy(date));
+    }
+  });
+  await test.step('5. Item "To pay bill", Unit 150, Gross price 1,500 → Total 225,000.00 calculated automatically', async () => {
+    const line = form.line(0);
+    await line.fill(INV_020.line);
+    const amount = async (l: import('@playwright/test').Locator) => parseAmount((await l.innerText()).trim(), 2);
+    await expect.poll(() => amount(line.total).catch(() => null), 'line Total (150 × 1,500)').toBe(e.lineTotal);
+    expect.soft(await amount(form.total('Grand Total')), 'Grand Total').toBe(e.grand);
+    await evidence(page, `${opts.tag}_step5-calculated`);
+  });
+  await test.step(`6. Click "Create" button${opts.successMessage ? ' → Expected 1: success message' : ''}`, async () => {
+    const messages = await watchMessages(page);
+    const message = page.getByText('Debit Note has been successfully created.', { exact: true }).first();
+    const shown = message.waitFor({ timeout: 30_000 }).then(() => true, () => false);
+    await form.createButton.click();
+    await expect(page).toHaveURL(/\/receivables\/invoices\/\d+$/, { timeout: 30_000 });
+    if (opts.successMessage) {
+      expect.soft(await shown, '"Debit Note has been successfully created." message (exact text from the case)').toBe(true);
+      const seen = await messages();
+      test.info().annotations.push({ type: 'observed', description: `after Create: ${seen.length ? seen.map(t => `"${t}"`).join(' | ') : 'no message'}` });
+    }
+    await evidence(page, `${opts.tag}_step6-created`);
+  });
+}
+
+/**
+ * Steps 1-5 of the approve cases (INV-017, INV-031): "Inv/DN" on the top › our apartment's draft › Manage › check the
+ * data › Approve. The success message is Old EM's wording (Old EM is the expected behaviour). Returns the ref number.
+ */
+async function approveFromDraftsSteps(page: import('@playwright/test').Page, apartment: string, kind: keyof typeof KIND,
+  opts: { tag: string; total: string; category: string }): Promise<string> {
+  const k = KIND[kind];
+  const detail = new InvoiceDetailPage(page);
+  await test.step('1. Click "Inv/DN" on the top', async () => {
+    await page.goto('/dashboard');
+    await new PendingApprovals(page).link('Inv/DN').click();
+    await expect(page).toHaveURL(/\/receivables\/invoices\/drafts/);
+  });
+  const drafts = new InvoiceDraftsPage(page);
+  await test.step(`2. Choose the ${k.label.toLowerCase()} (our apartment's draft)`, async () => {
+    await drafts.filterApartment(apartment);
+    const row = drafts.rowsWith(apartment).filter({ hasText: k.type });
+    await expect(row, `one ${k.type} draft for ${apartment}`).toHaveCount(1);
+    await expect.soft(row, 'draft row: category and total').toContainText(new RegExp(`${opts.category}.*${opts.total.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+  });
+  await test.step('3. Click "Manage" button', async () => {
+    await drafts.manageLink(drafts.rowsWith(apartment).filter({ hasText: k.type })).click();
+    await expect(page).toHaveURL(/\/receivables\/invoices\/\d+$/);
+    await expect(detail.heading).toBeVisible();
+  });
+  await test.step('4. Check the data', async () => {
+    await expect.soft(detail.type, 'document type').toHaveText(k.type);
+    await expect.soft(detail.status, 'status').toHaveText('Draft');
+    await expect.soft(detail.issuedTo, 'issued to our apartment').toContainText(apartment);
+    await expect.soft(detail.field('Total'), 'total').toHaveText(opts.total);
+    await evidence(page, `${opts.tag}_step4-draft`);
+  });
+  let code = '';
+  await test.step(`5. Click "Approve" button → Expected 1: ${k.label} approved successfully with ref number`, async () => {
+    const messages = await watchMessages(page);
+    const message = page.getByText(k.approved, { exact: true }).first();
+    const shown = message.waitFor({ timeout: 30_000 }).then(() => true, () => false);
+    await detail.approve();
+    expect.soft(await shown, `"${k.approved}" message (Old EM wording + full stop; known bug EM-198)`).toBe(true);
+    const seen = await messages();
+    test.info().annotations.push({ type: 'observed', description: `after Approve: ${seen.length ? seen.map(t => `"${t}"`).join(' | ') : 'no message'}` });
+    code = (await detail.code.innerText()).replace(/^#/, '').trim();
+    expect.soft(code, 'ref number').toMatch(k.code);
+    await expect.soft(detail.status, 'status after approval').toHaveText(/^Unpaid$/i);
+    test.info().annotations.push({ type: 'data', description: `approved ${code} (#${detail.id()})` });
+    await evidence(page, `${opts.tag}_step5-approved`);
+  });
+  return code;
+}
+
+/**
+ * Check areas after an approval dated today and not yet due (INV-017, INV-031): the document is unpaid and "Current"
+ * in AR, the Invoice/DN list, the apartment (summary, Invoices, SOA), the contact (summary, Unpaid) and the Invoices
+ * report; the Draft list is back to before. Same areas as INV-003 (from the Old EM run), with no overdue amount.
+ */
+function approvedAreaChecks(before: Record<AreaKey, string>, after: Record<AreaKey, string>,
+  doc: { code: string; date: Date; due: Date; total: string; amount: number; pendingAfterDraft: number }): void {
+  const esc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const C = esc(doc.code), D = esc(dmy(doc.date, '/')), DUE = esc(dmy(doc.due, '/')), T = esc(doc.total);
+  const row = (k: AreaKey, re: RegExp) => expect.soft(after[k], AREAS[k]).toMatch(re);
+  row('arList', new RegExp(`^1 row\\(s\\): ${C}.*${T} ${T} ${D} ${DUE} Unpaid`));
+  for (const k of ['apartmentSummary', 'contactSummary'] as const) {
+    expect.soft(agingAmount(after[k], 'Current'), `${AREAS[k]}: Current`).toBe(doc.total);
+    expect.soft(agingAmount(after[k], 'Total Amount Overdue'), `${AREAS[k]}: Total Amount Overdue`).toBe('0.00 Ks');
+    expect.soft(after[k], `${AREAS[k]}: Accounts Receivable`).toMatch(new RegExp(`^Accounts Receivable ${T}`));
+  }
+  // Shared totals: others may post at the same time, so a different delta is reported, not proven wrong.
+  const mmk = (t: string, re: RegExp) => Number((re.exec(t)?.[1] ?? 'NaN').replace(/,/g, ''));
+  const delta = (k: AreaKey, re: RegExp) => Math.round((mmk(after[k], re) - mmk(before[k], re)) * 100) / 100;
+  expect.soft(delta('arTotal', /Accounts Receivable ([\d,.]+) Ks/), `${AREAS.arTotal} +${doc.amount} (shared total)`).toBe(doc.amount);
+  expect.soft(delta('dashboardAr', /Current ([\d,.]+) Ks/), `${AREAS.dashboardAr}: MMK Current +${doc.amount} (shared total)`).toBe(doc.amount);
+  expect.soft(delta('dashboardAr', /Overdue ([\d,.]+) Ks/), `${AREAS.dashboardAr}: MMK Overdue unchanged (shared total)`).toBe(0);
+  row('invoiceList', new RegExp(`^1 row\\(s\\): .*${C}.*${T} 0\\.00 Ks ${T} ${D}`));
+  expect.soft(after.draftList, `${AREAS.draftList}: back to before (the draft became the document)`).toBe(before.draftList);
+  expect.soft(Number(after.pendingInvDn), `${AREAS.pendingInvDn}: −1 after approval (others may add drafts too)`).toBeLessThanOrEqual(doc.pendingAfterDraft - 1);
+  row('apartmentInvoices', new RegExp(`^1 row\\(s\\): .*${C}.*${T}.*${DUE}.*Unpaid`, 'i'));
+  row('apartmentSoa', new RegExp(`Balance Due:? ${T}`));
+  row('contactUnpaid', new RegExp(`^Unpaid Invoices \\(1\\) \\| 1 row\\(s\\): .*${C}.*${T}.*${DUE}.*Unpaid`, 'i'));
+  row('report', new RegExp(`^1 row\\(s\\): .*${C}.*${T} 0\\.00 Ks ${T} ${D}`));
 }
 
 test.describe('Invoices · Invoice', () => {
@@ -353,8 +524,8 @@ test.describe('Invoices · Invoice', () => {
       });
       await test.step('8. Click "Create" button → Expected 1: success message', async () => {
         await form.createButton.click();
-        const message = page.getByText('Invoice has been successfully created', { exact: true }).first();
-        await expect.soft(message, '"Invoice has been successfully created" message (exact text from the case; known bug EM-153)').toBeVisible({ timeout: 10_000 });
+        const message = page.getByText('Invoice has been successfully created.', { exact: true }).first();
+        await expect.soft(message, '"Invoice has been successfully created." message (exact text from the case; known bug EM-153)').toBeVisible({ timeout: 10_000 });
         test.info().annotations.push({ type: 'observed', description: (await message.isVisible())
           ? `message "${(await message.innerText()).trim()}"`
           : 'no success message; New EM shows only "Creating this draft…" and then opens the invoice detail (EM-153)' });
@@ -383,6 +554,112 @@ test.describe('Invoices · Invoice', () => {
           expect.soft(`${AREAS[k]}: ${after[k]}`, `${AREAS[k]} must not change for a draft (before: ${before[k]})`).toBe(`${AREAS[k]}: ${before[k]}`);
         }
       });
+    });
+
+  // INV-017 (2026-11-25): the draft to approve is our own, made with the INV-001 data (2,781.00 Ks incl. 81.00 Ks
+  // Commercial Tax), dated today, +7 days. Admin approves its own draft (as INV-003). The case's "approved successfully
+  // with ref number" uses Old EM's message "Invoice has been approved successfully". Check areas after approval:
+  // as INV-003, but not overdue (due in 7 days → "Current").
+  test('INV-017 Approve invoice - ref number, tax included, unpaid in apartment',
+    testCase({ id: 'INV-017', source: 'TC_Inv_021', priority: 'P1', smoke: true, critical: true }),
+    async ({ page, createInvoicePage: form }) => {
+      const date = today();
+      const due = addDays(date, 7);
+      const total = '2,781.00 Ks';
+      const apartment = await test.step('Setup: own apartment with a new owner (API)', () =>
+        createApartmentWithOwner(page.request, test.info(), addDays(date, -30)));
+      test.info().annotations.push({ type: 'data', description: `${apartment.name} (estate ${apartment.id}), owner contact ${apartment.owner.id}, invoice date ${dmy(date, '/')}, due ${dmy(due, '/')}` });
+      const before = await test.step('Check areas: before', () => readCheckAreas(page, apartment, 'This Month', 'before'));
+      await test.step('Setup: draft invoice with the INV-001 data', () => createInvoiceSteps(page, form, apartment.name, date, { tag: 'INV-017_setup' }));
+      const pendingAfterDraft = await new PendingApprovals(page).count('Inv/DN');
+
+      const code = await approveFromDraftsSteps(page, apartment.name, 'invoice', { tag: 'INV-017', total, category: INV_001.category });
+
+      await test.step('Expected 2: Commercial Tax is included in the invoice', async () => {
+        const detail = new InvoiceDetailPage(page);
+        await expect.soft(detail.field('Total'), 'total').toHaveText(total);
+        await expect.soft(detail.summary('Commercial Tax'), 'Commercial Tax (3 % of 2,700)').toHaveText('81.00 Ks');
+        await expect.soft(detail.summary('Grand Total'), 'Grand Total = 2,700 + 81 tax').toHaveText(total);
+        await evidence(page, 'INV-017_expected2-tax');
+      });
+
+      const after = await test.step('Check areas: after', () => readCheckAreas(page, apartment, 'This Month', 'after'));
+      await compareCheckAreas(before, after);
+      await test.step('Expected 3 + check areas: the invoice is unpaid in the apartment and everywhere', async () =>
+        approvedAreaChecks(before, after, { code, date, due, total, amount: 2781, pendingAfterDraft }));
+    });
+});
+
+test.describe('Invoices · Debit note', () => {
+  test.describe.configure({ timeout: 480_000 });
+
+  // INV-020 (2026-11-25): as INV-001, the case runs twice ("dated last month to today"), each on its own new
+  // apartment. Category "Internet" was added to the test env for it (user decision 2026-11-25). Message wording is
+  // the case's (= Old EM's toast). A draft changes only the Inv/DN Draft list and the pending counter (as INV-001).
+  test('INV-020 Create debit note (MMK, dated last month to today) as draft',
+    testCase({ id: 'INV-020', source: 'TC_Inv_024', priority: 'P1', smoke: true, critical: true }),
+    async ({ page, createDebitNotePage: form }) => {
+      for (const variant of [{ label: 'today', date: today }, { label: 'last month', date: lastMonth }]) await test.step(`Dated ${variant.label}`, async () => {
+        const date = variant.date();
+        const apartment = await test.step('Setup: own apartment with a new owner (API)', () =>
+          createApartmentWithOwner(page.request, test.info(), addDays(date, -30)));
+        test.info().annotations.push({ type: 'data', description: `${apartment.name} (estate ${apartment.id}), owner contact ${apartment.owner.id}, debit note date ${dmy(date, '/')}` });
+        const filterType = filterTypeFor(date);
+        const tag = `INV-020_${variant.label.replace(' ', '-')}`;
+        const before = await test.step('Check areas: before', () => readCheckAreas(page, apartment, filterType, `${variant.label.replace(' ', '-')}_before`));
+
+        await createDebitNoteSteps(page, form, apartment.name, date, { tag, successMessage: true });
+
+        await test.step('Expected 2: debit note is saved as draft in Inv/DN', async () => {
+          const detail = new InvoiceDetailPage(page);
+          await expect.soft(detail.type, 'document type').toHaveText('DEBIT NOTE');
+          await expect.soft(detail.status, 'status').toHaveText('Draft');
+          await expect.soft(detail.field('Total'), 'saved total').toHaveText(INV_020.expected.total);
+          await expect.soft(detail.field('Issue Date'), 'issue date').toHaveText(dmy(date, '/'));
+          await expect.soft(detail.field('Due Date'), 'due date = issue date + 15 days').toHaveText(dmy(addDays(date, 15), '/'));
+          test.info().annotations.push({ type: 'data', description: `draft debit note #${detail.id()}` });
+          await evidence(page, `${tag}_expected2-draft`);
+        });
+
+        const after = await test.step('Check areas: after', () => readCheckAreas(page, apartment, filterType, `${variant.label.replace(' ', '-')}_after`));
+        const changed = await compareCheckAreas(before, after);
+        await test.step('Expected 3: notification to the approver (Inv/DN pending counter +1, draft listed)', async () => {
+          expect.soft(Number(after.pendingInvDn), 'Inv/DN pending counter (others may add drafts too)').toBeGreaterThanOrEqual(Number(before.pendingInvDn) + 1);
+          await new PendingApprovals(page).link('Inv/DN').click();
+          await expect(page).toHaveURL(/\/receivables\/invoices\/drafts/);
+        });
+        await test.step('Check areas: a draft changes only the Inv/DN draft list and the pending counter', async () => {
+          expect.soft(after.draftList, AREAS.draftList).toMatch(/^1 row\(s\): .*DEBIT NOTE.*Internet.*225,000\.00/);
+          const allowed: AreaKey[] = ['draftList', 'pendingInvDn'];
+          for (const k of changed.filter(k => !allowed.includes(k))) {
+            expect.soft(`${AREAS[k]}: ${after[k]}`, `${AREAS[k]} must not change for a draft (before: ${before[k]})`).toBe(`${AREAS[k]}: ${before[k]}`);
+          }
+        });
+      });
+    });
+
+  // INV-031 (2026-11-25): the draft to approve is our own, made with the INV-020 data (225,000.00 Ks, Internet,
+  // +15 days), dated today. Admin approves its own draft. Message: Old EM's "Debit Note has been approved
+  // successfully". Check areas after approval as INV-017 (unpaid, "Current").
+  test('INV-031 Approve debit note - ref number, unpaid in apartment',
+    testCase({ id: 'INV-031', source: 'TC_Inv_039', priority: 'P1', smoke: true, critical: true }),
+    async ({ page, createDebitNotePage: form }) => {
+      const date = today();
+      const due = addDays(date, 15);
+      const total = INV_020.expected.total;
+      const apartment = await test.step('Setup: own apartment with a new owner (API)', () =>
+        createApartmentWithOwner(page.request, test.info(), addDays(date, -30)));
+      test.info().annotations.push({ type: 'data', description: `${apartment.name} (estate ${apartment.id}), owner contact ${apartment.owner.id}, debit note date ${dmy(date, '/')}, due ${dmy(due, '/')}` });
+      const before = await test.step('Check areas: before', () => readCheckAreas(page, apartment, 'This Month', 'before'));
+      await test.step('Setup: draft debit note with the INV-020 data', () => createDebitNoteSteps(page, form, apartment.name, date, { tag: 'INV-031_setup' }));
+      const pendingAfterDraft = await new PendingApprovals(page).count('Inv/DN');
+
+      const code = await approveFromDraftsSteps(page, apartment.name, 'debit-note', { tag: 'INV-031', total, category: INV_020.category });
+
+      const after = await test.step('Check areas: after', () => readCheckAreas(page, apartment, 'This Month', 'after'));
+      await compareCheckAreas(before, after);
+      await test.step('Expected 2 + check areas: the debit note is unpaid in the apartment and everywhere', async () =>
+        approvedAreaChecks(before, after, { code, date, due, total, amount: 225000, pendingAfterDraft }));
     });
 });
 

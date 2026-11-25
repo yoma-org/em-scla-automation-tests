@@ -40,6 +40,8 @@ type PageFixtures = {
   globalSearch: GlobalSearch;
   changePasswordPage: ChangePasswordPage;
   createInvoicePage: CreateInvoicePage;
+  /** Create Debit Note form (same page object, debit-note kind). */
+  createDebitNotePage: CreateInvoicePage;
   apartmentsListPage: ApartmentsListPage;
   createApartmentPage: CreateApartmentPage;
   apartmentDetailPage: ApartmentDetailPage;
@@ -93,6 +95,10 @@ export const test = base.extend<PageFixtures>({
 
   createInvoicePage: async ({ page }, use) => {
     await use(new CreateInvoicePage(page));
+  },
+
+  createDebitNotePage: async ({ page }, use) => {
+    await use(new CreateInvoicePage(page, 'debit-note'));
   },
 
   apartmentsListPage: async ({ page }, use) => {

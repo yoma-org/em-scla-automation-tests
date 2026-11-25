@@ -5,6 +5,7 @@ export const Routes = {
   /** In-app page from the account menu (the first-login page is /account/change-password). */
   changePassword: '/change-password',
   createInvoice: '/receivables/invoices/new',
+  createDebitNote: '/receivables/debit-notes/new',
   apartments: '/estates',
   createApartment: '/estates/new',
   apartment: (id: number | string) => `/estates/${id}`,

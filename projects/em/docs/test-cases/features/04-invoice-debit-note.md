@@ -85,7 +85,7 @@ User needs to login the system first.
 
 **Expected result:**
 
-1. "Invoice has been successfully created" message will be shown
+1. "Invoice has been successfully created." message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -457,7 +457,7 @@ User needs to login the system first.
 
 **Expected result:**
 
-1. "Invoice has been successfully created" message will be shown
+1. "Invoice has been successfully created." message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -653,7 +653,7 @@ The system does not allow minus,so it does not appear in the feild
 
 **Expected result:**
 
-1. "Invoice has been successfully created" message will be shown
+1. "Invoice has been successfully created." message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -773,7 +773,7 @@ The system does not allow minus,so it does not appear in the feild
 
 **Expected result:**
 
-1. "Invoice has been successfully created" message will be shown
+1. "Invoice has been successfully created." message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -954,7 +954,7 @@ User needs to login the system first.
 
 **Expected result:**
 
-1. "Debit Note has been successfully created" message will be shown
+1. "Debit Note has been successfully created." message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -1158,7 +1158,7 @@ The system does not allow minus,so it does not appear in the feild
 
 **Expected result:**
 
-1. "Debit Note has been successfully created" message will be shown
+1. "Debit Note has been successfully created." message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 
@@ -1273,7 +1273,7 @@ The system does not allow minus,so it does not appear in the feild
 
 **Expected result:**
 
-1. "Debit Note has been successfully created" message will be shown
+1. "Debit Note has been successfully created." message will be shown
 2. Invoice will be saved as draft in Inv/Dn.
 3. Notification will be sent to approver.
 

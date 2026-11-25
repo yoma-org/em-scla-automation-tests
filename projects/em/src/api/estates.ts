@@ -15,13 +15,21 @@ async function ok(res: Awaited<ReturnType<APIRequestContext['post']>>, what: str
   return text ? JSON.parse(text) : {};
 }
 
-/** Contact with a generated passport number and phone (no real resident data). */
+/**
+ * Contact with a generated passport number and phone (no real resident data). The 7 digits are random (the last
+ * 7 digits of the clock repeat every ~2.8 hours and clashed with older contacts); a clash with an existing identity
+ * (409 ERR_CONTACT_DUPLICATE_IDENTITY) is retried with new digits.
+ */
 export async function createContact(request: APIRequestContext, name: string): Promise<Contact> {
-  const digits = String(Date.now()).slice(-7);
-  const body = await ok(await request.post('/api/gw/contacts', {
-    data: { type: 'PASSPORT', identity: `P${digits}`, name, mobile_number: `9${digits}${Math.floor(Math.random() * 10)}`, mobile_country_code: '+95' }
-  }), 'POST contacts');
-  return { id: Number(body.id ?? body.data?.id), name };
+  for (let attempt = 1; ; attempt++) {
+    const digits = String(Math.floor(Math.random() * 1e7)).padStart(7, '0');
+    const res = await request.post('/api/gw/contacts', {
+      data: { type: 'PASSPORT', identity: `P${digits}`, name, mobile_number: `9${digits}${Math.floor(Math.random() * 10)}`, mobile_country_code: '+95' }
+    });
+    if (res.status() === 409 && attempt < 5 && (await res.text()).includes('DUPLICATE')) continue;
+    const body = await ok(res, 'POST contacts');
+    return { id: Number(body.id ?? body.data?.id), name };
+  }
 }
 
 /** yyyy-mm-dd */
