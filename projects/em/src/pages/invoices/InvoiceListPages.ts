@@ -69,6 +69,29 @@ export class InvoiceRegisterPage extends InvoiceList {
     super(page, '/receivables/invoices', page.getByRole('heading', { name: 'Invoices - Debit Note', level: 1 }));
   }
 
+  /**
+   * First row matching `text`, turning pages with "Next" (10 rows a page) until it shows; the newest come first.
+   * Returns the row, or null when no page has one.
+   */
+  async findRow(text: RegExp, maxPages = 20): Promise<Locator | null> {
+    const next = this.page.getByRole('navigation', { name: 'Pages' }).getByRole('button', { name: 'Next', exact: true });
+    for (let i = 0; i < maxPages; i++) {
+      await this.settled();
+      const row = this.rows.filter({ hasText: text }).first();
+      if (await row.isVisible()) return row;
+      if (!(await next.isVisible()) || !(await next.isEnabled())) return null;
+      const status = await this.status.innerText().catch(() => '');
+      await next.click();
+      await this.page.waitForFunction(([s]) => !document.querySelector('main [role="status"]')?.textContent?.includes(s), [status], { timeout: 15_000 }).catch(() => {});
+    }
+    return null;
+  }
+
+  /** The row's document code link ("INV-202611-00050"): opens the detail page. */
+  codeLink(row: Locator): Locator {
+    return row.getByRole('link', { name: /^(INV|DN)-\d{6}-\d+$/ });
+  }
+
   async filter(type: FilterType, apartment: string): Promise<void> {
     await this.choose(this.page.getByRole('combobox', { name: 'Filter Type' }), type);
     await this.page.getByRole('combobox', { name: 'Apartment', exact: true }).click();
@@ -84,8 +107,18 @@ export class InvoiceDraftsPage extends InvoiceList {
     super(page, '/receivables/invoices/drafts', page.getByRole('heading', { name: 'Draft: Invoices - Debit Note', level: 1 }));
   }
 
+  /**
+   * Filters by apartment. On the slow test env the pick can be lost while the filter lists are still loading
+   * (the list then shows every draft): the filter is applied once the URL has ?estate=<id>; otherwise reload and retry.
+   */
   async filterApartment(apartment: string): Promise<void> {
-    await this.choose(this.page.getByRole('combobox', { name: 'Apartment', exact: true }), apartment);
+    for (let attempt = 1; ; attempt++) {
+      await this.choose(this.page.getByRole('combobox', { name: 'Apartment', exact: true }), apartment);
+      const applied = await this.page.waitForURL(/[?&]estate=\d+/, { timeout: 10_000 }).then(() => true, () => false);
+      if (applied) break;
+      if (attempt === 2) throw new Error(`Draft list: apartment filter "${apartment}" was not applied`);
+      await this.goto();
+    }
     await this.settled();
   }
 

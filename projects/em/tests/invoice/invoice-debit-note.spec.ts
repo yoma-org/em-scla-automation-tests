@@ -9,10 +9,10 @@
 import { test, expect } from '@fixtures';
 import { testCase } from '@helpers/testCase';
 import { evidence } from '@helpers/evidence';
-import { parseAmount } from '@helpers/money';
+import { amountOrNull, parseAmount } from '@helpers/money';
 import { createApartmentWithOwner } from '@api/estates';
 import { AREAS, agingAmount, compareCheckAreas, readCheckAreas, type AreaKey } from '@helpers/checkAreas';
-import { filterTypeFor, InvoiceDraftsPage } from '@pages/invoices/InvoiceListPages';
+import { filterTypeFor, InvoiceDraftsPage, InvoiceRegisterPage } from '@pages/invoices/InvoiceListPages';
 import { InvoiceDetailPage } from '@pages/invoices/InvoiceDetailPage';
 import { PendingApprovals } from '@components/PendingApprovals';
 
@@ -43,13 +43,27 @@ const INV_001 = {
 type CreateInvoicePage = import('@pages/invoices/CreateInvoicePage').CreateInvoicePage;
 
 /**
+ * Another item line for createInvoiceSteps (INV-012, INV-013): filled with the Discount in Ks when `discountInKs`.
+ * The case gives no figures for it, so the calculated figures are recorded, not checked.
+ */
+interface CustomLine { label: string; input: import('@pages/invoices/CreateInvoicePage').InvoiceLineInput; discountInKs?: boolean }
+
+/** INV-012 / INV-013 test data (case): 200 × gross price, 3% Tax, Discount 10 Ks. */
+const bigPriceLine = (grossPrice: string): CustomLine => ({
+  label: `Unit 200, Gross price ${grossPrice}, 3% Tax, Discount 10 Ks`,
+  // Entered without thousands separators, as a user types it (a value with commas is not taken by the field).
+  input: { description: 'Maintenance fees', taxType: '3% Tax', unit: '200', grossPrice: grossPrice.replace(/,/g, ''), discount: '10' },
+  discountInKs: true
+});
+
+/**
  * Steps 1-6 shared by the "create invoice" cases (INV-001, INV-003, …): menu › Add Invoice › defaults › header
  * (apartment, Maintenance Service, +7 days, `date`) › the INV-001 line and its figures › Create.
  * `successMessage`: the case expects a success message after Create (INV-001 Expected 1).
  * Ends on the new draft's detail page.
  */
 async function createInvoiceSteps(page: import('@playwright/test').Page, form: CreateInvoicePage, apartment: string, date: Date,
-  opts: { tag: string; successMessage?: boolean }): Promise<void> {
+  opts: { tag: string; successMessage?: boolean; line?: CustomLine }): Promise<void> {
   const e = INV_001.expected;
   await test.step('1. Click "Invoices / Debit Note" from left menu', async () => {
     await page.goto('/dashboard');
@@ -82,7 +96,23 @@ async function createInvoiceSteps(page: import('@playwright/test').Page, form: C
     if (oldCoRef) test.info().annotations.push({ type: 'environment', description: `Settings › General › "Old CoRef No." is enabled on the environment (not by this test); the form required it, filled "${oldCoRef}"` });
   });
 
-  await test.step('5. Fill the item; Discount price, Tax and Total are auto calculated', async () => {
+  if (opts.line) {
+    const custom = opts.line;
+    await test.step(`5. Fill the item (${custom.label}); Discount price, Tax and Total are auto calculated`, async () => {
+      const line = form.line(0);
+      await line.fill({ ...custom.input, discount: undefined });
+      if (custom.discountInKs) await form.discountInKs.check();
+      if (custom.input.discount !== undefined) {
+        await line.discount.fill(custom.input.discount);
+        await line.discount.blur();
+      }
+      await expect.poll(() => line.total.innerText().then(t => amountOrNull(t.trim(), 3)), 'line Total is calculated').not.toBeNull();
+      await expect.soft(line.grossPrice, 'Gross Price is kept as entered').toHaveValue(custom.input.grossPrice.replace(/,/g, ''));
+      const text = async (l: import('@playwright/test').Locator) => (await l.innerText()).replace(/\s+/g, ' ').trim();
+      test.info().annotations.push({ type: 'observed', description: `form figures: Disc. Price ${await text(line.discPrice)} · Tax ${await text(line.tax)} · Total ${await text(line.total)} | ${await text(form.totals)}` });
+      await evidence(page, `${opts.tag}_step5-calculated`);
+    });
+  } else await test.step('5. Fill the item; Discount price, Tax and Total are auto calculated', async () => {
     const line = form.line(0);
     await line.fill(INV_001.line);
     const amount = async (l: import('@playwright/test').Locator) => parseAmount((await l.innerText()).trim(), 2);
@@ -107,7 +137,7 @@ async function createInvoiceSteps(page: import('@playwright/test').Page, form: C
         ? `message "${(await message.innerText()).trim()}"`
         : 'no success message; New EM shows only "Creating this draft…" and then opens the invoice detail' });
     }
-    await expect(page).toHaveURL(/\/receivables\/invoices\/\d+$/, { timeout: 30_000 });
+    await expect(page).toHaveURL(InvoiceDetailPage.URL, { timeout: 30_000 });
     await evidence(page, `${opts.tag}_step6-created`);
   });
 }
@@ -160,7 +190,7 @@ async function rejectedDiscountCreateSteps(page: import('@playwright/test').Page
       return;
     }
     await form.createButton.click();
-    await page.waitForURL(/\/receivables\/invoices\/\d+$/, { timeout: 30_000 }).catch(() => {});
+    await page.waitForURL(InvoiceDetailPage.URL, { timeout: 30_000 }).catch(() => {});
     await expect.soft(page, `no invoice is created with ${opts.label} (Discount field still "${left}")`).toHaveURL(/\/receivables\/invoices\/new$/);
     const messages = (await page.getByRole('main').getByRole('alert').allInnerTexts()).map(t => t.trim()).filter(Boolean);
     test.info().annotations.push({ type: 'observed', description: `${opts.label}: Discount "${left}", after Create the page is ${new URL(page.url()).pathname}${messages.length ? `; message: ${messages.join(' | ')}` : ''}` });
@@ -189,12 +219,38 @@ async function watchMessages(page: import('@playwright/test').Page): Promise<() 
   return () => page.evaluate(() => (window as unknown as { __qeMessages?: string[] }).__qeMessages ?? []).catch(() => []);
 }
 
+/** Debit note data for createDebitNoteSteps; `expected` figures as the line Total / Grand Total show them. */
+interface DebitNoteData {
+  category: string;
+  paymentTerms: RegExp;
+  terms: string;
+  line: { description: string; unit: string; grossPrice: string };
+  expected: { lineTotal: string; grand: string; total: string };
+}
+
 /** INV-020 test data (case), category "Internet" added on the test env for it. */
-const INV_020 = {
+const INV_020: DebitNoteData = {
   category: 'Internet',
   paymentTerms: /^\+?15 ?days$/i,
+  terms: '+15 days',
   line: { description: 'To pay bill', unit: '150', grossPrice: '1500' },
   expected: { lineTotal: '225000.00', grand: '225000.00', total: '225,000.00 Ks' }
+};
+
+/** INV-025 test data (case): the largest gross price, 14 integer digits + 2 decimals. */
+const INV_025: DebitNoteData = {
+  ...INV_020,
+  line: { description: 'To pay bill', unit: '1', grossPrice: '12345678901234.56' },
+  expected: { lineTotal: '12345678901234.56', grand: '12345678901234.56', total: '12,345,678,901,234.56 Ks' }
+};
+
+/** INV-029 test data (case): "Maintenance Services" (test env: "Maintenance Service"), +7 days, 2 × 1,500. */
+const INV_029: DebitNoteData = {
+  category: 'Maintenance Service',
+  paymentTerms: /^\+?7 ?days$/i,
+  terms: '+7 days',
+  line: { description: 'Maintenance fees', unit: '2', grossPrice: '1500' },
+  expected: { lineTotal: '3000.00', grand: '3000.00', total: '3,000.00 Ks' }
 };
 
 const KIND = {
@@ -203,12 +259,14 @@ const KIND = {
 } as const;
 
 /**
- * Steps 1-6 of INV-020 (create debit note): menu › Add Debit Note › required fields (apartment, Internet, +15 days,
- * `date`) › defaults › the line 150 × 1,500 and its Total › Create. Ends on the new draft's detail page.
+ * Steps 1-6 of the create debit note cases (INV-020, INV-025, INV-029): menu › Add Debit Note › required fields
+ * (apartment, category, payment terms, `date`) › defaults › the line and its Total › Create. `data` defaults to
+ * INV-020's (Internet, +15 days, 150 × 1,500). Ends on the new draft's detail page.
  */
 async function createDebitNoteSteps(page: import('@playwright/test').Page, form: CreateInvoicePage, apartment: string, date: Date,
-  opts: { tag: string; successMessage?: boolean }): Promise<void> {
-  const e = INV_020.expected;
+  opts: { tag: string; successMessage?: boolean; data?: DebitNoteData }): Promise<void> {
+  const d = opts.data ?? INV_020;
+  const e = d.expected;
   await test.step('1. Click "Invoices / Debit Note" from left menu', async () => {
     await page.goto('/dashboard');
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Invoices / Debit Note' }).click();
@@ -219,10 +277,10 @@ async function createDebitNoteSteps(page: import('@playwright/test').Page, form:
     await expect(page).toHaveURL(/\/receivables\/debit-notes\/new$/);
     await expect(form.heading).toBeVisible();
   });
-  await test.step(`3. Fill the required fields (apartment, Internet, payment terms +15 days, date ${dmy(date, '/')})`, async () => {
+  await test.step(`3. Fill the required fields (apartment, ${d.category}, payment terms ${d.terms}, date ${dmy(date, '/')})`, async () => {
     await form.chooseApartment(apartment);
-    await form.chooseCategory(INV_020.category);
-    await form.choosePaymentTerms(INV_020.paymentTerms);
+    await form.chooseCategory(d.category);
+    await form.choosePaymentTerms(d.paymentTerms);
     const oldCoRef = await form.fillOldCoRefIfShown();
     if (oldCoRef) test.info().annotations.push({ type: 'environment', description: `Settings › General › "Old CoRef No." is enabled on the environment (not by this test); the form required it, filled "${oldCoRef}"` });
   });
@@ -235,11 +293,11 @@ async function createDebitNoteSteps(page: import('@playwright/test').Page, form:
       await expect(form.date).toHaveValue(dmy(date));
     }
   });
-  await test.step('5. Item "To pay bill", Unit 150, Gross price 1,500 → Total 225,000.00 calculated automatically', async () => {
+  await test.step(`5. Item "${d.line.description}", Unit ${d.line.unit}, Gross price ${d.line.grossPrice} → Total ${e.total} calculated automatically`, async () => {
     const line = form.line(0);
-    await line.fill(INV_020.line);
+    await line.fill(d.line);
     const amount = async (l: import('@playwright/test').Locator) => parseAmount((await l.innerText()).trim(), 2);
-    await expect.poll(() => amount(line.total).catch(() => null), 'line Total (150 × 1,500)').toBe(e.lineTotal);
+    await expect.poll(() => amount(line.total).catch(() => null), `line Total (${d.line.unit} × ${d.line.grossPrice})`).toBe(e.lineTotal);
     expect.soft(await amount(form.total('Grand Total')), 'Grand Total').toBe(e.grand);
     await evidence(page, `${opts.tag}_step5-calculated`);
   });
@@ -248,7 +306,7 @@ async function createDebitNoteSteps(page: import('@playwright/test').Page, form:
     const message = page.getByText('Debit Note has been successfully created.', { exact: true }).first();
     const shown = message.waitFor({ timeout: 30_000 }).then(() => true, () => false);
     await form.createButton.click();
-    await expect(page).toHaveURL(/\/receivables\/invoices\/\d+$/, { timeout: 30_000 });
+    await expect(page).toHaveURL(InvoiceDetailPage.URL, { timeout: 30_000 });
     if (opts.successMessage) {
       expect.soft(await shown, '"Debit Note has been successfully created." message (exact text from the case)').toBe(true);
       const seen = await messages();
@@ -280,7 +338,7 @@ async function approveFromDraftsSteps(page: import('@playwright/test').Page, apa
   });
   await test.step('3. Click "Manage" button', async () => {
     await drafts.manageLink(drafts.rowsWith(apartment).filter({ hasText: k.type })).click();
-    await expect(page).toHaveURL(/\/receivables\/invoices\/\d+$/);
+    await expect(page).toHaveURL(InvoiceDetailPage.URL);
     await expect(detail.heading).toBeVisible();
   });
   await test.step('4. Check the data', async () => {
@@ -339,6 +397,39 @@ function approvedAreaChecks(before: Record<AreaKey, string>, after: Record<AreaK
   row('report', new RegExp(`^1 row\\(s\\): .*${C}.*${T} 0\\.00 Ks ${T} ${D}`));
 }
 
+/**
+ * Check areas after approving a document dated the 1st of last month and already overdue (INV-003, INV-029), from the
+ * Old EM run (projects/old-em probe check-areas-approved-invoice): unpaid and overdue in AR, the Invoice/DN list, the
+ * apartment (summary in the aging `band`, Invoices, SOA), the contact (summary, Unpaid) and the Invoices report; the
+ * Draft list is back to before.
+ */
+function overdueAreaChecks(before: Record<AreaKey, string>, after: Record<AreaKey, string>,
+  doc: { code: string; date: Date; due: Date; total: string; amount: number; band: string; pendingAfterDraft: number }): void {
+  const esc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const C = esc(doc.code), D = esc(dmy(doc.date, '/')), DUE = esc(dmy(doc.due, '/')), T = esc(doc.total);
+  const row = (k: AreaKey, re: RegExp) => expect.soft(after[k], AREAS[k]).toMatch(re);
+  row('arList', new RegExp(`^1 row\\(s\\): ${C}.*${T} ${T} ${D} ${DUE} Unpaid`));
+  for (const k of ['apartmentSummary', 'contactSummary'] as const) {
+    expect.soft(agingAmount(after[k], 'Current'), `${AREAS[k]}: Current`).toBe('0.00 Ks');
+    expect.soft(agingAmount(after[k], 'Total Amount Overdue'), `${AREAS[k]}: Total Amount Overdue`).toBe(doc.total);
+    expect.soft(agingAmount(after[k], doc.band), `${AREAS[k]}: ${doc.band}`).toBe(doc.total);
+    expect.soft(after[k], `${AREAS[k]}: Accounts Receivable`).toMatch(new RegExp(`^Accounts Receivable ${T}`));
+  }
+  // Shared totals: others may post at the same time, so a different delta is reported, not proven wrong.
+  const mmk = (t: string, re: RegExp) => Number((re.exec(t)?.[1] ?? 'NaN').replace(/,/g, ''));
+  const delta = (k: AreaKey, re: RegExp) => Math.round((mmk(after[k], re) - mmk(before[k], re)) * 100) / 100;
+  expect.soft(delta('arTotal', /Accounts Receivable ([\d,.]+) Ks/), `${AREAS.arTotal} +${doc.amount} (shared total)`).toBe(doc.amount);
+  expect.soft(delta('dashboardAr', /Overdue ([\d,.]+) Ks/), `${AREAS.dashboardAr}: MMK Overdue +${doc.amount} (shared total)`).toBe(doc.amount);
+  expect.soft(delta('dashboardAr', /Current ([\d,.]+) Ks/), `${AREAS.dashboardAr}: MMK Current unchanged (shared total)`).toBe(0);
+  row('invoiceList', new RegExp(`^1 row\\(s\\): .*${C}.*${T} 0\\.00 Ks ${T} ${D}`));
+  expect.soft(after.draftList, `${AREAS.draftList}: back to before (the draft became the document)`).toBe(before.draftList);
+  expect.soft(Number(after.pendingInvDn), `${AREAS.pendingInvDn}: −1 after approval (others may add drafts too)`).toBeLessThanOrEqual(doc.pendingAfterDraft - 1);
+  row('apartmentInvoices', new RegExp(`^1 row\\(s\\): .*${C}.*${T}.*${DUE}.*Unpaid`, 'i'));
+  row('apartmentSoa', new RegExp(`Balance Due:? ${T}`));
+  row('contactUnpaid', new RegExp(`^Unpaid Invoices \\(1\\) \\| 1 row\\(s\\): .*${C}.*${T}.*${DUE}.*Unpaid`, 'i'));
+  row('report', new RegExp(`^1 row\\(s\\): .*${C}.*${T} 0\\.00 Ks ${T} ${D} test1 test1`));
+}
+
 test.describe('Invoices · Invoice', () => {
   test.describe.configure({ timeout: 480_000 });
 
@@ -360,7 +451,8 @@ test.describe('Invoices · Invoice', () => {
 
         await test.step('Expected 2: invoice is saved as draft in Inv/DN', async () => {
           const detail = new InvoiceDetailPage(page);
-          await expect(page).toHaveURL(/\/receivables\/invoices\/\d+$/);
+          await expect(page).toHaveURL(InvoiceDetailPage.URL);
+          await detail.loaded();
           await expect.soft(detail.status, 'status').toHaveText('Draft');
           await expect.soft(detail.field('Total'), 'saved total').toHaveText(/2,781\.00/);
           await expect.soft(detail.field('Issue Date'), 'issue date').toHaveText(dmy(date, '/'));
@@ -415,7 +507,7 @@ test.describe('Invoices · Invoice', () => {
       const detail = new InvoiceDetailPage(page);
       let code = '';
       await test.step('Approve the draft (Admin) → Expected 1: due date = issue date + 7 days', async () => {
-        await expect(page).toHaveURL(/\/receivables\/invoices\/\d+$/);
+        await expect(page).toHaveURL(InvoiceDetailPage.URL);
         await expect.soft(detail.field('Due Date'), 'draft due date').toHaveText(dmy(due, '/'));
         await detail.approve();
         code = (await detail.code.innerText()).replace(/^#/, '').trim();
@@ -429,35 +521,8 @@ test.describe('Invoices · Invoice', () => {
 
       const after = await test.step('Check areas: after', () => readCheckAreas(page, apartment, 'Last Month', 'after'));
       await compareCheckAreas(before, after);
-      const row = (k: AreaKey, re: RegExp) => expect.soft(after[k], AREAS[k]).toMatch(re);
-      const esc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const C = esc(code), D = esc(dmy(date, '/')), DUE = esc(dmy(due, '/')), T = esc(total);
-
-      await test.step(`Expected 2: AR overdue based on the due date (${daysOverdue} days → "${band}")`, async () => {
-        row('arList', new RegExp(`^1 row\\(s\\): ${C}.*${T} ${T} ${D} ${DUE} Unpaid`));
-        for (const k of ['apartmentSummary', 'contactSummary'] as const) {
-          expect.soft(agingAmount(after[k], 'Current'), `${AREAS[k]}: Current`).toBe('0.00 Ks');
-          expect.soft(agingAmount(after[k], 'Total Amount Overdue'), `${AREAS[k]}: Total Amount Overdue`).toBe(total);
-          expect.soft(agingAmount(after[k], band), `${AREAS[k]}: ${band}`).toBe(total);
-          expect.soft(after[k], `${AREAS[k]}: Accounts Receivable`).toMatch(new RegExp(`^Accounts Receivable ${T}`));
-        }
-        // Shared totals: others may post at the same time, so a different delta is reported, not proven wrong.
-        const mmk = (t: string, re: RegExp) => Number((re.exec(t)?.[1] ?? 'NaN').replace(/,/g, ''));
-        const delta = (k: AreaKey, re: RegExp) => Math.round((mmk(after[k], re) - mmk(before[k], re)) * 100) / 100;
-        expect.soft(delta('arTotal', /Accounts Receivable ([\d,.]+) Ks/), `${AREAS.arTotal} +2,781 (shared total)`).toBe(2781);
-        expect.soft(delta('dashboardAr', /Overdue ([\d,.]+) Ks/), `${AREAS.dashboardAr}: MMK Overdue +2,781 (shared total)`).toBe(2781);
-        expect.soft(delta('dashboardAr', /Current ([\d,.]+) Ks/), `${AREAS.dashboardAr}: MMK Current unchanged (shared total)`).toBe(0);
-      });
-
-      await test.step('Check areas: the approved invoice shows everywhere as unpaid', async () => {
-        row('invoiceList', new RegExp(`^1 row\\(s\\): .*${C}.*${T} 0\\.00 Ks ${T} ${D}`));
-        expect.soft(after.draftList, `${AREAS.draftList}: back to before (the draft became the invoice)`).toBe(before.draftList);
-        expect.soft(Number(after.pendingInvDn), `${AREAS.pendingInvDn}: −1 after approval (others may add drafts too)`).toBeLessThanOrEqual(pendingAfterDraft - 1);
-        row('apartmentInvoices', new RegExp(`^1 row\\(s\\): .*${C}.*${T}.*${DUE}.*Unpaid`, 'i'));
-        row('apartmentSoa', new RegExp(`Balance Due:? ${T}`));
-        row('contactUnpaid', new RegExp(`^Unpaid Invoices \\(1\\) \\| 1 row\\(s\\): .*${C}.*${T}.*${DUE}.*Unpaid`, 'i'));
-        row('report', new RegExp(`^1 row\\(s\\): .*${C}.*${T} 0\\.00 Ks ${T} ${D} test1 test1`));
-      });
+      await test.step(`Expected 2 + check areas: AR overdue based on the due date (${daysOverdue} days → "${band}"), unpaid everywhere`, async () =>
+        overdueAreaChecks(before, after, { code, date, due, total, amount: 2781, band, pendingAfterDraft }));
     });
 
   // INV-008: dated today (the case's 1.6.2025 is outside the allowed range); figures are
@@ -527,10 +592,11 @@ test.describe('Invoices · Invoice', () => {
         test.info().annotations.push({ type: 'observed', description: (await message.isVisible())
           ? `message "${(await message.innerText()).trim()}"`
           : 'no success message; New EM shows only "Creating this draft…" and then opens the invoice detail' });
-        await expect(page).toHaveURL(/\/receivables\/invoices\/\d+$/, { timeout: 30_000 });
+        await expect(page).toHaveURL(InvoiceDetailPage.URL, { timeout: 30_000 });
       });
       await test.step('Expected 2: invoice is saved as draft in Inv/DN, with both lines', async () => {
         const detail = new InvoiceDetailPage(page);
+        await detail.loaded();
         await expect.soft(detail.status, 'status').toHaveText('Draft');
         await expect.soft(detail.field('Total'), 'saved total').toHaveText(/18,450\.00/);
         await expect.soft(detail.lines, 'two invoice lines').toHaveCount(2);
@@ -585,6 +651,47 @@ test.describe('Invoices · Invoice', () => {
       await compareCheckAreas(before, after);
       await test.step('Expected 3 + check areas: the invoice is unpaid in the apartment and everywhere', async () =>
         approvedAreaChecks(before, after, { code, date, due, total, amount: 2781, pendingAfterDraft }));
+    });
+
+  // INV-012: the largest gross price, 14 integer digits + 2 decimals (12,345,678,901,234.56), × 200, 3% Tax,
+  // Discount 10 Ks; dated today. The case gives no figures: they are recorded (annotation "observed"), the gross
+  // price must be kept as entered and the invoice created as a draft. Check areas as INV-001 (a draft changes only
+  // the Inv/DN Draft list and the pending counter).
+  test('INV-012 Invoice accepts max gross price (14 integer digits + 2 decimals)',
+    testCase({ id: 'INV-012', source: 'TC_Inv_016', priority: 'P2' }),
+    async ({ page, createInvoicePage: form }) => {
+      const date = today();
+      const apartment = await test.step('Setup: own apartment with a new owner (API)', () =>
+        createApartmentWithOwner(page.request, test.info(), addDays(date, -30)));
+      test.info().annotations.push({ type: 'data', description: `${apartment.name} (estate ${apartment.id}), owner contact ${apartment.owner.id}` });
+      const before = await test.step('Check areas: before', () => readCheckAreas(page, apartment, 'This Month', 'before'));
+
+      await createInvoiceSteps(page, form, apartment.name, date, { tag: 'INV-012', successMessage: true, line: bigPriceLine('12,345,678,901,234.56') });
+
+      await test.step('Expected 2: invoice is saved as draft in Inv/DN', async () => {
+        const detail = new InvoiceDetailPage(page);
+        await detail.loaded();
+        await expect.soft(detail.status, 'status').toHaveText('Draft');
+        await expect.soft(detail.lines, 'one invoice line').toHaveCount(1);
+        await expect.soft(detail.lines.first(), 'gross price on the saved line').toContainText('12,345,678,901,234.56');
+        test.info().annotations.push({ type: 'observed', description: `saved draft #${detail.id()}: Total ${(await detail.field('Total').innerText()).trim()}` });
+        await evidence(page, 'INV-012_expected2-draft');
+      });
+
+      const after = await test.step('Check areas: after', () => readCheckAreas(page, apartment, 'This Month', 'after'));
+      const changed = await compareCheckAreas(before, after);
+      await test.step('Expected 3: notification to the approver (Inv/DN pending counter +1, draft listed)', async () => {
+        expect.soft(Number(after.pendingInvDn), 'Inv/DN pending counter (others may add drafts too)').toBeGreaterThanOrEqual(Number(before.pendingInvDn) + 1);
+        await new PendingApprovals(page).link('Inv/DN').click();
+        await expect(page).toHaveURL(/\/receivables\/invoices\/drafts/);
+      });
+      await test.step('Check areas: a draft changes only the Inv/DN draft list and the pending counter', async () => {
+        expect.soft(after.draftList, AREAS.draftList).toMatch(/^1 row\(s\): .*INVOICE.*Maintenance Service/);
+        const allowed: AreaKey[] = ['draftList', 'pendingInvDn'];
+        for (const k of changed.filter(k => !allowed.includes(k))) {
+          expect.soft(`${AREAS[k]}: ${after[k]}`, `${AREAS[k]} must not change for a draft (before: ${before[k]})`).toBe(`${AREAS[k]}: ${before[k]}`);
+        }
+      });
     });
 });
 
@@ -658,6 +765,175 @@ test.describe('Invoices · Debit note', () => {
       await compareCheckAreas(before, after);
       await test.step('Expected 2 + check areas: the debit note is unpaid in the apartment and everywhere', async () =>
         approvedAreaChecks(before, after, { code, date, due, total, amount: 225000, pendingAfterDraft }));
+    });
+
+  // INV-025: the largest gross price (12,345,678,901,234.56) × 1, Internet, +15 days, dated today. Total =
+  // the gross price. Check areas as INV-020 (a draft changes only the Inv/DN Draft list and the pending counter).
+  test('INV-025 Debit note accepts max gross price (14 integer digits + 2 decimals)',
+    testCase({ id: 'INV-025', source: 'TC_Inv_033', priority: 'P2' }),
+    async ({ page, createDebitNotePage: form }) => {
+      const date = today();
+      const apartment = await test.step('Setup: own apartment with a new owner (API)', () =>
+        createApartmentWithOwner(page.request, test.info(), addDays(date, -30)));
+      test.info().annotations.push({ type: 'data', description: `${apartment.name} (estate ${apartment.id}), owner contact ${apartment.owner.id}` });
+      const before = await test.step('Check areas: before', () => readCheckAreas(page, apartment, 'This Month', 'before'));
+
+      await createDebitNoteSteps(page, form, apartment.name, date, { tag: 'INV-025', successMessage: true, data: INV_025 });
+
+      await test.step('Expected 2: debit note is saved as draft in Inv/DN', async () => {
+        const detail = new InvoiceDetailPage(page);
+        await expect.soft(detail.type, 'document type').toHaveText('DEBIT NOTE');
+        await expect.soft(detail.status, 'status').toHaveText('Draft');
+        await expect.soft(detail.field('Total'), 'saved total').toHaveText(INV_025.expected.total);
+        await expect.soft(detail.field('Due Date'), 'due date = issue date + 15 days').toHaveText(dmy(addDays(date, 15), '/'));
+        test.info().annotations.push({ type: 'data', description: `draft debit note #${detail.id()}` });
+        await evidence(page, 'INV-025_expected2-draft');
+      });
+
+      const after = await test.step('Check areas: after', () => readCheckAreas(page, apartment, 'This Month', 'after'));
+      const changed = await compareCheckAreas(before, after);
+      await test.step('Expected 3: notification to the approver (Inv/DN pending counter +1, draft listed)', async () => {
+        expect.soft(Number(after.pendingInvDn), 'Inv/DN pending counter (others may add drafts too)').toBeGreaterThanOrEqual(Number(before.pendingInvDn) + 1);
+        await new PendingApprovals(page).link('Inv/DN').click();
+        await expect(page).toHaveURL(/\/receivables\/invoices\/drafts/);
+      });
+      await test.step('Check areas: a draft changes only the Inv/DN draft list and the pending counter', async () => {
+        expect.soft(after.draftList, AREAS.draftList).toMatch(/^1 row\(s\): .*DEBIT NOTE.*Internet.*12,345,678,901,234\.56/);
+        const allowed: AreaKey[] = ['draftList', 'pendingInvDn'];
+        for (const k of changed.filter(k => !allowed.includes(k))) {
+          expect.soft(`${AREAS[k]}: ${after[k]}`, `${AREAS[k]} must not change for a draft (before: ${before[k]})`).toBe(`${AREAS[k]}: ${before[k]}`);
+        }
+      });
+    });
+
+  // INV-029: as INV-003 for a debit note. The case's date 1.6.2025 cannot be chosen (last month to today only), so
+  // the debit note is dated the 1st of last month; +7 days, 2 × 1,500 = 3,000.00 Ks. Admin approves its own draft.
+  // Check areas after approval as INV-003: unpaid and overdue everywhere, in the aging band of its days overdue.
+  test('INV-029 Debit note due date = issue date + payment term; AR overdue based on due date',
+    testCase({ id: 'INV-029', source: 'TC_Inv_037', priority: 'P1', critical: true }),
+    async ({ page, createDebitNotePage: form }) => {
+      const now = today();
+      const date = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const due = addDays(date, 7);
+      const daysOverdue = Math.round((now.getTime() - due.getTime()) / 86_400_000);
+      const band = agingBand(daysOverdue);
+      const total = INV_029.expected.total;
+      const apartment = await test.step('Setup: own apartment with a new owner (API)', () =>
+        createApartmentWithOwner(page.request, test.info(), addDays(date, -30)));
+      test.info().annotations.push({ type: 'data', description: `${apartment.name} (estate ${apartment.id}), owner contact ${apartment.owner.id}, debit note date ${dmy(date, '/')}, due ${dmy(due, '/')}, ${daysOverdue} days overdue → "${band}"` });
+      const before = await test.step('Check areas: before', () => readCheckAreas(page, apartment, 'Last Month', 'before'));
+
+      await createDebitNoteSteps(page, form, apartment.name, date, { tag: 'INV-029', data: INV_029 });
+      const draftUrl = page.url();
+      const pendingAfterDraft = await new PendingApprovals(page).count('Inv/DN');
+      await page.goto(draftUrl);
+
+      const detail = new InvoiceDetailPage(page);
+      let code = '';
+      await test.step('Approve the draft (Admin) → Expected 1: due date = issue date + 7 days', async () => {
+        await expect(page).toHaveURL(InvoiceDetailPage.URL);
+        await expect.soft(detail.field('Due Date'), 'draft due date').toHaveText(dmy(due, '/'));
+        await detail.approve();
+        code = (await detail.code.innerText()).replace(/^#/, '').trim();
+        test.info().annotations.push({ type: 'data', description: `approved ${code} (debit note #${detail.id()})` });
+        expect.soft(code, 'ref number').toMatch(KIND['debit-note'].code);
+        await expect.soft(detail.status, 'status after approval').toHaveText(/^Unpaid$/i);
+        await expect.soft(detail.field('Issue Date'), 'issue date').toHaveText(dmy(date, '/'));
+        await expect.soft(detail.field('Due Date'), `due date = ${dmy(date, '/')} + 7 days`).toHaveText(dmy(due, '/'));
+        await expect.soft(detail.field('Total'), 'total').toHaveText(total);
+        await evidence(page, 'INV-029_expected1-approved');
+      });
+
+      const after = await test.step('Check areas: after', () => readCheckAreas(page, apartment, 'Last Month', 'after'));
+      await compareCheckAreas(before, after);
+      await test.step(`Expected 2 + check areas: AR overdue based on the due date (${daysOverdue} days → "${band}")`, async () =>
+        overdueAreaChecks(before, after, { code, date, due, total, amount: 3000, band, pendingAfterDraft }));
+    });
+});
+
+test.describe('Invoices · Listing', () => {
+  test.describe.configure({ timeout: 240_000 });
+
+  // INV-037: the precondition's Invoice and Debit Note are the newest approved ones in the register (Last 30 Days).
+  // New EM has no "Manage" button in the register: the document code opens its detail. "Full data" = type, code,
+  // status, apartment, dates and total as in the list row, with its lines. View PDF must open a PDF; Download PDF
+  // must save a .pdf file.
+  test('INV-037 View Invoice/Debit Note detail and view/download PDF',
+    testCase({ id: 'INV-037', source: 'TC_Inv_045', priority: 'P2' }),
+    async ({ page }) => {
+      const register = new InvoiceRegisterPage(page);
+      const detail = new InvoiceDetailPage(page);
+      for (const kind of ['invoice', 'debit-note'] as const) await test.step(KIND[kind].label, async () => {
+        const k = KIND[kind];
+        const prefix = kind === 'invoice' ? 'INV' : 'DN';
+        let code = '';
+        let rowText = '';
+        await test.step('1. Click "Invoices / Debit Note" from left menu', async () => {
+          await page.goto('/dashboard');
+          await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Invoices / Debit Note' }).click();
+          await expect(page).toHaveURL(/\/receivables\/invoices$/);
+          await register.settled();
+        });
+        await test.step(`2. In Listing, click one of the ${k.label}s`, async () => {
+          const found = await register.findRow(new RegExp(`\\b${prefix}-\\d{6}-\\d+`));
+          expect(found, `a ${k.label} in the list (Last 30 Days)`).not.toBeNull();
+          const row = found!;
+          rowText = (await row.innerText()).replace(/\s+/g, ' ').trim();
+          code = new RegExp(`${prefix}-\\d{6}-\\d+`).exec(rowText)?.[0] ?? '';
+          test.info().annotations.push({ type: 'data', description: `${k.label} ${code}: list row "${rowText}"` });
+          await register.codeLink(row).click();
+        });
+        await test.step('3. Click "Manage" button (New EM: the code opens the detail) → Expected: voucher with full data', async () => {
+          await expect(page).toHaveURL(InvoiceDetailPage.URL);
+          await detail.loaded();
+          await expect.soft(detail.type, 'document type').toHaveText(k.type);
+          await expect.soft(detail.code, 'code').toHaveText(new RegExp(`^#?${code}$`));
+          await expect.soft(detail.status, 'status').toBeVisible();
+          const issuedTo = (await detail.issuedTo.innerText()).replace(/\s+/g, ' ').trim();
+          expect.soft(rowText, `apartment "${issuedTo}" as in the list`).toContain(issuedTo);
+          const amounts = rowText.match(/[\d,]+\.\d{2} Ks/g) ?? [];
+          if (amounts[0]) await expect.soft(detail.field('Total'), 'total as in the list').toHaveText(amounts[0]);
+          const date = /\d{2}\/\d{2}\/\d{4}/.exec(rowText)?.[0];
+          if (date) await expect.soft(detail.field('Issue Date'), 'issue date as in the list').toHaveText(date);
+          await expect.soft(detail.field('Due Date'), 'due date').toHaveText(/\d{2}\/\d{2}\/\d{4}/);
+          expect.soft(await detail.lines.count(), 'at least one line').toBeGreaterThan(0);
+          await evidence(page, `INV-037_${prefix}_detail`);
+        });
+        await test.step('Expected: "View PDF" opens the PDF', async () => {
+          const pdfResponse = page.context().waitForEvent('response', { predicate: r => /application\/pdf/i.test(r.headers()['content-type'] ?? ''), timeout: 30_000 }).catch(() => null);
+          const popup = page.context().waitForEvent('page', { timeout: 30_000 }).catch(() => null);
+          await (await detail.pdfMenuItem('View PDF')).click();
+          const [response, tab] = await Promise.all([pdfResponse, popup]);
+          const where = tab ? `new tab ${tab.url()}` : `same tab ${page.url()}`;
+          test.info().annotations.push({ type: 'observed', description: `${code} View PDF: ${where}; PDF response ${response ? `${response.status()} ${response.url()}` : 'none'}` });
+          expect.soft(response, 'a PDF is served').not.toBeNull();
+          if (response) {
+            // The body is gone once the tab shows the PDF: judge by status, type and the file name it is served as.
+            expect.soft(response.status(), 'PDF response status').toBe(200);
+            expect.soft(decodeURIComponent(response.url()), 'PDF of this document').toContain(`${code}.pdf`);
+          }
+          if (tab) {
+            await evidence(tab, `INV-037_${prefix}_view-pdf`).catch(() => {});
+            await tab.close();
+          } else {
+            await evidence(page, `INV-037_${prefix}_view-pdf`);
+            if (!InvoiceDetailPage.URL.test(page.url())) await page.goBack();
+            await page.keyboard.press('Escape');
+          }
+        });
+        await test.step('Expected: "Download PDF" saves the PDF file', async () => {
+          await expect(page).toHaveURL(InvoiceDetailPage.URL);
+          const download = page.waitForEvent('download', { timeout: 30_000 });
+          await (await detail.pdfMenuItem('Download PDF')).click();
+          const file = await download;
+          const path = await file.path();
+          const head = (await import('node:fs')).readFileSync(path).subarray(0, 4).toString();
+          test.info().annotations.push({ type: 'observed', description: `${code} Download PDF: "${file.suggestedFilename()}"` });
+          expect.soft(file.suggestedFilename(), 'file name').toMatch(/\.pdf$/i);
+          expect.soft(head, 'file is a PDF').toBe('%PDF');
+          await test.info().attach(`INV-037_${prefix}_${file.suggestedFilename()}`, { path, contentType: 'application/pdf' });
+        });
+      });
     });
 });
 
@@ -1012,7 +1288,65 @@ test.describe('Invoices · Invoice validation', () => {
       });
   }
 
-  // The date must be blocked both on the calendar (future days disabled) and when
+  // INV-013: gross price 99,999,999,999,999 (over the limit), × 200, 3% Tax, Discount 10 Ks; dated today. The form
+  // does not calculate the line; after Create the message must show under Gross Price (exact text of the case) and
+  // no invoice is created. Check areas: the Inv/DN Draft list (our apartment) and the pending counter must not change.
+  test('INV-013 Invoice rejects gross price 99,999,999,999,999 (amount exceeded limit)',
+    testCase({ id: 'INV-013', source: 'TC_Inv_017', priority: 'P2' }),
+    async ({ page, createInvoicePage: form }) => {
+      const apartment = await test.step('Setup: own apartment with a new owner (API)', () =>
+        createApartmentWithOwner(page.request, test.info(), addDays(today(), -30)));
+      test.info().annotations.push({ type: 'data', description: `${apartment.name} (estate ${apartment.id})` });
+      const areas: AreaKey[] = ['draftList', 'pendingInvDn'];
+      const before = await test.step('Check areas: before', () => readCheckAreas(page, apartment, 'This Month', 'before', areas));
+      const data = bigPriceLine('99,999,999,999,999');
+      const line = form.line(0);
+
+      await test.step('1-3. Invoices / Debit Note › Add Invoice; Currency MMK, Date today', async () => {
+        await page.goto('/dashboard');
+        await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Invoices / Debit Note' }).click();
+        await page.getByRole('link', { name: 'Add Invoice' }).click();
+        await expect(form.heading).toBeVisible();
+        await expect.soft(form.currency, 'default currency').toHaveText('MMK');
+        await expect.soft(form.date, 'default date').toHaveValue(dmy(today()));
+      });
+      await test.step('4. Fill the required fields', async () => {
+        await form.chooseApartment(apartment.name);
+        await form.chooseCategory(INV_001.category);
+        await form.choosePaymentTerms(INV_001.paymentTerms);
+        const oldCoRef = await form.fillOldCoRefIfShown();
+        if (oldCoRef) test.info().annotations.push({ type: 'environment', description: `"Old CoRef No." setting enabled; filled "${oldCoRef}"` });
+      });
+      await test.step(`5. Fill the item (${data.label})`, async () => {
+        await line.fill({ ...data.input, discount: undefined });
+        await form.discountInKs.check();
+        await line.discount.fill(data.input.discount ?? '');
+        await line.discount.blur();
+        await page.waitForLoadState('networkidle').catch(() => {});
+        const text = async (l: import('@playwright/test').Locator) => (await l.innerText()).replace(/\s+/g, ' ').trim();
+        test.info().annotations.push({ type: 'observed', description: `before Create: Gross Price "${await line.grossPrice.inputValue()}", Total ${await text(line.total)}, Grand Total ${await text(form.total('Grand Total'))}` });
+        await evidence(page, 'INV-013_step5-filled');
+      });
+      await test.step('6. Click "Create" button → Expected 1 + 2: not created, "Amount exceeded maximum limit." under Gross Price', async () => {
+        await form.createButton.click();
+        const message = line.root.getByText('Amount exceeded maximum limit.', { exact: true });
+        await expect.soft(message, '"Amount exceeded maximum limit." under the Gross Price field (exact text from the case)').toBeVisible({ timeout: 15_000 });
+        await page.waitForURL(InvoiceDetailPage.URL, { timeout: 10_000 }).catch(() => {});
+        await expect.soft(page, 'Expected 1: no invoice is created').toHaveURL(/\/receivables\/invoices\/new$/);
+        const alerts = (await page.getByRole('main').getByRole('alert').allInnerTexts()).map(t => t.trim()).filter(Boolean);
+        test.info().annotations.push({ type: 'observed', description: `after Create: page ${new URL(page.url()).pathname}; messages: ${alerts.length ? alerts.join(' | ') : 'none'}` });
+        await evidence(page, 'INV-013_step6-create');
+      });
+
+      const after = await test.step('Check areas: after', () => readCheckAreas(page, apartment, 'This Month', 'after', areas));
+      await compareCheckAreas(before, after);
+      await test.step('Check areas: nothing was created (Draft list and pending counter unchanged)', async () => {
+        expect.soft(after.draftList, AREAS.draftList).toBe(before.draftList);
+        expect.soft(after.pendingInvDn, `${AREAS.pendingInvDn} (others may add drafts too)`).toBe(before.pendingInvDn);
+      });
+    });
+
+  // INV-002: the date must be blocked both on the calendar (future days disabled) and when
   // typed (the field must not keep a future date). Only the result counts, not how it is blocked. No check areas
   // in the case: read the Inv/DN Draft list (our apartment) and the pending counter to show nothing was created.
   test('INV-002 Invoice date cannot be a future date',

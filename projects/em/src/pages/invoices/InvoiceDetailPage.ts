@@ -15,6 +15,8 @@ export class InvoiceDetailPage {
   readonly approveButton: Locator;
   /** Approved document code, e.g. "INV-202610-00003" / "DN-202611-00006" (shown as "#INV-…"). */
   readonly code: Locator;
+  /** "PDF" button: opens a menu with "View PDF" and "Download PDF". */
+  readonly pdfButton: Locator;
 
   constructor(private readonly page: Page) {
     this.heading = page.getByRole('heading', { name: 'Detail', level: 1 });
@@ -24,6 +26,7 @@ export class InvoiceDetailPage {
     this.lines = page.getByRole('table', { name: 'Invoice lines' }).getByRole('rowgroup').nth(1).getByRole('row');
     this.approveButton = page.getByRole('button', { name: 'Approve', exact: true });
     this.code = page.getByRole('main').getByText(/^#?(INV|DN)-\d{6}-\d+$/).first();
+    this.pdfButton = page.getByRole('main').getByRole('button', { name: 'PDF', exact: true });
   }
 
   /** Value of a "Document details" entry (dl data-testid="paper-meta"; the colon on screen is styling). */
@@ -38,6 +41,14 @@ export class InvoiceDetailPage {
       .locator('xpath=following-sibling::dd[1]');
   }
 
+  /** Item of the PDF menu (opens the menu first). */
+  async pdfMenuItem(name: 'View PDF' | 'Download PDF'): Promise<Locator> {
+    await this.pdfButton.click();
+    const item = this.page.getByRole('menuitem', { name, exact: true });
+    await item.waitFor();
+    return item;
+  }
+
   /** Approve › Confirm approve (below the dual-approval threshold the document posts at once). */
   async approve(): Promise<void> {
     await this.approveButton.click();
@@ -45,8 +56,16 @@ export class InvoiceDetailPage {
     await this.code.waitFor({ timeout: 30_000 });
   }
 
-  /** Invoice id from the URL (/receivables/invoices/70 → '70'). */
+  /** Detail URL: /receivables/invoices/70, or /receivables/invoices/drafts/70 when opened from the Draft list. */
+  static readonly URL = /\/receivables\/invoices\/(?:drafts\/)?\d+$/;
+
+  /** Waits until the document has loaded (its status shows); the test env can be slow. */
+  async loaded(): Promise<void> {
+    await this.status.waitFor({ timeout: 30_000 }).catch(() => {});
+  }
+
+  /** Invoice id from the URL (/receivables/invoices/70 or …/drafts/70 → '70'). */
   id(): string {
-    return /\/receivables\/invoices\/(\d+)/.exec(this.page.url())?.[1] ?? '';
+    return /\/receivables\/invoices\/(?:drafts\/)?(\d+)/.exec(this.page.url())?.[1] ?? '';
   }
 }
