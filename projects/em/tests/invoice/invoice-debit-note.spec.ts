@@ -16,6 +16,10 @@ import { filterTypeFor, InvoiceDraftsPage, InvoiceRegisterPage } from '@pages/in
 import { InvoiceDetailPage } from '@pages/invoices/InvoiceDetailPage';
 import { PendingApprovals } from '@components/PendingApprovals';
 
+// One test at a time, in file order, also in CI (fullyParallel, 2 workers): the cases compare shared totals
+// (Dashboard AR, AR total, Inv/DN pending counter) before / after, so two tests posting at once would skew them.
+test.describe.configure({ mode: 'default' });
+
 const dmy = (d: Date, sep = '-') =>
   [d.getDate(), d.getMonth() + 1].map(n => String(n).padStart(2, '0')).concat(String(d.getFullYear())).join(sep);
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
